@@ -1,0 +1,74 @@
+
+replicaCount: 3
+
+image:
+  repository: cruise/k-rail
+  tag: latest
+  pullPolicy: IfNotPresent
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+config:
+  tls:
+    cert: "/cert/cert.pem"
+    key: "/cert/key.pem"
+  global_report_only: False
+  policy_config:
+    policy_require_ingress_exemption_classes:
+      - public
+    policy_trusted_repository_regexes:
+      - '^k8s.gcr.io/.*'               # official k8s GCR repo
+      - '^[A-Za-z0-9\-:@]+$'           # official docker hub images
+  policies:
+    - name: "pod_no_bind_mounts"
+      enabled: True
+      report_only: False
+    - name: "pod_no_docker_sock"
+      enabled: True
+      report_only: False
+    - name: "pod_immutable_reference"
+      enabled: True
+      report_only: False
+    - name: "pod_no_tiller"
+      enabled: True
+      report_only: False
+    - name: "pod_trusted_repository"
+      enabled: True
+      report_only: False
+    - name: "pod_no_host_network"
+      enabled: True
+      report_only: False
+    - name: "pod_no_privileged_container"
+      enabled: True
+      report_only: False
+    - name: "pod_no_new_capabilities"
+      enabled: True
+      report_only: False
+    - name: "pod_no_host_pid"
+      enabled: True
+      report_only: False
+    - name: "pod_safe_to_evict"
+      enabled: True
+      report_only: False
+    - name: "ingress_require_ingress_exemption"
+      enabled: True
+      report_only: False
+
+exemptions:
+  - resource_name: "*"
+    namespace: "kube-system"
+    username: "*"
+    group: "*"
+    exempt_policies: ["*"]

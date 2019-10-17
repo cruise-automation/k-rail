@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: k-rail-config
+  namespace: {{ .Release.Namespace }}
+data:
+  config.yml: |
+    {{- toYaml .Values.config | nindent 4 }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: k-rail-exemptions
+  namespace: {{ .Release.Namespace }}
+data:
+  config.yml: |
+    {{- toYaml .Values.exemptions | nindent 4 }}
+
+

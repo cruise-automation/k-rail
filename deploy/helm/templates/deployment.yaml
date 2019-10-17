@@ -1,0 +1,71 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: k-rail
+  namespace: {{ .Release.Namespace }}
+  labels:
+    name: k-rail
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      name: k-rail
+      labels:
+        name: k-rail 
+      annotations:
+        checksum/config: {{ print .Values.config | sha256sum }}
+        checksum/exemptions: {{ print .Values.exemptions | sha256sum }}
+    spec:
+      containers:
+        - name: k-rail
+          command: ["/k-rail", "-config=/config/config.yml", "-exemptions-path-glob=/exemptions/*.yml"]
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: k-rail-cert
+              mountPath: /cert
+              readOnly: true
+            - name: config
+              mountPath: /config
+              readOnly: true
+            - name: exemptions
+              mountPath: /exemptions
+              readOnly: true
+          securityContext:
+            readOnlyRootFilesystem: true
+          ports:
+            - containerPort: 10250
+            - containerPort: 8000
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8000
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000
+      volumes:
+        - name: k-rail-cert
+          secret:
+            secretName: k-rail-cert
+        - name: config
+          configMap:
+            name: k-rail-config
+        - name: exemptions
+          configMap:
+            name: k-rail-exemptions
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

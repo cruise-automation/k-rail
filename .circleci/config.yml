@@ -1,0 +1,56 @@
+version: 2
+
+setting: &setting
+  machine:
+    enabled: true
+    docker_layer_caching: true
+
+step_templates:
+  - &build_image
+    run:
+      name: Build Image
+      command: docker build --no-cache -t ${CIRCLE_PROJECT_REPONAME} .
+  - &push_vars
+    run:
+      name: Set vars for pushing to GCR
+      command: |
+        echo "export VAULT_ROLESETS=(security-gcr-dev-oauth security-gcr-prod-oauth)" >> $BASH_ENV
+        echo "export IMG_REPOS=(gcr.io/cruise-gcr-dev/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME} gcr.io/cruise-gcr-prod/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME})" >> $BASH_ENV
+        echo 'export IMG_TAG=$(echo $CIRCLE_SHA1 | cut -c1-6)' >> $BASH_ENV
+  - &tag_n_push
+    run:
+      name: vault_auth
+      command: |
+        export VAULT_ADDR=https://vault.robot.car:8200
+        export VAULT_TOKEN=$(vault write auth/circleci/login -format=json project_name=$CIRCLE_PROJECT_REPONAME \
+        build_number=$CIRCLE_BUILD_NUM commit_hash=$CIRCLE_SHA1 username=$CIRCLE_PROJECT_USERNAME | jq -r '.auth .client_token')
+
+        for i in ${!IMG_REPOS[@]}; do
+          export GCR_CREDS=$(vault read -field=token gcp/token/${VAULT_ROLESETS[$i]})
+          docker login -u oauth2accesstoken -p "$GCR_CREDS" https://gcr.io
+
+          docker tag ${CIRCLE_PROJECT_REPONAME} "${IMG_REPOS[$i]}:${IMG_TAG}"
+          docker push "${IMG_REPOS[$i]}:${IMG_TAG}" && echo "Pushed ${IMG_REPOS[$i]}:${IMG_TAG}"
+
+          # .circleci/twist_scan.sh "${IMG_REPOS[$i]}:${IMG_TAG}"
+        done
+
+jobs:
+  release:
+    <<: *setting
+    steps:
+      - checkout
+      - *push_vars
+      - *build_image
+      - *tag_n_push
+
+
+workflows:
+  version: 2
+  all:
+    jobs:
+      - release:
+          filters:
+            branches:
+              only:
+                - master

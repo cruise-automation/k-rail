@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bad-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: bad
+  template:
+    metadata:
+      labels:
+        name: bad
+    spec:
+      hostNetwork: true
+      hostPID: true
+      volumes:
+        - name: dockersock
+          hostPath:
+            path: /var/run/docker.sock
+        - name: hostroot
+          hostPath:
+            path: /
+      containers:
+        - name: bad
+          image: ubuntu
+          command: ["sleep", "36000"]
+          ports:
+          - containerPort: 8000
+            name: http
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: dockersock
+              mountPath: "/var/run/docker.sock"
+            - name: hostroot
+              mountPath: "/host"
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["NET_ADMIN", "SYS_ADMIN"]

@@ -1,0 +1,18 @@
+---
+# exempt all kube-system pods from image reference policy since they are mostly GKE-provided
+- resource_name: "*"
+  namespace: "kube-system"
+  exempt_policies: 
+  - "pod_immutable_image_reference"
+
+# wow-pod needs host network for GCE metadata compromising
+- resource_name: wow-pod
+  namespace: wow-project
+  exempt_policies: ["pod_no_host_network"]
+
+# allow everything
+# - resource_name: "*"
+#   namespace: "*"
+#   username: "*"
+#   group: "*"
+#   exempt_policies: ["*"]
