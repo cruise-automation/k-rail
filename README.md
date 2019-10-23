@@ -5,6 +5,9 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
 - [k-rail](#k-rail)
 - [Installation](#installation)
 - [Viewing policy violations](#viewing-policy-violations)
+  * [Violations from realtime feedback](#violations-from-realtime-feedback)
+  * [Violations from the Events API](#violations-from-the-events-api)
+  * [Violations from logs](#violations-from-logs)
 - [Supported policies](#supported-policies)
   * [No Bind Mounts](#no-bind-mounts)
   * [No Docker Sock Mount](#no-docker-sock-mount)
@@ -50,30 +53,57 @@ You can adjust the configuration and manage the exemptions in [`values.yaml`](de
 Test the default configuration by applying the non-compliant deployment:
 
 ```bash
-kubectl apply -n default -f deploy/non-compliant-deployment.yaml
+kubectl apply --namespace default -f deploy/non-compliant-deployment.yaml
 ```
 
 # Viewing policy violations
+
+There are a few ways of viewing violations. Violations from realtime feedback and the Events API is most useful for users, but violations from logs is most useful for presentation and analysis.
+
+## Violations from realtime feedback
 
 You may see violations when applying your resources:
 
 ```bash
 $ kubectl apply -f deploy/non-compliant-deployment.yaml
+
 Error from server (k-rail): error when creating "deploy/non-compliant-deployment.yaml": admission webhook "k-rail.cruise-automation.github.com" denied the request:
-bad-deployment had violation: Host Bind Mounts: host bind mounts are forbidden
-bad-deployment had violation: Docker Sock Mount: mounting the Docker socket is forbidden
-bad-deployment had violation: No Host Network: Using the host network is forbidden
-bad-deployment had violation: No Host PID: Using the host PID namespace is forbidden
+Deployment bad-deployment had violation: Host Bind Mounts: host bind mounts are forbidden
+Deployment bad-deployment had violation: Docker Sock Mount: mounting the Docker socket is forbidden
+Deployment bad-deployment had violation: Immutable Image Reference: image tag must include its sha256 digest
+Deployment bad-deployment had violation: No Host Network: Using the host network is forbidden
+Deployment bad-deployment had violation: No Privileged Container: Using privileged containers is forbidden
+Deployment bad-deployment had violation: No New Capabilities: Adding additional capabilities is forbidden
+Deployment bad-deployment had violation: No Host PID: Using the host PID namespace is forbidden
+Deployment bad-deployment had violation: Safe to evict: annotation is required for Pods that use emptyDir or hostPath mounts to enable cluster autoscaling
 ```
-    
+
+
+## Violations from the Events API
+
 You can also see violations that have occurred recently with the events API:
 
 
 ```bash
-$ kubectl get events --namespace enforced
+$ kubectl get events --namespace default
 LAST SEEN   TYPE      REASON         KIND         MESSAGE
 3m41s       Warning   FailedCreate   ReplicaSet   Error creating: admission webhook "k-rail.cruise-automation.github.com" denied the request:
 bad-pod-5f7cd9bf45-rbhsb had violation: Docker Sock Mount: mounting the Docker socket is forbidden
+```
+
+
+## Violations from logs
+
+Violations are also emitted as structured data in the logs:
+
+```json
+$ kubectl logs --namespace k-rail --selector name=k-rail
+
+{"enforced":true,"kind":"Deployment","level":"warning","msg":"ENFORCED","namespace":"default","policy":"pod_no_host_network","resource":"bad-deployment","time":"2019-10-23T19:54:24Z","user":"dustin.decker@getcruise.com"}
+{"enforced":true,"kind":"Deployment","level":"warning","msg":"ENFORCED","namespace":"default","policy":"pod_no_privileged_container","resource":"bad-deployment","time":"2019-10-23T19:54:24Z","user":"dustin.decker@getcruise.com"}
+{"enforced":true,"kind":"Deployment","level":"warning","msg":"ENFORCED","namespace":"default","policy":"pod_no_new_capabilities","resource":"bad-deployment","time":"2019-10-23T19:54:24Z","user":"dustin.decker@getcruise.com"}
+{"enforced":true,"kind":"Deployment","level":"warning","msg":"ENFORCED","namespace":"default","policy":"pod_no_host_pid","resource":"bad-deployment","time":"2019-10-23T19:54:24Z","user":"dustin.decker@getcruise.com"}
+{"enforced":true,"kind":"Deployment","level":"warning","msg":"ENFORCED","namespace":"default","policy":"pod_safe_to_evict","resource":"bad-deployment","time":"2019-10-23T19:54:24Z","user":"dustin.decker@getcruise.com"}
 ```
 
 Since the violations are outputted as structured data, you are encouraged to aggregate and display that information. GCP BigQuery + Data Studio, Sumologic, Elasticsearch + Kibana, Splunk, etc are all capable of this.
@@ -236,7 +266,7 @@ Newer versions (1.14+) of Kubernetes are not likely to have this issue if the `V
 
 To determine if this is occuring because the service is unreachable, check the `kube-apiserver` logs. You will see logs similar to,
 ```
-E0911 04:57:22.686526       1 dispatcher.go:68] failed calling webhook "K-rail.cruise-automation.github.com": Post https://K-rail.K-rail.svc:443/?timeout=30s: dial tcp 10.110.63.191:443: connect: connection refused
+E0911 04:57:22.686526       1 dispatcher.go:68] failed calling webhook "k-rail.cruise-automation.github.com": Post https://k-rail.k-rail.svc:443/?timeout=30s: dial tcp 10.110.63.191:443: connect: connection refused
 ```
 
 ### Checking kube-apiserver logs
