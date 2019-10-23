@@ -40,7 +40,7 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
 
 # Installation
 
-You can install k-rail using the helm chart in [`deploy/helm`](deploy/helm).
+You can install k-rail using the helm chart in [`deploy/helm`](deploy/helm). For the Helm deployment, all configuration is contained in [`deploy/helm/values.yaml`](deploy/helm/values.yaml).
 For Helm 2 and below, it is recommended to use `helm template` rather than Tiller:
 
 ```bash
@@ -48,7 +48,6 @@ helm template --namespace k-rail deploy/helm | kubectl apply -f -
 ```
 
 By default all policies are enforced (`report_only: false`).
-You can adjust the configuration and manage the exemptions in [`values.yaml`](deploy/helm/values.yaml).
 
 Test the default configuration by applying the non-compliant deployment:
 
@@ -187,6 +186,8 @@ policy_config:
 
 
 # Configuration
+
+For the Helm deployment, all configuration is contained in [`deploy/helm/values.yaml`](deploy/helm/values.yaml).
 
 ## Logging
 
