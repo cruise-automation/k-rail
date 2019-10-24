@@ -1,13 +1,12 @@
----
-# exempt all kube-system pods from image reference policy since they are mostly GKE-provided
-- resource_name: "*"
-  namespace: "kube-system"
-  exempt_policies: 
-  - "pod_immutable_image_reference"
+###
+# For the Helm deployment, all policy and exemption configuration is contained in deploy/helm/values.yaml.
+# This example file is provided for reference.
+###
 
-# wow-pod needs host network for GCE metadata compromising
-- resource_name: wow-pod
-  namespace: wow-project
+---
+# bad-pod needs host network for GCE metadata compromising
+- resource_name: bad-pod
+  namespace: bad-project
   exempt_policies: ["pod_no_host_network"]
 
 # allow everything

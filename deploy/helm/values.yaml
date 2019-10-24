@@ -21,6 +21,7 @@ tolerations: []
 affinity: {}
 
 config:
+  log_level: info
   tls:
     cert: "/cert/cert.pem"
     key: "/cert/key.pem"

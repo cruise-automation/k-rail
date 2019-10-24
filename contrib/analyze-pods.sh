@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# This script was used to analyze some existing workloads for point-in-time analysis and verification.
+# We're providing it in case it is useful. There may be later usage and documentation at some point in the future.
+
 mkdir -p /tmp/pods
 rm /tmp/pods/filtered.json
 
