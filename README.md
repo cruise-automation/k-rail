@@ -48,7 +48,7 @@ For the Helm deployment, all configuration for policies and exemptions are conta
 For Helm 2 and below, it is recommended to use `helm template` render the YAML for applying rather than usig Helm Tiller:
 
 ```bash
-helm template --namespace k-rail deploy/helm | kubectl apply -f - 
+helm template --namespace k-rail deploy/helm | kubectl apply -n k-rail -f -
 ```
 
 By default all policies are enforced (`report_only: false`).
