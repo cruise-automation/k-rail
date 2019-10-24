@@ -35,13 +35,17 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
     + [Viewing webhook latency and status code metrics](#viewing-webhook-latency-and-status-code-metrics)
   * [Policies are enabled, but are not triggering when they should](#policies-are-enabled--but-are-not-triggering-when-they-should)
   * [Policies are enabled, but a deployment is blocked and an exemption is needed](#policies-are-enabled--but-a-deployment-is-blocked-and-an-exemption-is-needed)
+  * [Checking the mTLS certificate expiration](#checking-the-mtls-certificate-expiration)
 - [License](#license)
 
 
 # Installation
 
-You can install k-rail using the helm chart in [`deploy/helm`](deploy/helm). For the Helm deployment, all configuration is contained in [`deploy/helm/values.yaml`](deploy/helm/values.yaml).
-For Helm 2 and below, it is recommended to use `helm template` rather than Tiller:
+You can install or update k-rail using the helm chart in [`deploy/helm`](deploy/helm).
+
+For the Helm deployment, all configuration for policies and exemptions are contained in [`deploy/helm/values.yaml`](deploy/helm/values.yaml).
+
+For Helm 2 and below, it is recommended to use `helm template` render the YAML for applying rather than usig Helm Tiller:
 
 ```bash
 helm template --namespace k-rail deploy/helm | kubectl apply -f - 
@@ -49,7 +53,7 @@ helm template --namespace k-rail deploy/helm | kubectl apply -f -
 
 By default all policies are enforced (`report_only: false`).
 
-Test the default configuration by applying the non-compliant deployment:
+Test the default configuration by applying the provided non-compliant deployment:
 
 ```bash
 kubectl apply --namespace default -f deploy/non-compliant-deployment.yaml
@@ -158,7 +162,7 @@ There are many malicious, poorly configured, and outdated and vulnerable images 
 
 ### Policy configuration
 
-The Trusted Image Repository policy can be configured in the K-rail configuration file.
+The Trusted Image Repository policy can be configured in the k-rail configuration file.
 
 Example
 ```yaml
@@ -175,7 +179,7 @@ The Require Ingress Exemption policy requires the configured ingress classes to 
 
 ### Policy configuration
 
-The Require Ingress Exemption policy can be configured in the K-rail configuration file.
+The Require Ingress Exemption policy can be configured in the k-rail configuration file.
 
 Example
 ```yaml
@@ -191,7 +195,7 @@ For the Helm deployment, all configuration is contained in [`deploy/helm/values.
 
 ## Logging
 
-Log levels can be set in the K-rail configuration file. Acceptable values are `debug`, `warn`, and `info`. The default log level is `info`.
+Log levels can be set in the k-rail configuration file. Acceptable values are `debug`, `warn`, and `info`. The default log level is `info`.
 
 All reporting and enforcement operations are logged in a structured json blob per event.
 It is useful to run policies in report-only mode, analyze your state in with the structured logs, and flip on enforcement mode when appropriate.
@@ -210,6 +214,8 @@ Policies configure a validator. They can be enabled/disabled, and run in report-
 ## Policy exemptions
 
 A folder to load policy exemptions from can be specified from config. Load exemptions by specifying the `-exemptions-path-glob` parameter, and specify a path glob that includes the exemptions, such as `/config/policies/*.yaml`.
+
+For the Helm deployment, all policy and exemption configuration is contained in [`deploy/helm/values.yaml`](deploy/helm/values.yaml).
 
 The format of an exemption config is YAML, and looks like this:
 
@@ -236,7 +242,9 @@ The format of an exemption config is YAML, and looks like this:
 
 ## Policy configuration
 
-Some policies are configurable. Policy configuration is contained in the K-rail configuration file, and documentation for a policy's configuration can be found in the Supported policies heading above.
+Some policies are configurable. Policy configuration is contained in the k-rail configuration file, and documentation for a policy's configuration can be found in the Supported policies heading above.
+
+For the Helm deployment, all policy and exemption configuration is contained in [`deploy/helm/values.yaml`](deploy/helm/values.yaml).
 
 
 # Adding new policies
@@ -296,6 +304,22 @@ This may be caused by the `k-rail` service being unreachable. To determine this,
 ## Policies are enabled, but a deployment is blocked and an exemption is needed
 
 If you need to make an exemption to a policy, see [Policy exemptions](#policy-exemptions).
+
+## Checking the mTLS certificate expiration
+
+By default, a 10 year certificate is generated during each apply of k-rail. Re-applying will renew it.
+
+You can also check the expiration with this command:
+
+```bash
+$ kubectl get secret --namespace k-rail k-rail-cert -o json | jq -r '.data["cert.pem"]' | base64 -d | openssl x509 -noout -text | grep -A 3 "Validity"
+
+        Validity
+            Not Before: Oct 24 05:40:16 2019 GMT
+            Not After : Oct 21 05:40:16 2029 GMT
+        Subject: CN = k-rail.k-rail.svc
+```
+
 
 # License
 

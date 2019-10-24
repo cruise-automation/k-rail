@@ -17,5 +17,3 @@ metadata:
 data:
   config.yml: |
     {{- toYaml .Values.exemptions | nindent 4 }}
-
-
