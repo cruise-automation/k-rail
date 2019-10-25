@@ -42,6 +42,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: k-rail-cert
+  namespace: {{ .Release.Namespace }}
   labels:
     app: k-rail-cert
 type: Opaque
