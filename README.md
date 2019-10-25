@@ -1,5 +1,8 @@
 # k-rail
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/cruise-automation/k-rail)](https://goreportcard.com/report/github.com/cruise-automation/k-rail)
+[![Docker Hub Build Status](https://img.shields.io/docker/cloud/build/cruise/k-rail.svg)](https://hub.docker.com/r/cruise/k-rail/)
+
 k-rail is a workload policy enforcement tool for Kubernetes. It can help you secure a multi tenant cluster with minimal disruption and maximum velocity.
 
 - [k-rail](#k-rail)
@@ -39,6 +42,20 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
 - [License](#license)
 
 
+# Why k-rail?
+
+By default, the Kubernetes APIs allow for a variety of easy privilege escalation routes. When operating a multi-tenant cluster, many features can be dangerous or introduce instability and must be used judiciously. k-rail attempts to make workload policy enforcement easy in Kubernetes, even if you already have a large number of diverse workloads. Several features enable you to roll out policy enforcement safely without breaking existing workloads:
+
+- Passive report-only mode of running policies
+- Structured violation data logged, ready for analysis and dashboards
+- Flexible and powerful policy exemptions by resource name, namespace, groups, and users
+- Realtime interactive feedback for engineers and systems that apply resources
+
+By leveraging the first three features you can quickly and easily roll out enforcement to deployments without breaking them and monitor violations with confidence. The interactive feedback informs and educates engineers during future policy violations.
+
+Cruise was able to utilize this software to apply enforcement to more than a dozen clusters with thousands of existing diverse workloads in all environments in about a week without breaking existing deployments. Now you can too.
+
+
 # Installation
 
 You can install or update k-rail using the helm chart in [`deploy/helm`](deploy/helm).
@@ -57,6 +74,14 @@ Test the default configuration by applying the provided non-compliant deployment
 
 ```bash
 kubectl apply --namespace default -f deploy/non-compliant-deployment.yaml
+```
+
+# Removal
+
+Removing k-rail is similar to the installation, but you use `delete` instead of `apply`:
+
+```bash
+helm template --namespace k-rail deploy/helm | kubectl delete -f -
 ```
 
 # Viewing policy violations
@@ -116,11 +141,13 @@ Since the violations are outputted as structured data, you are encouraged to agg
 
 ## No Bind Mounts
 
-Host bind mounts can be used to exfiltrate data from or escalate privileges on the host system. Using host bind mounts can cause unreliability of the node if it causes a partition to fill up.
+Host bind mounts (also called `hostPath` mounts) can be used to exfiltrate data from or escalate privileges on the host system. Using host bind mounts can cause unreliability of the node if it causes a partition to fill up.
 
 ## No Docker Sock Mount
 
 The Docker socket bind mount provides API access to the host Docker daemon, which can be used for privilege escalation or otherwise control the container host. Using Docker sock mounts can cause unreliability of the node because of the extra workloads that the Kubernetes schedulers are not aware of.
+
+**Note:** It is recommended to use the `No Bind Mounts` policy to disable all `hostPath` mounts rather than only this policy.
 
 ## Immutable Image Reference
 
@@ -155,6 +182,8 @@ Privileged containers have all capabilities and also removes cgroup resource acc
 ## No Helm Tiller
 
 Helm Tiller installations often have an unauthenticated API open to the cluster which provides a privilege escalation route to ClusterAdmin or NamespaceEditor.
+
+**Note:** This policy only blocks images that `/tiller` in their name from being deployed. It is not a robust policy and serves more as a reminder for engineers to seek an alternate route of deployment, such as using `helm template` or [isopod](https://github.com/cruise-automation/isopod#isopod).
 
 ## Trusted Image Repository
 
