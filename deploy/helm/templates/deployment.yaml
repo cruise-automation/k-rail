@@ -1,5 +1,5 @@
 ---
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: k-rail
@@ -8,6 +8,9 @@ metadata:
     name: k-rail
 spec:
   replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      name: k-rail
   template:
     metadata:
       name: k-rail
