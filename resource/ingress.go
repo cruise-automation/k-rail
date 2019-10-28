@@ -40,7 +40,7 @@ func GetIngressResource(ar *admissionv1beta1.AdmissionRequest) *IngressResource 
 			ResourceName: ing.Name,
 			ResourceKind: "Ingress",
 		}
-	case metav1.GroupVersionResource{Group: "networking.k8s.io", Version: "v1beta1", Resource: "ingresses"}:
+	case metav1.GroupVersionResource{Group: "networking", Version: "v1beta1", Resource: "ingresses"}:
 		ing := networkingv1beta1.Ingress{}
 		if err := decodeObject(ar.Object.Raw, &ing); err != nil {
 			return nil
