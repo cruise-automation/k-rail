@@ -1,8 +1,20 @@
 {{- $cn := printf "k-rail.%s.svc" .Release.Namespace }}
 {{- $ca := genCA "k-rail-admission-ca" 3650 -}}
 {{- $cert := genSignedCert $cn nil nil 3650 $ca -}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: k-rail-cert
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: k-rail-cert
+type: Opaque
+data:
+  cert.pem: {{ b64enc $cert.Cert }}
+  key.pem: {{ b64enc $cert.Key }}
+---
 apiVersion: admissionregistration.k8s.io/v1beta1
-kind: ValidatingWebhookConfiguration
+kind: MutatingWebhookConfiguration
 metadata:
   name: k-rail
   annotations:
@@ -30,7 +42,7 @@ webhooks:
           - jobs
           - cronjobs
           - ingresses
-    failurePolicy: Ignore
+    failurePolicy: {{ print .Values.failurePolicy }}
     sideEffects: None
     namespaceSelector:
       matchExpressions:
@@ -38,15 +50,3 @@ webhooks:
           operator: NotIn
           values: 
             - {{ .Release.Namespace }}
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: k-rail-cert
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app: k-rail-cert
-type: Opaque
-data:
-  cert.pem: {{ b64enc $cert.Cert }}
-  key.pem: {{ b64enc $cert.Key }}
