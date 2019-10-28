@@ -62,7 +62,7 @@ You can install or update k-rail using the helm chart in [`deploy/helm`](deploy/
 
 For the Helm deployment, all configuration for policies and exemptions are contained in [`deploy/helm/values.yaml`](deploy/helm/values.yaml).
 
-For Helm 2 and below, it is recommended to use `helm template` render the YAML for applying rather than usig Helm Tiller:
+For Helm 2 and below, it is recommended to use `helm template` render the YAML for applying rather than using Helm Tiller:
 
 ```bash
 helm template --namespace k-rail deploy/helm | kubectl apply -f - 
