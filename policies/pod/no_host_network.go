@@ -27,13 +27,13 @@ func (p PolicyNoHostNetwork) Name() string {
 	return "pod_no_host_network"
 }
 
-func (p PolicyNoHostNetwork) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) []policies.ResourceViolation {
+func (p PolicyNoHostNetwork) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 
 	podResource := resource.GetPodResource(ar)
 	if podResource == nil {
-		return resourceViolations
+		return resourceViolations, nil
 	}
 
 	violationText := "No Host Network: Using the host network is forbidden"
@@ -48,5 +48,5 @@ func (p PolicyNoHostNetwork) Validate(ctx context.Context, config policies.Confi
 		})
 	}
 
-	return resourceViolations
+	return resourceViolations, nil
 }

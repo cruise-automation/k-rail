@@ -28,13 +28,13 @@ func (p PolicyNoTiller) Name() string {
 	return "pod_no_tiller"
 }
 
-func (p PolicyNoTiller) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) []policies.ResourceViolation {
+func (p PolicyNoTiller) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 
 	podResource := resource.GetPodResource(ar)
 	if podResource == nil {
-		return resourceViolations
+		return resourceViolations, nil
 	}
 
 	violationText := "No Tiller: Helm Tiller is forbidden from running"
@@ -52,5 +52,5 @@ func (p PolicyNoTiller) Validate(ctx context.Context, config policies.Config, ar
 		}
 	}
 
-	return resourceViolations
+	return resourceViolations, nil
 }

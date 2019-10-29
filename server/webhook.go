@@ -26,6 +26,7 @@ import (
 	"encoding/json"
 
 	"github.com/cruise-automation/k-rail/policies"
+	"github.com/cruise-automation/k-rail/resource"
 
 	"k8s.io/api/admission/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -118,6 +119,8 @@ func (s *Server) validateResources(ar v1beta1.AdmissionReview) v1beta1.Admission
 	reportedViolations := []policies.ResourceViolation{}
 	exemptViolations := []policies.ResourceViolation{}
 
+	var mutationPatches []policies.PatchOperation
+
 	// allow resource if namespace is blacklisted
 	for _, namespace := range s.Config.BlacklistedNamespaces {
 		if namespace == ar.Request.Namespace {
@@ -133,7 +136,24 @@ func (s *Server) validateResources(ar v1beta1.AdmissionReview) v1beta1.Admission
 	}
 
 	for _, val := range s.EnforcedPolicies {
-		violations := val.Validate(ctx, s.Config.PolicyConfig, ar.Request)
+		violations, patches := val.Validate(ctx, s.Config.PolicyConfig, ar.Request)
+
+		// render non-exempt Pod mutations
+		// TODO: This could use a bit of refactoring so there is less repetition and we could
+		// have the relevant resource name available for any resource being checked for exemptions.
+		// The AdmissionReview Name is often empty and populated by an downstream controller.
+		podResource := resource.GetPodResource(ar.Request)
+		if len(violations) == 0 && patches != nil && !policies.IsExempt(
+			podResource.ResourceName,
+			ar.Request.Namespace,
+			ar.Request.UserInfo,
+			val.Name(),
+			s.Exemptions,
+		) {
+			mutationPatches = append(mutationPatches, patches...)
+		}
+
+		// apply exempt and non-exempt violations
 		if len(violations) > 0 {
 			if policies.IsExempt(
 				violations[0].ResourceName,
@@ -152,7 +172,7 @@ func (s *Server) validateResources(ar v1beta1.AdmissionReview) v1beta1.Admission
 	}
 
 	for _, val := range s.ReportOnlyPolicies {
-		violations := val.Validate(ctx, s.Config.PolicyConfig, ar.Request)
+		violations, _ := val.Validate(ctx, s.Config.PolicyConfig, ar.Request)
 		if len(violations) > 0 {
 			if policies.IsExempt(
 				violations[0].ResourceName,
@@ -245,9 +265,16 @@ func (s *Server) validateResources(ar v1beta1.AdmissionReview) v1beta1.Admission
 		violations = "NO VIOLATIONS"
 	}
 
+	patches, _ := json.Marshal(mutationPatches)
+
 	ar.Response = &v1beta1.AdmissionResponse{
 		UID:     ar.Request.UID,
 		Allowed: true,
+		Patch:   patches,
+		PatchType: func() *v1beta1.PatchType {
+			pt := v1beta1.PatchTypeJSONPatch
+			return &pt
+		}(),
 		Result: &metav1.Status{
 			Reason:  "k-rail admission review",
 			Message: violations,

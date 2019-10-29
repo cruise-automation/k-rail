@@ -114,7 +114,7 @@ func TestPolicySafeToEvict(t *testing.T) {
 
 			v := PolicySafeToEvict{}
 			conf := policies.Config{}
-			if got := v.Validate(ctx, conf, ar); !reflect.DeepEqual(len(got), tt.violations) {
+			if got, _ := v.Validate(ctx, conf, ar); !reflect.DeepEqual(len(got), tt.violations) {
 				t.Errorf("PolicySafeToEvict() %s got %v want %v violations", tt.name, len(got), tt.violations)
 			}
 		})

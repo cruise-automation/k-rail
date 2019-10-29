@@ -26,13 +26,13 @@ func (p PolicyBindMounts) Name() string {
 	return "pod_no_bind_mounts"
 }
 
-func (p PolicyBindMounts) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) []policies.ResourceViolation {
+func (p PolicyBindMounts) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 
 	podResource := resource.GetPodResource(ar)
 	if podResource == nil {
-		return resourceViolations
+		return resourceViolations, nil
 	}
 
 	violationText := "Host Bind Mounts: host bind mounts are forbidden"
@@ -49,5 +49,5 @@ func (p PolicyBindMounts) Validate(ctx context.Context, config policies.Config, 
 		}
 	}
 
-	return resourceViolations
+	return resourceViolations, nil
 }

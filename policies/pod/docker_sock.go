@@ -27,13 +27,13 @@ func (p PolicyDockerSock) Name() string {
 	return "pod_no_docker_sock"
 }
 
-func (p PolicyDockerSock) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) []policies.ResourceViolation {
+func (p PolicyDockerSock) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 
 	podResource := resource.GetPodResource(ar)
 	if podResource == nil {
-		return resourceViolations
+		return resourceViolations, nil
 	}
 
 	violationText := "Docker Sock Mount: mounting the Docker socket is forbidden"
@@ -52,5 +52,5 @@ func (p PolicyDockerSock) Validate(ctx context.Context, config policies.Config, 
 		}
 	}
 
-	return resourceViolations
+	return resourceViolations, nil
 }

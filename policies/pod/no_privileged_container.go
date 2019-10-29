@@ -27,13 +27,13 @@ func (p PolicyNoPrivilegedContainer) Name() string {
 	return "pod_no_privileged_container"
 }
 
-func (p PolicyNoPrivilegedContainer) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) []policies.ResourceViolation {
+func (p PolicyNoPrivilegedContainer) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 
 	podResource := resource.GetPodResource(ar)
 	if podResource == nil {
-		return resourceViolations
+		return resourceViolations, nil
 	}
 
 	violationText := "No Privileged Container: Using privileged containers is forbidden"
@@ -52,5 +52,5 @@ func (p PolicyNoPrivilegedContainer) Validate(ctx context.Context, config polici
 		}
 	}
 
-	return resourceViolations
+	return resourceViolations, nil
 }

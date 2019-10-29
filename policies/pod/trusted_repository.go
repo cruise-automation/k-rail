@@ -28,13 +28,13 @@ func (p PolicyTrustedRepository) Name() string {
 	return "pod_trusted_repository"
 }
 
-func (p PolicyTrustedRepository) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) []policies.ResourceViolation {
+func (p PolicyTrustedRepository) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 
 	podResource := resource.GetPodResource(ar)
 	if podResource == nil {
-		return resourceViolations
+		return resourceViolations, nil
 	}
 
 	violationText := "Trusted Image Repository: image must be sourced from a trusted repository"
@@ -58,5 +58,5 @@ func (p PolicyTrustedRepository) Validate(ctx context.Context, config policies.C
 		}
 	}
 
-	return resourceViolations
+	return resourceViolations, nil
 }

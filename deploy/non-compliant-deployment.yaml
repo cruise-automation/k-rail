@@ -25,9 +25,6 @@ spec:
         - name: bad
           image: ubuntu
           command: ["sleep", "36000"]
-          ports:
-          - containerPort: 8000
-            name: http
           imagePullPolicy: Always
           volumeMounts:
             - name: dockersock

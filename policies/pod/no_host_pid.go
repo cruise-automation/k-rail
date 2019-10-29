@@ -27,13 +27,13 @@ func (p PolicyNoHostPID) Name() string {
 	return "pod_no_host_pid"
 }
 
-func (p PolicyNoHostPID) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) []policies.ResourceViolation {
+func (p PolicyNoHostPID) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 
 	podResource := resource.GetPodResource(ar)
 	if podResource == nil {
-		return resourceViolations
+		return resourceViolations, nil
 	}
 
 	violationText := "No Host PID: Using the host PID namespace is forbidden"
@@ -48,5 +48,5 @@ func (p PolicyNoHostPID) Validate(ctx context.Context, config policies.Config, a
 		})
 	}
 
-	return resourceViolations
+	return resourceViolations, nil
 }

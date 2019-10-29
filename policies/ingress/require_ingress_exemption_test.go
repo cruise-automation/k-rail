@@ -26,7 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func TestValidatePodDockerSock(t *testing.T) {
+func TestPolicyRequireIngressExemption(t *testing.T) {
 	ctx := context.Background()
 
 	tests := []struct {
@@ -36,7 +36,7 @@ func TestValidatePodDockerSock(t *testing.T) {
 		violations int
 	}{
 		{
-			name:       "deny ext ing",
+			name:       "deny ext ingress",
 			violations: 1,
 			ingressExt: &extensionsv1beta1.Ingress{
 				ObjectMeta: metav1.ObjectMeta{
@@ -47,7 +47,7 @@ func TestValidatePodDockerSock(t *testing.T) {
 			},
 		},
 		{
-			name:       "deny net ing",
+			name:       "deny net ingress",
 			violations: 1,
 			ingressNet: &networkingv1beta1.Ingress{
 				ObjectMeta: metav1.ObjectMeta{
@@ -58,7 +58,7 @@ func TestValidatePodDockerSock(t *testing.T) {
 			},
 		},
 		{
-			name:       "allow ext ing",
+			name:       "allow ext ingress",
 			violations: 0,
 			ingressExt: &extensionsv1beta1.Ingress{
 				ObjectMeta: metav1.ObjectMeta{
@@ -69,7 +69,7 @@ func TestValidatePodDockerSock(t *testing.T) {
 			},
 		},
 		{
-			name:       "allow net ing",
+			name:       "allow net ingress",
 			violations: 0,
 			ingressNet: &networkingv1beta1.Ingress{
 				ObjectMeta: metav1.ObjectMeta{
@@ -105,7 +105,7 @@ func TestValidatePodDockerSock(t *testing.T) {
 			}
 
 			v := PolicyRequireIngressExemption{}
-			if got := v.Validate(ctx, policies.Config{PolicyRequireIngressExemptionClasses: []string{"public"}}, ar); !reflect.DeepEqual(len(got), tt.violations) {
+			if got, _ := v.Validate(ctx, policies.Config{PolicyRequireIngressExemptionClasses: []string{"public"}}, ar); !reflect.DeepEqual(len(got), tt.violations) {
 				t.Errorf("PolicyRequireIngressExemption() %s got %v want %v violations", tt.name, len(got), tt.violations)
 			}
 		})

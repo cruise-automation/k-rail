@@ -1,12 +1,14 @@
-# k-rail
+![k-rail](images/k-rail.png)
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/cruise-automation/k-rail)](https://goreportcard.com/report/github.com/cruise-automation/k-rail)
 [![Docker Hub Build Status](https://img.shields.io/docker/cloud/build/cruise/k-rail.svg)](https://hub.docker.com/r/cruise/k-rail/)
 
 k-rail is a workload policy enforcement tool for Kubernetes. It can help you secure a multi tenant cluster with minimal disruption and maximum velocity.
 
-- [k-rail](#k-rail)
+- [Why k-rail?](#why-k-rail-)
+  * [Suggested usage](#suggested-usage)
 - [Installation](#installation)
+- [Removal](#removal)
 - [Viewing policy violations](#viewing-policy-violations)
   * [Violations from realtime feedback](#violations-from-realtime-feedback)
   * [Violations from the Events API](#violations-from-the-events-api)
@@ -22,6 +24,8 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
   * [No Helm Tiller](#no-helm-tiller)
   * [Trusted Image Repository](#trusted-image-repository)
     + [Policy configuration](#policy-configuration)
+  * [Safe to Evict](#safe-to-evict)
+  * [Mutate Safe to Evict](#mutate-safe-to-evict)
   * [Require Ingress Exemption](#require-ingress-exemption)
     + [Policy configuration](#policy-configuration-1)
 - [Configuration](#configuration)
@@ -55,6 +59,11 @@ By leveraging the first three features you can quickly and easily roll out enfor
 
 Cruise was able to utilize this software to apply enforcement to more than a dozen clusters with thousands of existing diverse workloads in all environments in about a week without breaking existing deployments. Now you can too.
 
+## Suggested usage
+
+If you have a new cluster without existing workloads, just run k-rail in enforcement mode for the policies you desire and add exemptions as needed.
+
+If you have a cluster with existing workloads, run it in monitor mode for a few weeks or until you have collected enough data. The violation events are emmitted in the logs in JSON, so it is suggested that you analyze that data collected to make exemptions as needed. Once the exemptions are applied, you can safely turn on enforcement mode without breaking existing workloads.
 
 # Installation
 
@@ -173,7 +182,7 @@ The host PID namespace can be used to inspect process environment variables (whi
 
 ## No New Capabilities
 
-Kernel Capabilities can be used to escalate to level of kernel API access available to the process. Some can enable loading kernel modules among other potentially dangerous things.
+Kernel Capabilities can be used to escalate to level of kernel API access available to the process. Some can enable loading kernel modules, changing namespace and other potentially dangerous things.
 
 ## No Privileged Container
 
@@ -200,6 +209,32 @@ policy_config:
     - '^gcr.io/some-gcr-repo/.*'   # private GCR repo
     - '^k8s.gcr.io/.*'             # official k8s GCR repo
     - '^[A-Za-z0-9\-:@]+$'         # official docker hub images
+```
+
+## Safe to Evict
+
+The Kubernetes autoscaler will not evict pods using hostPath or emptyDir mounts unless they have this annotation:
+
+```javascript
+cluster-autoscaler.kubernetes.io/safe-to-evict=true
+```
+
+This policy validates that Pods have this annotation. You'll probably find the mutation policy below more useful.
+
+## Mutate Safe to Evict
+
+The Kubernetes autoscaler will not evict pods using hostPath or emptyDir mounts unless they have this annotation:
+
+```javascript
+cluster-autoscaler.kubernetes.io/safe-to-evict=true
+```
+
+This policy mutates Pods that do not have the annotation specfied to be `true`. It will not override existing annotations with `false`.
+
+You can also set the annoation on existing Pods with this one-liner:
+
+```bash
+$ kubectl get po --all-namespaces -o json | jq -r '.items[] | select(.spec.volumes[].hostPath or .spec.volumes[].emptyDir) | [ .metadata.namespace, .metadata.name ] | @tsv' | while IFS=$'\t' read -r namespace pod; do echo "\n NAMESPACE: $namespace \n POD: $pod \n"; kubectl annotate pod -n $namespace $pod "cluster-autoscaler.kubernetes.io/safe-to-evict=true"; done
 ```
 
 ## Require Ingress Exemption
@@ -238,7 +273,7 @@ This mode must be false to have any policies in enforcement mode.
 
 ### Policy modes
 
-Policies configure a validator. They can be enabled/disabled, and run in report-only or enforcement mode as specified in the config.
+Policies can be enabled/disabled, and run in report-only or enforcement mode as specified in the config.
 
 ## Policy exemptions
 
@@ -281,14 +316,19 @@ For the Helm deployment, all policy and exemption configuration is contained in 
 Policies must satisfy this interface:
 
 ```go
+// Policy specifies how a Policy is implemented
+// Returns an optional slice of violations and an optional slice of patch operations if mutation is desired.
 type Policy interface {
 	Name() string
-	Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) []internal.ResourceViolation
+	Validate(ctx context.Context,
+		config policies.Config,
+		ar *admissionv1beta1.AdmissionRequest,
+	) ([]policies.ResourceViolation, []policies.PatchOperation)
 }
 ```
 
 `Name()` must return a string that matches a policy name that is provided in configuration.
-Validate accepts an AdmissionRequest, and the resource of interest must be extracted from it. See `resource/pod.go` for an example of extracting PodSpecs from an AdmissionRequest.
+Validate accepts an AdmissionRequest, and the resource of interest must be extracted from it. See `resource/pod.go` for an example of extracting PodSpecs from an AdmissionRequest. If mutation on a resource is desired, you can return a slice of JSONPatch operations and `nil` for the violations.
 
 
 Policies can be registered in `internal/policies.go`. Any policies that are registered but do not have configuration provided get enabled in report-only mode.
@@ -300,7 +340,7 @@ Policies can be registered in `internal/policies.go`. Any policies that are regi
 ## Resources are having timeout events
 
 If you see timeout events on resources, this may be because the `k-rail` service is unreachable from the Kubernetes apiserver.
-Newer versions (1.14+) of Kubernetes are not likely to have this issue if the `ValidationWebhookConfiguration` `failurePolicy` is set to `Ignore` and `timeoutSeconds` is set to a lower number (such as `5` or less).
+Newer versions (1.14+) of Kubernetes are not likely to have this issue if the `MutatingWebhookConfiguration` `failurePolicy` is set to `Ignore` and `timeoutSeconds` is set to a lower number (such as `5` or less).
 
 To determine if this is occuring because the service is unreachable, check the `kube-apiserver` logs. You will see logs similar to,
 ```
