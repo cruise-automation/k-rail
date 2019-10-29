@@ -77,7 +77,7 @@ func TestPolicyBindMounts(t *testing.T) {
 
 			v := PolicyBindMounts{}
 
-			if got := v.Validate(ctx, policies.Config{}, ar); !reflect.DeepEqual(len(got), tt.violations) {
+			if got, _ := v.Validate(ctx, policies.Config{}, ar); !reflect.DeepEqual(len(got), tt.violations) {
 				t.Errorf("PolicyBindMounts() = %v, got %v want %v violations", tt.name, len(got), tt.violations)
 			}
 		})

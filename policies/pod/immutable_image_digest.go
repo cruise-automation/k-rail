@@ -30,13 +30,13 @@ func (p PolicyImageImmutableReference) Name() string {
 	return "pod_immutable_reference"
 }
 
-func (p PolicyImageImmutableReference) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) []policies.ResourceViolation {
+func (p PolicyImageImmutableReference) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 
 	podResource := resource.GetPodResource(ar)
 	if podResource == nil {
-		return resourceViolations
+		return resourceViolations, nil
 	}
 
 	violationText := "Immutable Image Reference: image tag must include its sha256 digest"
@@ -70,5 +70,5 @@ func (p PolicyImageImmutableReference) Validate(ctx context.Context, config poli
 		}
 	}
 
-	return resourceViolations
+	return resourceViolations, nil
 }

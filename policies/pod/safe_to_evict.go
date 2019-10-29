@@ -26,13 +26,13 @@ func (p PolicySafeToEvict) Name() string {
 	return "pod_safe_to_evict"
 }
 
-func (p PolicySafeToEvict) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) []policies.ResourceViolation {
+func (p PolicySafeToEvict) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 
 	podResource := resource.GetPodResource(ar)
 	if podResource == nil {
-		return resourceViolations
+		return resourceViolations, nil
 	}
 
 	violationText := "Safe to evict: annotation is required for Pods that use emptyDir or hostPath mounts to enable cluster autoscaling"
@@ -58,5 +58,5 @@ func (p PolicySafeToEvict) Validate(ctx context.Context, config policies.Config,
 		}
 	}
 
-	return resourceViolations
+	return resourceViolations, nil
 }

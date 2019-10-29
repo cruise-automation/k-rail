@@ -23,15 +23,19 @@ import (
 )
 
 // Policy specifies how a Policy is implemented
+// Returns a slice of violations and an optional slice of patch operations if mutation is desired.
 type Policy interface {
 	Name() string
 	Validate(ctx context.Context,
 		config policies.Config,
 		ar *admissionv1beta1.AdmissionRequest,
-	) []policies.ResourceViolation
+	) ([]policies.ResourceViolation, []policies.PatchOperation)
 }
 
 func (s *Server) registerPolicies() {
+	// Policies will be run in the order that they are registered.
+	// Policies that mutate will have their resulting patch merged with any previous patches in that order as well.
+
 	s.registerPolicy(pod.PolicyBindMounts{})
 	s.registerPolicy(pod.PolicyDockerSock{})
 	s.registerPolicy(pod.PolicyImageImmutableReference{})
@@ -42,6 +46,7 @@ func (s *Server) registerPolicies() {
 	s.registerPolicy(pod.PolicyNoNewCapabilities{})
 	s.registerPolicy(pod.PolicyNoHostPID{})
 	s.registerPolicy(pod.PolicySafeToEvict{})
+	s.registerPolicy(pod.PolicyMutateSafeToEvict{})
 	s.registerPolicy(ingress.PolicyRequireIngressExemption{})
 }
 

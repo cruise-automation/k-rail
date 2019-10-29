@@ -69,7 +69,7 @@ func TestPolicyImageImmutableReference(t *testing.T) {
 			}
 
 			v := PolicyImageImmutableReference{}
-			if got := v.Validate(ctx, policies.Config{}, ar); !reflect.DeepEqual(len(got), tt.violations) {
+			if got, _ := v.Validate(ctx, policies.Config{}, ar); !reflect.DeepEqual(len(got), tt.violations) {
 				t.Errorf("PolicyImageImmutableReference() = %v, got %v want %v violations", tt.podSpec.Containers[0].Image, len(got), tt.violations)
 			}
 		})

@@ -27,13 +27,13 @@ func (p PolicyNoNewCapabilities) Name() string {
 	return "pod_no_new_capabilities"
 }
 
-func (p PolicyNoNewCapabilities) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) []policies.ResourceViolation {
+func (p PolicyNoNewCapabilities) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 
 	podResource := resource.GetPodResource(ar)
 	if podResource == nil {
-		return resourceViolations
+		return resourceViolations, nil
 	}
 
 	violationText := "No New Capabilities: Adding additional capabilities is forbidden"
@@ -52,5 +52,5 @@ func (p PolicyNoNewCapabilities) Validate(ctx context.Context, config policies.C
 		}
 	}
 
-	return resourceViolations
+	return resourceViolations, nil
 }

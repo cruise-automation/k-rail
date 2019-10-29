@@ -27,13 +27,13 @@ func (p PolicyRequireIngressExemption) Name() string {
 	return "ingress_require_ingress_exemption"
 }
 
-func (p PolicyRequireIngressExemption) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) []policies.ResourceViolation {
+func (p PolicyRequireIngressExemption) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 
 	ingressResource := resource.GetIngressResource(ar)
 	if ingressResource == nil {
-		return resourceViolations
+		return resourceViolations, nil
 	}
 
 	violationText := "Require Ingress Exemption: Using certain Ingress classes requires an exemption"
@@ -66,5 +66,5 @@ func (p PolicyRequireIngressExemption) Validate(ctx context.Context, config poli
 			}
 		}
 	}
-	return resourceViolations
+	return resourceViolations, nil
 }

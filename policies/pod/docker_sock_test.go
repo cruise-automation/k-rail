@@ -77,7 +77,7 @@ func TestPolicyDockerSock(t *testing.T) {
 			}
 
 			v := PolicyDockerSock{}
-			if got := v.Validate(ctx, policies.Config{}, ar); !reflect.DeepEqual(len(got), tt.violations) {
+			if got, _ := v.Validate(ctx, policies.Config{}, ar); !reflect.DeepEqual(len(got), tt.violations) {
 				t.Errorf("PolicyDockerSock() %s got %v want %v violations", tt.name, len(got), tt.violations)
 			}
 		})

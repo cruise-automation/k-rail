@@ -66,6 +66,9 @@ config:
     - name: "pod_safe_to_evict"
       enabled: True
       report_only: False
+    - name: "pod_mutate_safe_to_evict"
+      enabled: True
+      report_only: False
     - name: "ingress_require_ingress_exemption"
       enabled: True
       report_only: False
