@@ -29,7 +29,7 @@ webhooks:
         path: "/"
       caBundle: {{ b64enc $ca.Cert }}
     rules:
-      - operations: ["CREATE","UPDATE"]
+      - operations: ["CREATE","UPDATE","CONNECT"]
         apiGroups: ["*"]
         apiVersions: ["*"]
         resources: 
@@ -42,6 +42,7 @@ webhooks:
           - jobs
           - cronjobs
           - ingresses
+          - pods/exec
     failurePolicy: {{ print .Values.failurePolicy }}
     sideEffects: None
     namespaceSelector:

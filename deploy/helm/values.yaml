@@ -36,6 +36,9 @@ config:
       - '^k8s.gcr.io/.*'               # official k8s GCR repo
       - '^[A-Za-z0-9\-:@]+$'           # official docker hub images
   policies:
+    - name: "pod_no_exec"
+      enabled: True
+      report_only: False
     - name: "pod_no_bind_mounts"
       enabled: True
       report_only: False

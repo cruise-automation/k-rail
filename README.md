@@ -148,6 +148,12 @@ Since the violations are outputted as structured data, you are encouraged to agg
 
 # Supported policies
 
+## No Exec
+
+The No Exec policy prevents users from execing into running pods unless they have an exemption. This policy is typically enforced within a production environment, but run in report-only mode in dev and staging environments to facilitate debugging.
+
+Execing into a pod can enable someone to do many nefarious things to that workload. Eventually this policy will also apply a taint label to the Pod to indicate that it should no longer be trusted and can be evicted.
+
 ## No Bind Mounts
 
 Host bind mounts (also called `hostPath` mounts) can be used to exfiltrate data from or escalate privileges on the host system. Using host bind mounts can cause unreliability of the node if it causes a partition to fill up.
