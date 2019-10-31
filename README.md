@@ -77,6 +77,14 @@ For Helm 2 and below, it is recommended to use `helm template` render the YAML f
 helm template --namespace k-rail deploy/helm | kubectl apply -f - 
 ```
 
+Until this project has its own helm chart repository, [a contributor](https://github.com/funkypenguin/helm-k-rail) has [published](http://funkypenguin.github.io/helm-charts/) the helm chart in this repo for easy installation, so an alternate helm-based installation would be:
+
+```bash
+helm repo add funkypenguin https://funkypenguin.github.io/helm-charts
+helm repo update
+helm template --namespace k-rail funkypenguin/k-rail | kubectl apply -f - 
+```
+
 By default all policies are enforced (`report_only: false`).
 
 Test the default configuration by applying the provided non-compliant deployment:
