@@ -63,9 +63,9 @@ config:
     - name: "pod_no_host_pid"
       enabled: True
       report_only: False
-    - name: "pod_safe_to_evict"
-      enabled: True
-      report_only: False
+    - name: "pod_safe_to_evict" # deprecated in favor of pod_mutate_safe_to_evict policy
+      enabled: False
+      report_only: True
     - name: "pod_mutate_safe_to_evict"
       enabled: True
       report_only: False

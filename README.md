@@ -178,11 +178,11 @@ Host networking enables packet capture of host network interfaces and a bypass t
 
 ## No Host PID
 
-The host PID namespace can be used to inspect process environment variables (which often contain secrets). It can also potentially be used to dump process memory.
+The host PID namespace can be used to inspect process environment variables (which often contain secrets). It can also potentially be used to dump process memory, modify kernel parameters, and insert kprobes+uprobes into the kernel to exfiltrate information.
 
 ## No New Capabilities
 
-Kernel Capabilities can be used to escalate to level of kernel API access available to the process. Some can enable loading kernel modules, changing namespace and other potentially dangerous things.
+Kernel Capabilities can be used to escalate to level of kernel API access available to the process. Some can enable loading kernel modules, changing namespace, load eBPF byte code in the kernel and other potentially dangerous things.
 
 ## No Privileged Container
 
@@ -212,6 +212,8 @@ policy_config:
 ```
 
 ## Safe to Evict
+
+**DEPRECATED** - See `Mutate Safe to Evict` below
 
 The Kubernetes autoscaler will not evict pods using hostPath or emptyDir mounts unless they have this annotation:
 
