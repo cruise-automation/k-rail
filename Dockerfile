@@ -12,5 +12,5 @@ EXPOSE 8443/tcp
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /build/k-rail /k-rail
-USER nobody
+USER 65534
 ENTRYPOINT ["/k-rail", "-config", "/config/config.yml"]
