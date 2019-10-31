@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/cruise-automation/k-rail/policies"
 	"github.com/cruise-automation/k-rail/resource"
@@ -41,8 +42,7 @@ func (p PolicyImageImmutableReference) Validate(ctx context.Context, config poli
 
 	violationText := "Immutable Image Reference: image tag must include its sha256 digest"
 
-	for _, container := range podResource.PodSpec.Containers {
-
+	validateContainer := func(container corev1.Container) {
 		// validate that the image name ends with a digest
 		refSplit := strings.Split(container.Image, "@")
 		if len(refSplit) == 2 {
@@ -68,6 +68,14 @@ func (p PolicyImageImmutableReference) Validate(ctx context.Context, config poli
 				Error:        nil,
 			})
 		}
+	}
+
+	for _, container := range podResource.PodSpec.Containers {
+		validateContainer(container)
+	}
+
+	for _, container := range podResource.PodSpec.InitContainers {
+		validateContainer(container)
 	}
 
 	return resourceViolations, nil

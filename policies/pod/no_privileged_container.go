@@ -16,6 +16,7 @@ import (
 	"context"
 
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/cruise-automation/k-rail/policies"
 	"github.com/cruise-automation/k-rail/resource"
@@ -38,7 +39,7 @@ func (p PolicyNoPrivilegedContainer) Validate(ctx context.Context, config polici
 
 	violationText := "No Privileged Container: Using privileged containers is forbidden"
 
-	for _, container := range podResource.PodSpec.Containers {
+	validateContainer := func(container corev1.Container) {
 		if container.SecurityContext != nil && container.SecurityContext.Privileged != nil {
 			if *container.SecurityContext.Privileged {
 				resourceViolations = append(resourceViolations, policies.ResourceViolation{
@@ -50,6 +51,14 @@ func (p PolicyNoPrivilegedContainer) Validate(ctx context.Context, config polici
 				})
 			}
 		}
+	}
+
+	for _, container := range podResource.PodSpec.Containers {
+		validateContainer(container)
+	}
+
+	for _, container := range podResource.PodSpec.InitContainers {
+		validateContainer(container)
 	}
 
 	return resourceViolations, nil
