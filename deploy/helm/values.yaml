@@ -6,7 +6,7 @@ failurePolicy: Fail
 
 image:
   repository: cruise/k-rail
-  tag: latest
+  tag: release-v1.0
   pullPolicy: IfNotPresent
 
 resources:
