@@ -5,7 +5,7 @@
 
 k-rail is a workload policy enforcement tool for Kubernetes. It can help you secure a multi tenant cluster with minimal disruption and maximum velocity.
 
-- [Why k-rail?](#why-k-rail-)
+- [Why k-rail?](#why-k-rail)
   * [Suggested usage](#suggested-usage)
 - [Installation](#installation)
 - [Removal](#removal)
@@ -14,6 +14,7 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
   * [Violations from the Events API](#violations-from-the-events-api)
   * [Violations from logs](#violations-from-logs)
 - [Supported policies](#supported-policies)
+  * [No Exec](#no-exec)
   * [No Bind Mounts](#no-bind-mounts)
   * [No Docker Sock Mount](#no-docker-sock-mount)
   * [Immutable Image Reference](#immutable-image-reference)
@@ -24,7 +25,7 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
   * [No Helm Tiller](#no-helm-tiller)
   * [Trusted Image Repository](#trusted-image-repository)
     + [Policy configuration](#policy-configuration)
-  * [Safe to Evict](#safe-to-evict)
+  * [Safe to Evict (DEPRECATED)](#safe-to-evict--deprecated)
   * [Mutate Safe to Evict](#mutate-safe-to-evict)
   * [Require Ingress Exemption](#require-ingress-exemption)
     + [Policy configuration](#policy-configuration-1)
@@ -217,7 +218,7 @@ policy_config:
     - '^[A-Za-z0-9\-:@]+$'         # official docker hub images
 ```
 
-## Safe to Evict
+## Safe to Evict (DEPRECATED)
 
 **DEPRECATED** - See `Mutate Safe to Evict` below
 
