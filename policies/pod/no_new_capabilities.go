@@ -16,6 +16,7 @@ import (
 	"context"
 
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/cruise-automation/k-rail/policies"
 	"github.com/cruise-automation/k-rail/resource"
@@ -38,7 +39,7 @@ func (p PolicyNoNewCapabilities) Validate(ctx context.Context, config policies.C
 
 	violationText := "No New Capabilities: Adding additional capabilities is forbidden"
 
-	for _, container := range podResource.PodSpec.Containers {
+	validateContainer := func(container corev1.Container) {
 		if container.SecurityContext != nil && container.SecurityContext.Capabilities != nil {
 			if len(container.SecurityContext.Capabilities.Add) > 0 {
 				resourceViolations = append(resourceViolations, policies.ResourceViolation{
@@ -50,6 +51,14 @@ func (p PolicyNoNewCapabilities) Validate(ctx context.Context, config policies.C
 				})
 			}
 		}
+	}
+
+	for _, container := range podResource.PodSpec.Containers {
+		validateContainer(container)
+	}
+
+	for _, container := range podResource.PodSpec.InitContainers {
+		validateContainer(container)
 	}
 
 	return resourceViolations, nil

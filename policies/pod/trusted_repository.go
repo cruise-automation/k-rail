@@ -17,6 +17,7 @@ import (
 	"regexp"
 
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/cruise-automation/k-rail/policies"
 	"github.com/cruise-automation/k-rail/resource"
@@ -39,7 +40,7 @@ func (p PolicyTrustedRepository) Validate(ctx context.Context, config policies.C
 
 	violationText := "Trusted Image Repository: image must be sourced from a trusted repository"
 
-	for _, container := range podResource.PodSpec.Containers {
+	validateContainer := func(container corev1.Container) {
 		matches := 0
 		for _, pattern := range config.PolicyTrustedRepositoryRegexes {
 			if matched, _ := regexp.MatchString(pattern, container.Image); matched {
@@ -56,6 +57,14 @@ func (p PolicyTrustedRepository) Validate(ctx context.Context, config policies.C
 				Policy:       p.Name(),
 			})
 		}
+	}
+
+	for _, container := range podResource.PodSpec.Containers {
+		validateContainer(container)
+	}
+
+	for _, container := range podResource.PodSpec.InitContainers {
+		validateContainer(container)
 	}
 
 	return resourceViolations, nil

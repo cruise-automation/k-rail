@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/cruise-automation/k-rail/policies"
 	"github.com/cruise-automation/k-rail/resource"
@@ -39,7 +40,7 @@ func (p PolicyNoTiller) Validate(ctx context.Context, config policies.Config, ar
 
 	violationText := "No Tiller: Helm Tiller is forbidden from running"
 
-	for _, container := range podResource.PodSpec.Containers {
+	validateContainer := func(container corev1.Container) {
 		// we could also check for port 44134/tcp
 		if strings.Contains(container.Image, "/tiller") {
 			resourceViolations = append(resourceViolations, policies.ResourceViolation{
@@ -50,6 +51,14 @@ func (p PolicyNoTiller) Validate(ctx context.Context, config policies.Config, ar
 				Policy:       p.Name(),
 			})
 		}
+	}
+
+	for _, container := range podResource.PodSpec.Containers {
+		validateContainer(container)
+	}
+
+	for _, container := range podResource.PodSpec.InitContainers {
+		validateContainer(container)
 	}
 
 	return resourceViolations, nil
