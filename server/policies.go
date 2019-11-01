@@ -36,6 +36,7 @@ func (s *Server) registerPolicies() {
 	// Policies will be run in the order that they are registered.
 	// Policies that mutate will have their resulting patch merged with any previous patches in that order as well.
 
+	s.registerPolicy(pod.PolicyNoExec{})
 	s.registerPolicy(pod.PolicyBindMounts{})
 	s.registerPolicy(pod.PolicyDockerSock{})
 	s.registerPolicy(pod.PolicyImageImmutableReference{})
