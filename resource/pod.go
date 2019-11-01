@@ -45,7 +45,7 @@ func GetPodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {
 		return &PodResource{
 			PodSpec:        pod.Spec,
 			PodAnnotations: pod.ObjectMeta.Annotations,
-			ResourceName:   pod.Name,
+			ResourceName:   GetResourceName(pod.ObjectMeta),
 			ResourceKind:   "Pod",
 		}
 	case metav1.GroupVersionResource{Group: "", Version: "v1", Resource: "replicationcontrollers"}:
@@ -56,7 +56,7 @@ func GetPodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {
 		return &PodResource{
 			PodSpec:        rc.Spec.Template.Spec,
 			PodAnnotations: rc.Spec.Template.ObjectMeta.Annotations,
-			ResourceName:   rc.Name,
+			ResourceName:   GetResourceName(rc.ObjectMeta),
 			ResourceKind:   "ReplicationController",
 		}
 	case metav1.GroupVersionResource{Group: "extensions", Version: "v1beta1", Resource: "deployments"}:
@@ -67,7 +67,7 @@ func GetPodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {
 		return &PodResource{
 			PodSpec:        dep.Spec.Template.Spec,
 			PodAnnotations: dep.Spec.Template.ObjectMeta.Annotations,
-			ResourceName:   dep.Name,
+			ResourceName:   GetResourceName(dep.ObjectMeta),
 			ResourceKind:   "Deployment",
 		}
 	case metav1.GroupVersionResource{Group: "apps", Version: "v1beta1", Resource: "deployments"}:
@@ -78,7 +78,7 @@ func GetPodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {
 		return &PodResource{
 			PodSpec:        dep.Spec.Template.Spec,
 			PodAnnotations: dep.Spec.Template.ObjectMeta.Annotations,
-			ResourceName:   dep.Name,
+			ResourceName:   GetResourceName(dep.ObjectMeta),
 			ResourceKind:   "Deployment",
 		}
 	case metav1.GroupVersionResource{Group: "apps", Version: "v1beta2", Resource: "deployments"}:
@@ -89,7 +89,7 @@ func GetPodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {
 		return &PodResource{
 			PodSpec:        dep.Spec.Template.Spec,
 			PodAnnotations: dep.Spec.Template.ObjectMeta.Annotations,
-			ResourceName:   dep.Name,
+			ResourceName:   GetResourceName(dep.ObjectMeta),
 			ResourceKind:   "Deployment",
 		}
 	case metav1.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}:
@@ -100,7 +100,7 @@ func GetPodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {
 		return &PodResource{
 			PodSpec:        dep.Spec.Template.Spec,
 			PodAnnotations: dep.Spec.Template.ObjectMeta.Annotations,
-			ResourceName:   dep.Name,
+			ResourceName:   GetResourceName(dep.ObjectMeta),
 			ResourceKind:   "Deployment",
 		}
 	case metav1.GroupVersionResource{Group: "apps", Version: "v1", Resource: "replicasets"}:
@@ -111,7 +111,7 @@ func GetPodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {
 		return &PodResource{
 			PodSpec:        rs.Spec.Template.Spec,
 			PodAnnotations: rs.Spec.Template.ObjectMeta.Annotations,
-			ResourceName:   rs.Name,
+			ResourceName:   GetResourceName(rs.ObjectMeta),
 			ResourceKind:   "ReplicaSet",
 		}
 	case metav1.GroupVersionResource{Group: "extensions", Version: "v1beta1", Resource: "replicasets"}:
@@ -122,7 +122,7 @@ func GetPodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {
 		return &PodResource{
 			PodSpec:        rs.Spec.Template.Spec,
 			PodAnnotations: rs.Spec.Template.ObjectMeta.Annotations,
-			ResourceName:   rs.Name,
+			ResourceName:   GetResourceName(rs.ObjectMeta),
 			ResourceKind:   "ReplicaSet",
 		}
 	case metav1.GroupVersionResource{Group: "apps", Version: "v1beta2", Resource: "replicasets"}:
@@ -133,7 +133,7 @@ func GetPodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {
 		return &PodResource{
 			PodSpec:        rs.Spec.Template.Spec,
 			PodAnnotations: rs.Spec.Template.ObjectMeta.Annotations,
-			ResourceName:   rs.Name,
+			ResourceName:   GetResourceName(rs.ObjectMeta),
 			ResourceKind:   "ReplicaSet",
 		}
 	case metav1.GroupVersionResource{Group: "apps", Version: "v1", Resource: "daemonsets"}:
@@ -144,7 +144,7 @@ func GetPodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {
 		return &PodResource{
 			PodSpec:        ds.Spec.Template.Spec,
 			PodAnnotations: ds.Spec.Template.ObjectMeta.Annotations,
-			ResourceName:   ds.Name,
+			ResourceName:   GetResourceName(ds.ObjectMeta),
 			ResourceKind:   "DaemonSet",
 		}
 	case metav1.GroupVersionResource{Group: "extensions", Version: "v1beta1", Resource: "daemonsets"}:
@@ -155,7 +155,7 @@ func GetPodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {
 		return &PodResource{
 			PodSpec:        ds.Spec.Template.Spec,
 			PodAnnotations: ds.Spec.Template.ObjectMeta.Annotations,
-			ResourceName:   ds.Name,
+			ResourceName:   GetResourceName(ds.ObjectMeta),
 			ResourceKind:   "DaemonSet",
 		}
 	case metav1.GroupVersionResource{Group: "apps", Version: "v1beta2", Resource: "daemonsets"}:
@@ -166,7 +166,7 @@ func GetPodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {
 		return &PodResource{
 			PodSpec:        ds.Spec.Template.Spec,
 			PodAnnotations: ds.Spec.Template.ObjectMeta.Annotations,
-			ResourceName:   ds.Name,
+			ResourceName:   GetResourceName(ds.ObjectMeta),
 			ResourceKind:   "DaemonSet",
 		}
 	case metav1.GroupVersionResource{Group: "apps", Version: "v1", Resource: "statefulsets"}:
@@ -177,7 +177,7 @@ func GetPodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {
 		return &PodResource{
 			PodSpec:        ss.Spec.Template.Spec,
 			PodAnnotations: ss.Spec.Template.ObjectMeta.Annotations,
-			ResourceName:   ss.Name,
+			ResourceName:   GetResourceName(ss.ObjectMeta),
 			ResourceKind:   "StatefulSet",
 		}
 	case metav1.GroupVersionResource{Group: "apps", Version: "v1beta1", Resource: "statefulsets"}:
@@ -188,7 +188,7 @@ func GetPodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {
 		return &PodResource{
 			PodSpec:        ss.Spec.Template.Spec,
 			PodAnnotations: ss.Spec.Template.ObjectMeta.Annotations,
-			ResourceName:   ss.Name,
+			ResourceName:   GetResourceName(ss.ObjectMeta),
 			ResourceKind:   "StatefulSet",
 		}
 	case metav1.GroupVersionResource{Group: "apps", Version: "v1beta2", Resource: "statefulsets"}:
@@ -199,7 +199,7 @@ func GetPodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {
 		return &PodResource{
 			PodSpec:        ss.Spec.Template.Spec,
 			PodAnnotations: ss.Spec.Template.ObjectMeta.Annotations,
-			ResourceName:   ss.Name,
+			ResourceName:   GetResourceName(ss.ObjectMeta),
 			ResourceKind:   "StatefulSet",
 		}
 	case metav1.GroupVersionResource{Group: "batch", Version: "v1", Resource: "jobs"}:
@@ -210,7 +210,7 @@ func GetPodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {
 		return &PodResource{
 			PodSpec:        job.Spec.Template.Spec,
 			PodAnnotations: job.Spec.Template.ObjectMeta.Annotations,
-			ResourceName:   job.Name,
+			ResourceName:   GetResourceName(job.ObjectMeta),
 			ResourceKind:   "Job",
 		}
 	case metav1.GroupVersionResource{Group: "batch", Version: "v1beta1", Resource: "cronjobs"}:
@@ -221,7 +221,7 @@ func GetPodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {
 		return &PodResource{
 			PodSpec:        job.Spec.JobTemplate.Spec.Template.Spec,
 			PodAnnotations: job.Spec.JobTemplate.ObjectMeta.Annotations,
-			ResourceName:   job.Name,
+			ResourceName:   GetResourceName(job.ObjectMeta),
 			ResourceKind:   "CronJob",
 		}
 	case metav1.GroupVersionResource{Group: "batch", Version: "v2alpha1", Resource: "cronjobs"}:
@@ -232,7 +232,7 @@ func GetPodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {
 		return &PodResource{
 			PodSpec:        job.Spec.JobTemplate.Spec.Template.Spec,
 			PodAnnotations: job.Spec.JobTemplate.ObjectMeta.Annotations,
-			ResourceName:   job.Name,
+			ResourceName:   GetResourceName(job.ObjectMeta),
 			ResourceKind:   "CronJob",
 		}
 	default:

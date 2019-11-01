@@ -37,7 +37,7 @@ func GetIngressResource(ar *admissionv1beta1.AdmissionRequest) *IngressResource 
 		}
 		return &IngressResource{
 			IngressExt:   ing,
-			ResourceName: ing.Name,
+			ResourceName: GetResourceName(ing.ObjectMeta),
 			ResourceKind: "Ingress",
 		}
 	case metav1.GroupVersionResource{Group: "networking", Version: "v1beta1", Resource: "ingresses"}:
@@ -47,7 +47,7 @@ func GetIngressResource(ar *admissionv1beta1.AdmissionRequest) *IngressResource 
 		}
 		return &IngressResource{
 			IngressNet:   ing,
-			ResourceName: ing.Name,
+			ResourceName: GetResourceName(ing.ObjectMeta),
 			ResourceKind: "Ingress",
 		}
 	default:
