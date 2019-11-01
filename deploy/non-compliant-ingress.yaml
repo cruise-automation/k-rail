@@ -1,0 +1,11 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: bad-ingress
+  annotations:
+    kubernetes.io/ingress.class: public
+spec:
+  backend:
+    serviceName: bad-backend
+    servicePort: 666

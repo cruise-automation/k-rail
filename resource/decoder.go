@@ -35,3 +35,31 @@ func decodeObject(raw []byte, object object) error {
 	}
 	return nil
 }
+
+// GetResourceName attempts to get the best name for a resource
+func GetResourceName(meta metav1.ObjectMeta) (name string) {
+	// Attempt to get the owner controller's resource name.
+	// This name is the high level resource that the user is working with.
+	for _, owner := range meta.OwnerReferences {
+		if owner.Controller != nil && *owner.Controller == true {
+			if len(owner.Name) > 0 {
+				name = owner.Name
+				return
+			}
+		}
+	}
+
+	// Attempt to get the object's name
+	if len(meta.Name) > 0 {
+		name = meta.Name
+		return
+	}
+
+	// Attempt to get the name label
+	if val, ok := meta.Labels["name"]; ok {
+		name = val
+		return
+	}
+
+	return
+}

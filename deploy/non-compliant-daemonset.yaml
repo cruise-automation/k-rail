@@ -1,17 +1,16 @@
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
-  name: bad-deployment
+  name: bad-daemonset
 spec:
-  replicas: 1
   selector:
     matchLabels:
-      name: bad-deployment
+      name: bad-daemonset
   template:
     metadata:
       labels:
-        name: bad-deployment
+        name: bad-daemonset
     spec:
       hostNetwork: true
       hostPID: true
@@ -23,7 +22,7 @@ spec:
           hostPath:
             path: /
       containers:
-        - name: bad-deployment
+        - name: bad-daemonset
           image: ubuntu
           command: ["sleep", "36000"]
           imagePullPolicy: Always
@@ -36,5 +35,3 @@ spec:
             privileged: true
             capabilities:
               add: ["NET_ADMIN", "SYS_ADMIN"]
-
-
