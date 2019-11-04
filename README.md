@@ -53,8 +53,39 @@ By default, the Kubernetes APIs allow for a variety of easy privilege escalation
 
 - Passive report-only mode of running policies
 - Structured violation data logged, ready for analysis and dashboards
+  ```json
+  {
+    "enforced": true,
+    "kind": "PodExec",
+    "namespace": "ecommerce",
+    "policy": "pod_no_exec",
+    "resource": "payment-processor",
+    "user": "bob@amyshardware.com",
+    "time": "2019-11-03T06:28:07Z"
+  }
+  ```
 - Flexible and powerful policy exemptions by resource name, namespace, groups, and users
+  ```yaml
+  ---
+  - resource_name: "*"
+    namespace: "cluster-conformance-testing"
+    username: "cluster-ci@paas-ci.iam.gserviceaccount.com"
+    group: "*"
+    exempt_policies:
+      - "pod_no_privileged_containers"
+      - "pod_no_bind_mounts"
+      - "pod_no_host_network"
+      - "pod_default_seccomp_policy"
+      - "pod_no_host_pid"
+      - "pod_no_exec"
+  ```
 - Realtime interactive feedback for engineers and systems that apply resources
+  ```bash
+  $ kubectl apply --namespace default -f deploy/non-compliant-ingress.yaml
+  Error from server (InternalError): error when creating "deploy/non-compliant-ingress.yaml":
+  Internal error occurred: admission webhook "k-rail.cruise-automation.github.com" denied the request:
+  Ingress bad-ingress had violation: Require Ingress Exemption: Using the 'public' Ingress class requires an exemption
+  ```
 
 By leveraging the first three features you can quickly and easily roll out enforcement to deployments without breaking them and monitor violations with confidence. The interactive feedback informs and educates engineers during future policy violations.
 
@@ -135,13 +166,36 @@ bad-pod-5f7cd9bf45-rbhsb had violation: Docker Sock Mount: mounting the Docker s
 Violations are also emitted as structured data in the logs:
 
 ```json
-$ kubectl logs --namespace k-rail --selector name=k-rail
+$ kubectl logs --namespace k-rail --selector name=k-rail | jq '.'
 
-{"enforced":true,"kind":"Deployment","level":"warning","msg":"ENFORCED","namespace":"default","policy":"pod_no_host_network","resource":"bad-deployment","time":"2019-10-23T19:54:24Z","user":"dustin.decker@getcruise.com"}
-{"enforced":true,"kind":"Deployment","level":"warning","msg":"ENFORCED","namespace":"default","policy":"pod_no_privileged_container","resource":"bad-deployment","time":"2019-10-23T19:54:24Z","user":"dustin.decker@getcruise.com"}
-{"enforced":true,"kind":"Deployment","level":"warning","msg":"ENFORCED","namespace":"default","policy":"pod_no_new_capabilities","resource":"bad-deployment","time":"2019-10-23T19:54:24Z","user":"dustin.decker@getcruise.com"}
-{"enforced":true,"kind":"Deployment","level":"warning","msg":"ENFORCED","namespace":"default","policy":"pod_no_host_pid","resource":"bad-deployment","time":"2019-10-23T19:54:24Z","user":"dustin.decker@getcruise.com"}
-{"enforced":true,"kind":"Deployment","level":"warning","msg":"ENFORCED","namespace":"default","policy":"pod_safe_to_evict","resource":"bad-deployment","time":"2019-10-23T19:54:24Z","user":"dustin.decker@getcruise.com"}
+{
+  "enforced": true,
+  "kind": "Deployment",
+  "namespace": "default",
+  "policy": "pod_no_host_network",
+  "resource": "evil-deployment",
+  "time": "2019-10-23T19:54:24Z",
+  "user": "dustin.decker@getcruise.com"
+}
+{
+  "enforced": true,
+  "kind": "Deployment",
+  "namespace": "default",
+  "policy": "pod_no_privileged_container",
+  "resource": "evil-deployment",
+  "time": "2019-10-23T19:54:24Z",
+  "user": "dustin.decker@getcruise.com"
+}
+{
+  "enforced": true,
+  "kind": "Deployment",
+  "namespace": "default",
+  "policy": "pod_no_new_capabilities",
+  "resource": "evil-deployment",
+  "time": "2019-10-23T19:54:24Z",
+  "user": "dustin.decker@getcruise.com"
+}
+
 ```
 
 Since the violations are outputted as structured data, you are encouraged to aggregate and display that information. GCP BigQuery + Data Studio, Sumologic, Elasticsearch + Kibana, Splunk, etc are all capable of this.
