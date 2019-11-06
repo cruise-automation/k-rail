@@ -20,6 +20,7 @@ spec:
         checksum/config: {{ print .Values.config | sha256sum }}
         checksum/exemptions: {{ print .Values.exemptions | sha256sum }}
     spec:
+      serviceAccountName: k-rail
       containers:
         - name: k-rail
           command: ["/k-rail", "-config=/config/config.yml", "-exemptions-path-glob=/exemptions/*.yml"]

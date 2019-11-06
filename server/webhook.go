@@ -66,7 +66,7 @@ func (s *Server) ValidatingWebhook(w http.ResponseWriter, r *http.Request) {
 	// require application/json content-type
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" {
-		s.LogAndPrintError("wrong content type", fmt.Errorf("contentType=%s, expect application/json", contentType))
+		log.Error("wrong content type, expected application/json")
 		writeAdmissionError(w, ar, errors.New("incorrect content type"))
 	}
 
@@ -76,7 +76,7 @@ func (s *Server) ValidatingWebhook(w http.ResponseWriter, r *http.Request) {
 	// safely read the body into memory
 	body, err := ioutil.ReadAll(http.MaxBytesReader(w, r.Body, 1024*1024))
 	if err != nil {
-		s.LogAndPrintError("error reading body", err)
+		log.WithError(err).Error("error reading body")
 		writeAdmissionError(w, ar, err)
 	}
 	defer r.Body.Close()
@@ -88,7 +88,7 @@ func (s *Server) ValidatingWebhook(w http.ResponseWriter, r *http.Request) {
 	// unmarshall review request
 	deserializer := codecs.UniversalDeserializer()
 	if _, _, err = deserializer.Decode(body, nil, &ar); err != nil {
-		s.LogAndPrintError("error unmarshalling review request", err)
+		log.WithError(err).Error("error unmarshalling review request")
 		writeAdmissionError(w, ar, err)
 	}
 
@@ -99,7 +99,7 @@ func (s *Server) ValidatingWebhook(w http.ResponseWriter, r *http.Request) {
 	// write the review and results JSON response
 	payload, err := json.Marshal(ar)
 	if err != nil {
-		s.LogAndPrintError("could not marshal response", err)
+		log.WithError(err).Error("error marshalling response")
 		writeAdmissionError(w, ar, err)
 	}
 	w.Write(payload)
@@ -124,6 +124,7 @@ func (s *Server) validateResources(ar v1beta1.AdmissionReview) v1beta1.Admission
 	// allow resource if namespace is blacklisted
 	for _, namespace := range s.Config.BlacklistedNamespaces {
 		if namespace == ar.Request.Namespace {
+
 			ar.Response = &v1beta1.AdmissionResponse{
 				Allowed: true,
 				Result: &metav1.Status{
@@ -165,6 +166,10 @@ func (s *Server) validateResources(ar v1beta1.AdmissionReview) v1beta1.Admission
 				policy.Action(ctx, true, s.Config.PolicyConfig, ar.Request)
 				exemptViolations = append(exemptViolations,
 					violations...)
+
+				switch policy.Name() {
+				case "pod_no_exec":
+				}
 			} else {
 				policy.Action(ctx, false, s.Config.PolicyConfig, ar.Request)
 				enforcedViolations = append(enforcedViolations,

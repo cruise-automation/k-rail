@@ -22,10 +22,15 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/cruise-automation/k-rail/actions"
 	"github.com/cruise-automation/k-rail/policies"
+
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
+
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 const (
@@ -39,6 +44,7 @@ type Server struct {
 	EnforcedPolicies   []Policy
 	ReportOnlyPolicies []Policy
 	Exemptions         []policies.CompiledExemption
+	KubernetesClient   *kubernetes.Clientset
 }
 
 // Run starts the API server
@@ -54,11 +60,11 @@ func Run(ctx context.Context) {
 
 	yamlFile, err := ioutil.ReadFile(*configPath)
 	if err != nil {
-		log.Fatal("error loading yaml config: ", err)
+		log.WithError(err).Fatal("error loading yaml config")
 	}
 	err = yaml.Unmarshal(yamlFile, &cfg)
 	if err != nil {
-		log.Fatal("error unmarshalling yaml config: ", err)
+		log.WithError(err).Fatal("error unmarshalling yaml config")
 	}
 
 	if level, err := log.ParseLevel(cfg.LogLevel); err != nil {
@@ -71,17 +77,48 @@ func Run(ctx context.Context) {
 	if *exemptionsPathGlob != "" {
 		exemptions, err = policies.ExemptionsFromDirectory(*exemptionsPathGlob)
 		if err != nil {
-			log.Fatal("error loading exemptions: ", err)
+			log.WithError(err).Fatal("error loading exemptions")
+
 		}
 		log.Infof("loaded %d exemptions", len(exemptions))
 	}
 
-	log.Info("k-rail is running")
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		log.WithError(err).Fatal("could not configure kubernetes client")
+	}
+	kubernetesClient, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		log.WithError(err).Fatal("could not make kubernetes client")
+	}
+
+	// tainted Pod janitor for execs
+	if cfg.PolicyConfig.PolicyNoExec.DeleteTaintedPodsAfter != time.Duration(0) {
+		ticker := time.NewTicker(time.Minute * 5)
+		done := make(chan bool)
+		go func() {
+			for {
+				select {
+				case <-done:
+					return
+				case <-ticker.C:
+					log.Info("running exec taint janitor task")
+					actions.DeletePodsByAnnotationAfterDuration(
+						kubernetesClient,
+						"k-rail.cruise-automation.github.com/taint/exec",
+						cfg.PolicyConfig.PolicyNoExec.DeleteTaintedPodsAfter)
+				}
+			}
+		}()
+	}
 
 	srv := Server{
-		Config:     cfg,
-		Exemptions: exemptions,
+		Config:           cfg,
+		Exemptions:       exemptions,
+		KubernetesClient: kubernetesClient,
 	}
+
+	log.Info("k-rail is running")
 
 	srv.registerPolicies()
 
@@ -133,8 +170,4 @@ func (s *Server) readinessFunc(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
-}
-
-func (s *Server) LogAndPrintError(user string, err error) {
-	log.Error(err)
 }
