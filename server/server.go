@@ -19,7 +19,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
@@ -62,14 +61,10 @@ func Run(ctx context.Context) {
 		log.Fatal("error unmarshalling yaml config: ", err)
 	}
 
-	if strings.ToLower(cfg.LogLevel) == "debug" {
-		log.SetLevel(log.DebugLevel)
-	}
-	if strings.ToLower(cfg.LogLevel) == "warn" {
-		log.SetLevel(log.WarnLevel)
-	}
-	if strings.ToLower(cfg.LogLevel) == "info" {
-		log.SetLevel(log.InfoLevel)
+	if level, err := log.ParseLevel(cfg.LogLevel); err != nil {
+		log.SetLevel(level)
+	} else {
+		log.Fatal("invalid log level set: ", err)
 	}
 
 	var exemptions []policies.CompiledExemption
