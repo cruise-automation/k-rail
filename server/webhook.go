@@ -135,8 +135,8 @@ func (s *Server) validateResources(ar v1beta1.AdmissionReview) v1beta1.Admission
 		}
 	}
 
-	for _, val := range s.EnforcedPolicies {
-		violations, patches := val.Validate(ctx, s.Config.PolicyConfig, ar.Request)
+	for _, policy := range s.EnforcedPolicies {
+		violations, patches := policy.Apply(ctx, s.Config.PolicyConfig, ar.Request)
 
 		// render non-exempt Pod mutations
 		// TODO: This could use a bit of refactoring so there is less repetition and we could
@@ -147,7 +147,7 @@ func (s *Server) validateResources(ar v1beta1.AdmissionReview) v1beta1.Admission
 			podResource.ResourceName,
 			ar.Request.Namespace,
 			ar.Request.UserInfo,
-			val.Name(),
+			policy.Name(),
 			s.Exemptions,
 		) {
 			mutationPatches = append(mutationPatches, patches...)
@@ -159,26 +159,28 @@ func (s *Server) validateResources(ar v1beta1.AdmissionReview) v1beta1.Admission
 				violations[0].ResourceName,
 				ar.Request.Namespace,
 				ar.Request.UserInfo,
-				val.Name(),
+				policy.Name(),
 				s.Exemptions,
 			) {
+				policy.Action(ctx, true, s.Config.PolicyConfig, ar.Request)
 				exemptViolations = append(exemptViolations,
 					violations...)
 			} else {
+				policy.Action(ctx, false, s.Config.PolicyConfig, ar.Request)
 				enforcedViolations = append(enforcedViolations,
 					violations...)
 			}
 		}
 	}
 
-	for _, val := range s.ReportOnlyPolicies {
-		violations, _ := val.Validate(ctx, s.Config.PolicyConfig, ar.Request)
+	for _, policy := range s.ReportOnlyPolicies {
+		violations, _ := policy.Apply(ctx, s.Config.PolicyConfig, ar.Request)
 		if len(violations) > 0 {
 			if policies.IsExempt(
 				violations[0].ResourceName,
 				ar.Request.Namespace,
 				ar.Request.UserInfo,
-				val.Name(),
+				policy.Name(),
 				s.Exemptions,
 			) {
 				exemptViolations = append(exemptViolations,

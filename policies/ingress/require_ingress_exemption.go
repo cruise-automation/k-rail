@@ -27,7 +27,9 @@ func (p PolicyRequireIngressExemption) Name() string {
 	return "ingress_require_ingress_exemption"
 }
 
-func (p PolicyRequireIngressExemption) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
+// Apply is called if the Policy is enabled to detect violations or perform mutations.
+// Returning resource violations will cause a resource to be blocked unless there is an exemption for it.
+func (p PolicyRequireIngressExemption) Apply(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 
@@ -67,4 +69,9 @@ func (p PolicyRequireIngressExemption) Validate(ctx context.Context, config poli
 		}
 	}
 	return resourceViolations, nil
+}
+
+// Action will be called if the Policy is in violation and not in report-only mode.
+func (p PolicyRequireIngressExemption) Action(ctx context.Context, exempt bool, config policies.Config, ar *admissionv1beta1.AdmissionRequest) (err error) {
+	return
 }

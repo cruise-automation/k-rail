@@ -27,7 +27,9 @@ func (p PolicyNoHostNetwork) Name() string {
 	return "pod_no_host_network"
 }
 
-func (p PolicyNoHostNetwork) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
+// Validate is called if the Policy is enabled to detect violations or perform mutations.
+// Returning resource violations will cause a resource to be blocked unless there is an exemption for it.
+func (p PolicyNoHostNetwork) Apply(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 
@@ -49,4 +51,9 @@ func (p PolicyNoHostNetwork) Validate(ctx context.Context, config policies.Confi
 	}
 
 	return resourceViolations, nil
+}
+
+// Action will be called if the Policy is in violation and not in report-only mode.
+func (p PolicyNoHostNetwork) Action(ctx context.Context, exempt bool, config policies.Config, ar *admissionv1beta1.AdmissionRequest) (err error) {
+	return
 }

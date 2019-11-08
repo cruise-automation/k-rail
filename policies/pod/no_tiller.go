@@ -29,7 +29,9 @@ func (p PolicyNoTiller) Name() string {
 	return "pod_no_tiller"
 }
 
-func (p PolicyNoTiller) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
+// Validate is called if the Policy is enabled to detect violations or perform mutations.
+// Returning resource violations will cause a resource to be blocked unless there is an exemption for it.
+func (p PolicyNoTiller) Apply(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 
@@ -62,4 +64,9 @@ func (p PolicyNoTiller) Validate(ctx context.Context, config policies.Config, ar
 	}
 
 	return resourceViolations, nil
+}
+
+// Action will be called if the Policy is in violation and not in report-only mode.
+func (p PolicyNoTiller) Action(ctx context.Context, exempt bool, config policies.Config, ar *admissionv1beta1.AdmissionRequest) (err error) {
+	return
 }

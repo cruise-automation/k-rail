@@ -20,13 +20,19 @@ import (
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 )
 
+// PolicyBindMounts forbids hostPath mounts
 type PolicyBindMounts struct{}
 
 func (p PolicyBindMounts) Name() string {
 	return "pod_no_bind_mounts"
 }
 
-func (p PolicyBindMounts) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
+// Validate is called if the Policy is enabled to detect violations or perform mutations.
+// Returning resource violations will cause a resource to be blocked unless there is an exemption for it.
+func (p PolicyBindMounts) Apply(
+	ctx context.Context,
+	config policies.Config,
+	ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 
@@ -50,4 +56,9 @@ func (p PolicyBindMounts) Validate(ctx context.Context, config policies.Config, 
 	}
 
 	return resourceViolations, nil
+}
+
+// Action will be called if the Policy is in violation and not in report-only mode.
+func (p PolicyBindMounts) Action(ctx context.Context, exempt bool, config policies.Config, ar *admissionv1beta1.AdmissionRequest) (err error) {
+	return
 }

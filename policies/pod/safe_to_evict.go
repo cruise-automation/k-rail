@@ -26,7 +26,9 @@ func (p PolicySafeToEvict) Name() string {
 	return "pod_safe_to_evict"
 }
 
-func (p PolicySafeToEvict) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
+// Validate is called if the Policy is enabled to detect violations or perform mutations.
+// Returning resource violations will cause a resource to be blocked unless there is an exemption for it.
+func (p PolicySafeToEvict) Apply(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 
@@ -59,4 +61,9 @@ func (p PolicySafeToEvict) Validate(ctx context.Context, config policies.Config,
 	}
 
 	return resourceViolations, nil
+}
+
+// Action will be called if the Policy is in violation and not in report-only mode.
+func (p PolicySafeToEvict) Action(ctx context.Context, exempt bool, config policies.Config, ar *admissionv1beta1.AdmissionRequest) (err error) {
+	return
 }

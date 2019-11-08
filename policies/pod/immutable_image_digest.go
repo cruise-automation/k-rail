@@ -25,13 +25,16 @@ import (
 	digest "github.com/opencontainers/go-digest"
 )
 
+// PolicyImageImmutableReference requires a hash reference for a container image.
 type PolicyImageImmutableReference struct{}
 
 func (p PolicyImageImmutableReference) Name() string {
 	return "pod_immutable_reference"
 }
 
-func (p PolicyImageImmutableReference) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
+// Validate is called if the Policy is enabled to detect violations or perform mutations.
+// Returning resource violations will cause a resource to be blocked unless there is an exemption for it.
+func (p PolicyImageImmutableReference) Apply(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 
@@ -79,4 +82,9 @@ func (p PolicyImageImmutableReference) Validate(ctx context.Context, config poli
 	}
 
 	return resourceViolations, nil
+}
+
+// Action will be called if the Policy is in violation and not in report-only mode.
+func (p PolicyImageImmutableReference) Action(ctx context.Context, exempt bool, config policies.Config, ar *admissionv1beta1.AdmissionRequest) (err error) {
+	return
 }

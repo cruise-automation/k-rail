@@ -380,22 +380,32 @@ Policies must satisfy this interface:
 
 ```go
 // Policy specifies how a Policy is implemented
-// Returns an optional slice of violations and an optional slice of patch operations if mutation is desired.
 type Policy interface {
+
+	// Name returns the name of the policy for rendering and for referencing configuration.
 	Name() string
-	Validate(ctx context.Context,
+
+	// Validate is called if the Policy is enabled to detect violations. Violations will cause a resource to be
+	// blocked unless there is an exemption for it.
+	Apply(ctx context.Context,
 		config policies.Config,
 		ar *admissionv1beta1.AdmissionRequest,
 	) ([]policies.ResourceViolation, []policies.PatchOperation)
+
+	// Action will be called if the Policy is in violation and not in report-only mode.
+	Action(ctx context.Context,
+		exempt bool,
+		config policies.Config,
+		ar *admissionv1beta1.AdmissionRequest,
+	) error
 }
 ```
 
 `Name()` must return a string that matches a policy name that is provided in configuration.
-Validate accepts an AdmissionRequest, and the resource of interest must be extracted from it. See `resource/pod.go` for an example of extracting PodSpecs from an AdmissionRequest. If mutation on a resource is desired, you can return a slice of JSONPatch operations and `nil` for the violations.
+Apply accepts an AdmissionRequest, and the resource of interest must be extracted from it. See `resource/pod.go` for an example of extracting PodSpecs from an AdmissionRequest. If mutation on a resource is desired, you can return a slice of JSONPatch operations and `nil` for the violations.
 
 
 Policies can be registered in `internal/policies.go`. Any policies that are registered but do not have configuration provided get enabled in report-only mode.
-
 
 
 # Debugging

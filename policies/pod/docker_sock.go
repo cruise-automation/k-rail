@@ -21,13 +21,18 @@ import (
 	"github.com/cruise-automation/k-rail/resource"
 )
 
+// PolicyDockerSock forbids a hostPath mount for just the Docker socket.
+// Note that it does not block mounting '/', '/var', or '/var/run'.
+// It is recommended that you use the BindMounts Policy to block all bind mounts.
 type PolicyDockerSock struct{}
 
 func (p PolicyDockerSock) Name() string {
 	return "pod_no_docker_sock"
 }
 
-func (p PolicyDockerSock) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
+// Validate is called if the Policy is enabled to detect violations or perform mutations.
+// Returning resource violations will cause a resource to be blocked unless there is an exemption for it.
+func (p PolicyDockerSock) Apply(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 
@@ -53,4 +58,9 @@ func (p PolicyDockerSock) Validate(ctx context.Context, config policies.Config, 
 	}
 
 	return resourceViolations, nil
+}
+
+// Action will be called if the Policy is in violation and not in report-only mode.
+func (p PolicyDockerSock) Action(ctx context.Context, exempt bool, config policies.Config, ar *admissionv1beta1.AdmissionRequest) (err error) {
+	return
 }

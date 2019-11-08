@@ -105,7 +105,7 @@ func TestPolicyRequireIngressExemption(t *testing.T) {
 			}
 
 			v := PolicyRequireIngressExemption{}
-			if got, _ := v.Validate(ctx, policies.Config{PolicyRequireIngressExemptionClasses: []string{"public"}}, ar); !reflect.DeepEqual(len(got), tt.violations) {
+			if got, _ := v.Apply(ctx, policies.Config{PolicyRequireIngressExemptionClasses: []string{"public"}}, ar); !reflect.DeepEqual(len(got), tt.violations) {
 				t.Errorf("PolicyRequireIngressExemption() %s got %v want %v violations", tt.name, len(got), tt.violations)
 			}
 		})
