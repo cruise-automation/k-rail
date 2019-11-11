@@ -19,4 +19,7 @@ type Config struct {
 	PolicyRequireIngressExemptionClasses []string `yaml:"policy_require_ingress_exemption_classes"`
 	// PolicyTrustedRepositoryRegexes contains regexes that match image repositories that you want to allow.
 	PolicyTrustedRepositoryRegexes []string `yaml:"policy_trusted_repository_regexes"`
+	// PolicyDefaultSeccompPolicy contains the seccomp policy that you want to be applied on Pods by default.
+	// Defaults to 'runtime/default'
+	PolicyDefaultSeccompPolicy string `yaml:"policy_default_seccomp_policy"`
 }
