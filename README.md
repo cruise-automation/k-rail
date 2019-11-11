@@ -17,6 +17,8 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
   * [No Exec](#no-exec)
   * [No Bind Mounts](#no-bind-mounts)
   * [No Docker Sock Mount](#no-docker-sock-mount)
+  * [Mutate Default Seccomp Profile](#mutate-default-seccomp-profile)
+    + [Policy configuration](#policy-configuration)
   * [Immutable Image Reference](#immutable-image-reference)
   * [No Host Network](#no-host-network)
   * [No Host PID](#no-host-pid)
@@ -24,18 +26,18 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
   * [No Privileged Container](#no-privileged-container)
   * [No Helm Tiller](#no-helm-tiller)
   * [Trusted Image Repository](#trusted-image-repository)
-    + [Policy configuration](#policy-configuration)
+    + [Policy configuration](#policy-configuration-1)
   * [Safe to Evict (DEPRECATED)](#safe-to-evict--deprecated)
   * [Mutate Safe to Evict](#mutate-safe-to-evict)
   * [Require Ingress Exemption](#require-ingress-exemption)
-    + [Policy configuration](#policy-configuration-1)
+    + [Policy configuration](#policy-configuration-2)
 - [Configuration](#configuration)
   * [Logging](#logging)
   * [Modes of operation](#modes-of-operation)
     + [Global report-only mode](#global-report-only-mode)
     + [Policy modes](#policy-modes)
   * [Policy exemptions](#policy-exemptions)
-  * [Policy configuration](#policy-configuration-2)
+  * [Policy configuration](#policy-configuration-3)
 - [Adding new policies](#adding-new-policies)
 - [Debugging](#debugging)
   * [Resources are having timeout events](#resources-are-having-timeout-events)
@@ -45,7 +47,6 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
   * [Policies are enabled, but a deployment is blocked and an exemption is needed](#policies-are-enabled--but-a-deployment-is-blocked-and-an-exemption-is-needed)
   * [Checking the mTLS certificate expiration](#checking-the-mtls-certificate-expiration)
 - [License](#license)
-
 
 # Why k-rail?
 
@@ -218,6 +219,21 @@ Host bind mounts (also called `hostPath` mounts) can be used to exfiltrate data 
 The Docker socket bind mount provides API access to the host Docker daemon, which can be used for privilege escalation or otherwise control the container host. Using Docker sock mounts can cause unreliability of the node because of the extra workloads that the Kubernetes schedulers are not aware of.
 
 **Note:** It is recommended to use the `No Bind Mounts` policy to disable all `hostPath` mounts rather than only this policy.
+
+## Mutate Default Seccomp Profile
+
+Sets a default seccomp profile (`runtime/default` or a configured one) for Pods if they have no existing seccomp configuration. The default seccomp policy for Docker and Containerd both block over 40 syscalls, [many of which](https://docs.docker.com/engine/security/seccomp/#significant-syscalls-blocked-by-the-default-profile) are potentially dangerous. The default policies are [usually very compatible](https://blog.jessfraz.com/post/containers-security-and-echo-chambers/#breaking-changes) with applications, too.
+
+### Policy configuration
+
+The Mutate Default Seccomp Profile policy can be configured in the k-rail configuration file.
+
+Example
+
+```yaml
+policy_config:
+  policy_default_seccomp_policy: "runtime/default"
+```
 
 ## Immutable Image Reference
 
