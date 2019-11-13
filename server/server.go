@@ -61,10 +61,14 @@ func Run(ctx context.Context) {
 		log.Fatal("error unmarshalling yaml config: ", err)
 	}
 
-	if level, err := log.ParseLevel(cfg.LogLevel); err != nil {
-		log.SetLevel(level)
+	if len(cfg.LogLevel) == 0 {
+		log.SetLevel(log.InfoLevel)
 	} else {
-		log.Fatal("invalid log level set: ", err)
+		level, err := log.ParseLevel(cfg.LogLevel)
+		if err != nil {
+			log.Fatal("invalid log level set: ", err)
+		}
+		log.SetLevel(level)
 	}
 
 	var exemptions []policies.CompiledExemption
