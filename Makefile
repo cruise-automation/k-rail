@@ -17,4 +17,5 @@ build:
 		GO111MODULE=on CGO_ENABLED=0 go build -o k-rail cmd/main.go
 
 test:
-		GO111MODULE=on CGO_ENABLED=0 go test -cover $(shell go list ./... | grep -v /vendor/)
+		GO111MODULE=on CGO_ENABLED=1 go test -race -cover $(shell go list ./... | grep -v /vendor/)
+		
