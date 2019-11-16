@@ -38,7 +38,7 @@ func (p PolicyNoShareProcessNamespace) Validate(ctx context.Context, config poli
 
 	violationText := "No ShareProcessNamespace: sharing the process namespace among containers in a Pod is forbidden."
 
-	if *podResource.PodSpec.ShareProcessNamespace {
+	if podResource.PodSpec.ShareProcessNamespace != nil {
 		resourceViolations = append(resourceViolations, policies.ResourceViolation{
 			Namespace:    ar.Namespace,
 			ResourceName: podResource.ResourceName,
