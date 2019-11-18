@@ -76,6 +76,9 @@ config:
     - name: "pod_default_seccomp_policy"
       enabled: True
       report_only: False
+    - name: "pod_no_shareprocessnamespace"
+      enabled: True
+      report_only: False
     - name: "ingress_require_ingress_exemption"
       enabled: True
       report_only: False

@@ -49,6 +49,7 @@ func (s *Server) registerPolicies() {
 	s.registerPolicy(pod.PolicySafeToEvict{})
 	s.registerPolicy(pod.PolicyMutateSafeToEvict{})
 	s.registerPolicy(pod.PolicyDefaultSeccompPolicy{})
+	s.registerPolicy(pod.PolicyNoShareProcessNamespace{})
 	s.registerPolicy(ingress.PolicyRequireIngressExemption{})
 }
 
