@@ -56,6 +56,12 @@ func test_setup() (Server, []test) {
 					ReportOnly: false,
 				},
 			},
+			PolicyConfig: policies.Config{
+				MutateEmptyDirSizeLimit: policies.MutateEmptyDirSizeLimit{
+					MaximumSizeLimit: "2Gi",
+					DefaultSizeLimit: "1Gi",
+				},
+			},
 		},
 		Exemptions: compiledExemptions,
 	}

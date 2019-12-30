@@ -12,6 +12,11 @@
 
 package policies
 
+type MutateEmptyDirSizeLimit struct {
+	MaximumSizeLimit string `yaml:"maximum_size_limit"`
+	DefaultSizeLimit string `yaml:"default_size_limit"`
+}
+
 // Config contains configuration for Policies
 type Config struct {
 	// PolicyRequireIngressExemptionClasses contains the Ingress classes that an exemption is required for
@@ -22,4 +27,6 @@ type Config struct {
 	// PolicyDefaultSeccompPolicy contains the seccomp policy that you want to be applied on Pods by default.
 	// Defaults to 'runtime/default'
 	PolicyDefaultSeccompPolicy string `yaml:"policy_default_seccomp_policy"`
+
+	MutateEmptyDirSizeLimit MutateEmptyDirSizeLimit `yaml:"mutate_empty_dir_size_limit"`
 }

@@ -20,6 +20,7 @@ import (
 	"github.com/cruise-automation/k-rail/policies/pod"
 	log "github.com/sirupsen/logrus"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 // Policy specifies how a Policy is implemented
@@ -39,6 +40,12 @@ func (s *Server) registerPolicies() {
 	s.registerPolicy(pod.PolicyNoExec{})
 	s.registerPolicy(pod.PolicyBindMounts{})
 	s.registerPolicy(pod.PolicyDockerSock{})
+	// fail fast on startup not on first request
+	limit := s.Config.PolicyConfig.MutateEmptyDirSizeLimit
+	s.registerPolicy(pod.PolicyEmptyDirSizeLimit{
+		MaxSize:     resource.MustParse(limit.MaximumSizeLimit),
+		DefaultSize: resource.MustParse(limit.DefaultSizeLimit)},
+	)
 	s.registerPolicy(pod.PolicyImageImmutableReference{})
 	s.registerPolicy(pod.PolicyNoTiller{})
 	s.registerPolicy(pod.PolicyTrustedRepository{})
