@@ -13,6 +13,8 @@
 package resource
 
 import (
+	"context"
+
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	appsv1beta1 "k8s.io/api/apps/v1beta1"
@@ -34,8 +36,20 @@ type PodResource struct {
 }
 
 // GetPodResource extracts a PodResource from an AdmissionRequest
-func GetPodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {
+func GetPodResource(ar *admissionv1beta1.AdmissionRequest, ctx context.Context) *PodResource {
+	c := GetResourceCache(ctx)
+	if c == nil {
+		return decodePodResource(ar)
+	}
+	if p, ok := c[cacheKeyPod]; ok {
+		return p.(*PodResource)
+	}
+	r := decodePodResource(ar)
+	c[cacheKeyPod] = r
+	return r
+}
 
+func decodePodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {
 	switch ar.Resource {
 	case metav1.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}:
 		pod := corev1.Pod{}
