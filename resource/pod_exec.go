@@ -13,6 +13,7 @@
 package resource
 
 import (
+	"context"
 	"encoding/json"
 	"strings"
 
@@ -29,7 +30,14 @@ type PodExecResource struct {
 }
 
 // GetPodExecResource extracts and PodExecResource from an AdmissionRequest
-func GetPodExecResource(ar *admissionv1beta1.AdmissionRequest) *PodExecResource {
+func GetPodExecResource(ctx context.Context, ar *admissionv1beta1.AdmissionRequest) *PodExecResource {
+	c := GetResourceCache(ctx)
+	return c.getOrSet(cacheKeyPodExec, func() interface{} {
+		return decodePodExecResource(ar)
+	}).(*PodExecResource)
+}
+
+func decodePodExecResource(ar *admissionv1beta1.AdmissionRequest) *PodExecResource {
 	switch ar.Kind {
 	case metav1.GroupVersionKind{Group: "", Version: "v1", Kind: "PodExecOptions"}:
 		podExecOptions := corev1.PodExecOptions{}

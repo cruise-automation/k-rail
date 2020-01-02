@@ -38,15 +38,9 @@ type PodResource struct {
 // GetPodResource extracts a PodResource from an AdmissionRequest
 func GetPodResource(ar *admissionv1beta1.AdmissionRequest, ctx context.Context) *PodResource {
 	c := GetResourceCache(ctx)
-	if c == nil {
+	return c.getOrSet(cacheKeyPod, func() interface{} {
 		return decodePodResource(ar)
-	}
-	if p, ok := c[cacheKeyPod]; ok {
-		return p.(*PodResource)
-	}
-	r := decodePodResource(ar)
-	c[cacheKeyPod] = r
-	return r
+	}).(*PodResource)
 }
 
 func decodePodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {

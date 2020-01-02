@@ -54,29 +54,3 @@ spec:
     - name: http
       containerPort: 8080
 `
-
-const deploymentExample = `
-kind: Deployment
-apiVersion: apps/v1
-metadata:
-  name: foo
-  namespace: testing
-  labels:
-    app: foo
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: foo
-  template:
-    metadata:
-      labels:
-        app: foo
-    spec:
-      containers:
-      - name: foo
-        image: foo
-        ports:
-        - name: http
-          containerPort: 8080
-`
