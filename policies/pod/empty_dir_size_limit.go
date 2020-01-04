@@ -19,11 +19,9 @@ import (
 	"github.com/cruise-automation/k-rail/policies"
 	"github.com/cruise-automation/k-rail/resource"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
-	apiresource "k8s.io/apimachinery/pkg/api/resource"
 )
 
 type PolicyEmptyDirSizeLimit struct {
-	MaxSize, DefaultSize apiresource.Quantity
 }
 
 func (p PolicyEmptyDirSizeLimit) Name() string {
@@ -40,6 +38,7 @@ func (p PolicyEmptyDirSizeLimit) Validate(ctx context.Context, config policies.C
 		return resourceViolations, nil
 	}
 
+	cfg := config.MutateEmptyDirSizeLimit
 	var patches []policies.PatchOperation
 
 	for i, volume := range podResource.PodSpec.Volumes {
@@ -50,12 +49,12 @@ func (p PolicyEmptyDirSizeLimit) Validate(ctx context.Context, config policies.C
 			patches = append(patches, policies.PatchOperation{
 				Op:    "replace",
 				Path:  fmt.Sprintf("/spec/volumes/%d/emptyDir/sizeLimit", i),
-				Value: p.DefaultSize.String(),
+				Value: cfg.DefaultSizeLimit.String(),
 			})
 			continue
 		}
 
-		if volume.EmptyDir.SizeLimit.Cmp(p.MaxSize) > 0 {
+		if volume.EmptyDir.SizeLimit.Cmp(cfg.MaximumSizeLimit) > 0 {
 			resourceViolations = append(resourceViolations, policies.ResourceViolation{
 				Namespace:    ar.Namespace,
 				ResourceName: podResource.ResourceName,

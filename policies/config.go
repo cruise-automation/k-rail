@@ -12,21 +12,57 @@
 
 package policies
 
-type MutateEmptyDirSizeLimit struct {
-	MaximumSizeLimit string `yaml:"maximum_size_limit"`
-	DefaultSizeLimit string `yaml:"default_size_limit"`
-}
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+
+	apiresource "k8s.io/apimachinery/pkg/api/resource"
+)
 
 // Config contains configuration for Policies
 type Config struct {
 	// PolicyRequireIngressExemptionClasses contains the Ingress classes that an exemption is required for
 	// to use. Typically this would include your public ingress classes.
-	PolicyRequireIngressExemptionClasses []string `yaml:"policy_require_ingress_exemption_classes"`
+	PolicyRequireIngressExemptionClasses []string `json:"policy_require_ingress_exemption_classes"`
 	// PolicyTrustedRepositoryRegexes contains regexes that match image repositories that you want to allow.
-	PolicyTrustedRepositoryRegexes []string `yaml:"policy_trusted_repository_regexes"`
+	PolicyTrustedRepositoryRegexes []string `json:"policy_trusted_repository_regexes"`
 	// PolicyDefaultSeccompPolicy contains the seccomp policy that you want to be applied on Pods by default.
 	// Defaults to 'runtime/default'
-	PolicyDefaultSeccompPolicy string `yaml:"policy_default_seccomp_policy"`
+	PolicyDefaultSeccompPolicy string `json:"policy_default_seccomp_policy"`
 
-	MutateEmptyDirSizeLimit MutateEmptyDirSizeLimit `yaml:"mutate_empty_dir_size_limit"`
+	MutateEmptyDirSizeLimit MutateEmptyDirSizeLimit `json:"mutate_empty_dir_size_limit"`
+}
+
+type MutateEmptyDirSizeLimit struct {
+	MaximumSizeLimit apiresource.Quantity `json:"maximum_size_limit"`
+	DefaultSizeLimit apiresource.Quantity `json:"default_size_limit"`
+}
+
+func (m *MutateEmptyDirSizeLimit) UnmarshalJSON(value []byte) error {
+	var v map[string]json.RawMessage
+	if err := json.Unmarshal(value, &v); err != nil {
+		return err
+	}
+
+	if max, ok := v["maximum_size_limit"]; ok {
+		if err := m.MaximumSizeLimit.UnmarshalJSON(max); err != nil {
+			return fmt.Errorf("maximum_size_limit failed: %s", err)
+		}
+	}
+	if def, ok := v["default_size_limit"]; ok {
+		if err := m.DefaultSizeLimit.UnmarshalJSON(def); err != nil {
+			return fmt.Errorf("default_size_limit failed: %s", err)
+		}
+	}
+	if m.DefaultSizeLimit.IsZero() {
+		return errors.New("default size must not be empty")
+	}
+	if m.MaximumSizeLimit.IsZero() {
+		return errors.New("max size must not be empty")
+	}
+	if m.DefaultSizeLimit.Cmp(m.MaximumSizeLimit) > 0 {
+		return errors.New("default size must not be greater than max size")
+	}
+	return nil
 }
