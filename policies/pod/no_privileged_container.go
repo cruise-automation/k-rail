@@ -32,7 +32,7 @@ func (p PolicyNoPrivilegedContainer) Validate(ctx context.Context, config polici
 
 	resourceViolations := []policies.ResourceViolation{}
 
-	podResource := resource.GetPodResource(ar)
+	podResource := resource.GetPodResource(ar, ctx)
 	if podResource == nil {
 		return resourceViolations, nil
 	}

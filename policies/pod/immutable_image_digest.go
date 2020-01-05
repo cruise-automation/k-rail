@@ -35,7 +35,7 @@ func (p PolicyImageImmutableReference) Validate(ctx context.Context, config poli
 
 	resourceViolations := []policies.ResourceViolation{}
 
-	podResource := resource.GetPodResource(ar)
+	podResource := resource.GetPodResource(ar, ctx)
 	if podResource == nil {
 		return resourceViolations, nil
 	}

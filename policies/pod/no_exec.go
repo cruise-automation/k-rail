@@ -31,7 +31,7 @@ func (p PolicyNoExec) Validate(ctx context.Context, config policies.Config, ar *
 
 	resourceViolations := []policies.ResourceViolation{}
 
-	podExecResource := resource.GetPodExecResource(ar)
+	podExecResource := resource.GetPodExecResource(ctx, ar)
 	if podExecResource == nil {
 		return resourceViolations, nil
 	}

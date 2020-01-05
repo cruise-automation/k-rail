@@ -28,7 +28,7 @@ func (p PolicyMutateSafeToEvict) Name() string {
 
 func (p PolicyMutateSafeToEvict) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
-	podResource := resource.GetPodResource(ar)
+	podResource := resource.GetPodResource(ar, ctx)
 	if podResource == nil {
 		return nil, nil
 	}

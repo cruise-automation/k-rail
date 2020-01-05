@@ -31,7 +31,7 @@ func (p PolicyRequireIngressExemption) Validate(ctx context.Context, config poli
 
 	resourceViolations := []policies.ResourceViolation{}
 
-	ingressResource := resource.GetIngressResource(ar)
+	ingressResource := resource.GetIngressResource(ctx, ar)
 	if ingressResource == nil {
 		return resourceViolations, nil
 	}

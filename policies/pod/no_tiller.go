@@ -33,7 +33,7 @@ func (p PolicyNoTiller) Validate(ctx context.Context, config policies.Config, ar
 
 	resourceViolations := []policies.ResourceViolation{}
 
-	podResource := resource.GetPodResource(ar)
+	podResource := resource.GetPodResource(ar, ctx)
 	if podResource == nil {
 		return resourceViolations, nil
 	}
