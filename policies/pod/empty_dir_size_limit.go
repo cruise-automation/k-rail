@@ -33,7 +33,7 @@ const violationText = "Empty dir size limit: size limit is required for Pods tha
 func (p PolicyEmptyDirSizeLimit) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 	var resourceViolations []policies.ResourceViolation
 
-	podResource := resource.GetPodResource(ar)
+	podResource := resource.GetPodResource(ar, ctx)
 	if podResource == nil {
 		return resourceViolations, nil
 	}
@@ -48,7 +48,7 @@ func (p PolicyEmptyDirSizeLimit) Validate(ctx context.Context, config policies.C
 		if volume.EmptyDir.SizeLimit == nil || volume.EmptyDir.SizeLimit.IsZero() {
 			patches = append(patches, policies.PatchOperation{
 				Op:    "replace",
-				Path:  fmt.Sprintf("/spec/volumes/%d/emptyDir/sizeLimit", i),
+				Path:  fmt.Sprintf(volumePatchPath(podResource.ResourceKind)+"/%d/emptyDir/sizeLimit", i),
 				Value: cfg.DefaultSizeLimit.String(),
 			})
 			continue
@@ -65,4 +65,17 @@ func (p PolicyEmptyDirSizeLimit) Validate(ctx context.Context, config policies.C
 		}
 	}
 	return resourceViolations, patches
+}
+
+const templateVolumePath = "/spec/template/spec/volumes"
+
+func volumePatchPath(podKind string) string {
+	nonTemplateKinds := map[string]string{
+		"Pod":     "/spec/volumes",
+		"CronJob": "/spec/jobTemplate/spec/template/spec/volumes",
+	}
+	if pathPath, ok := nonTemplateKinds[podKind]; ok {
+		return pathPath
+	}
+	return templateVolumePath
 }
