@@ -28,7 +28,7 @@ func (p PolicyEmptyDirSizeLimit) Name() string {
 	return "pod_empty_dir_size_limit"
 }
 
-const violationText = "Empty dir size limit: size limit is required for Pods that use emptyDir"
+const violationText = "Empty dir size limit: size limit exceeds the max value"
 
 func (p PolicyEmptyDirSizeLimit) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 	var resourceViolations []policies.ResourceViolation
