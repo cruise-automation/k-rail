@@ -19,8 +19,10 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
   * [No Exec](#no-exec)
   * [No Bind Mounts](#no-bind-mounts)
   * [No Docker Sock Mount](#no-docker-sock-mount)
-  * [Mutate Default Seccomp Profile](#mutate-default-seccomp-profile)
+  * [EmptyDir size limit](#emptyDir-size-limit)
     + [Policy configuration](#policy-configuration)
+  * [Mutate Default Seccomp Profile](#mutate-default-seccomp-profile)
+    + [Policy configuration](#policy-configuration-1)
   * [Immutable Image Reference](#immutable-image-reference)
   * [No Host Network](#no-host-network)
   * [No Host PID](#no-host-pid)
@@ -28,11 +30,11 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
   * [No Privileged Container](#no-privileged-container)
   * [No Helm Tiller](#no-helm-tiller)
   * [Trusted Image Repository](#trusted-image-repository)
-    + [Policy configuration](#policy-configuration-1)
+    + [Policy configuration](#policy-configuration-2)
   * [Safe to Evict (DEPRECATED)](#safe-to-evict--deprecated)
   * [Mutate Safe to Evict](#mutate-safe-to-evict)
   * [Require Ingress Exemption](#require-ingress-exemption)
-    + [Policy configuration](#policy-configuration-2)
+    + [Policy configuration](#policy-configuration-3)
 - [Configuration](#configuration)
   * [Logging](#logging)
   * [Modes of operation](#modes-of-operation)
@@ -229,6 +231,21 @@ Host bind mounts (also called `hostPath` mounts) can be used to exfiltrate data 
 The Docker socket bind mount provides API access to the host Docker daemon, which can be used for privilege escalation or otherwise control the container host. Using Docker sock mounts can cause unreliability of the node because of the extra workloads that the Kubernetes schedulers are not aware of.
 
 **Note:** It is recommended to use the `No Bind Mounts` policy to disable all `hostPath` mounts rather than only this policy.
+
+## EmptyDir size limit
+By [default](https://kubernetes.io/docs/concepts/storage/volumes/#example-pod), an `emptyDir` lacks a `sizeLimit` parameter, and is disk-based;
+a Pod with access to said `emptyDir` can consume the Node's entire disk (i.e. the limit is unbounded) until the offending Pod is deleted or evicted, which can constitute a denial-of-service condition at the affected Node (i.e. DiskPressure).
+This policy
+* sets the configured default size when none is set for an `emptyDir` volume
+* reports a violation when the size is greater then the configured max size
+
+### Policy configuration
+```yaml
+policy_config:
+    mutate_empty_dir_size_limit:
+      maximum_size_limit: "1Gi"
+      default_size_limit: "512Mi"
+```
 
 ## Mutate Default Seccomp Profile
 
