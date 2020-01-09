@@ -39,6 +39,7 @@ func (s *Server) registerPolicies() {
 	s.registerPolicy(pod.PolicyNoExec{})
 	s.registerPolicy(pod.PolicyBindMounts{})
 	s.registerPolicy(pod.PolicyDockerSock{})
+	s.registerPolicy(pod.PolicyEmptyDirSizeLimit{})
 	s.registerPolicy(pod.PolicyImageImmutableReference{})
 	s.registerPolicy(pod.PolicyNoTiller{})
 	s.registerPolicy(pod.PolicyTrustedRepository{})

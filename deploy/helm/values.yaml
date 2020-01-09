@@ -36,6 +36,9 @@ config:
       - '^k8s.gcr.io/.*'               # official k8s GCR repo
       - '^[A-Za-z0-9\-:@]+$'           # official docker hub images
     policy_default_seccomp_policy: "runtime/default"
+    mutate_empty_dir_size_limit:
+      maximum_size_limit: "1Gi"
+      default_size_limit: "512Mi"
   policies:
     - name: "pod_no_exec"
       enabled: True
@@ -71,6 +74,9 @@ config:
       enabled: False
       report_only: True
     - name: "pod_mutate_safe_to_evict"
+      enabled: True
+      report_only: False
+    - name: "pod_empty_dir_size_limit"
       enabled: True
       report_only: False
     - name: "pod_default_seccomp_policy"

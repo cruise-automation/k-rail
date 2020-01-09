@@ -25,7 +25,7 @@ import (
 	"github.com/cruise-automation/k-rail/policies"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
-	yaml "gopkg.in/yaml.v2"
+	"sigs.k8s.io/yaml"
 )
 
 const (

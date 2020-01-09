@@ -21,11 +21,11 @@ require (
 	golang.org/x/text v0.3.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/inf.v0 v0.9.0 // indirect
-	gopkg.in/yaml.v2 v2.2.2
+	gopkg.in/yaml.v2 v2.2.2 // indirect
 	k8s.io/api v0.0.0-20190301173355-16f65c82b8fa
 	k8s.io/apimachinery v0.0.0-20190301173222-2f7e9cae4418
 	k8s.io/klog v0.0.0-20181108234604-8139d8cb77af // indirect
-	sigs.k8s.io/yaml v1.1.0 // indirect
+	sigs.k8s.io/yaml v1.1.0
 )
 
 replace git.apache.org/thrift.git => github.com/apache/thrift v0.12.0
