@@ -39,6 +39,10 @@ config:
     mutate_empty_dir_size_limit:
       maximum_size_limit: "1Gi"
       default_size_limit: "512Mi"
+    mutate_image_pull_policy:
+      IfNotPresent: 
+        - '^gcr.io/cruise-gcr-prod/daytona.*'
+        - '^gcr.io/cruise-gcr-dev/daytona.*'
   policies:
     - name: "pod_no_exec"
       enabled: True
@@ -83,6 +87,9 @@ config:
       enabled: True
       report_only: False
     - name: "pod_no_shareprocessnamespace"
+      enabled: True
+      report_only: False
+    - name: "pod_image_pull_policy"
       enabled: True
       report_only: False
     - name: "ingress_require_ingress_exemption"
