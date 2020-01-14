@@ -31,7 +31,7 @@ type Config struct {
 	// Defaults to 'runtime/default'
 	PolicyDefaultSeccompPolicy string `json:"policy_default_seccomp_policy"`
 	// PolicyImagePullPolicy contains the images that needs to enforce to a specific ImagePullPolicy
-	PolicyImagePullPolicy   map[string][]string     `json:"policy_image_pull_policy"`
+	PolicyImagePullPolicy   map[string][]string     `json:"mutate_image_pull_policy"`
 	MutateEmptyDirSizeLimit MutateEmptyDirSizeLimit `json:"mutate_empty_dir_size_limit"`
 }
 
