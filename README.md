@@ -33,6 +33,7 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
     + [Policy configuration](#policy-configuration-2)
   * [Safe to Evict (DEPRECATED)](#safe-to-evict--deprecated)
   * [Mutate Safe to Evict](#mutate-safe-to-evict)
+  * [Mutate Image Pull Policy] (#mutate-image-pull-policy)
   * [Require Ingress Exemption](#require-ingress-exemption)
     + [Policy configuration](#policy-configuration-3)
 - [Configuration](#configuration)
@@ -341,6 +342,28 @@ You can also set the annoation on existing Pods with this one-liner:
 
 ```bash
 $ kubectl get po --all-namespaces -o json | jq -r '.items[] | select(.spec.volumes[].hostPath or .spec.volumes[].emptyDir) | [ .metadata.namespace, .metadata.name ] | @tsv' | while IFS=$'\t' read -r namespace pod; do echo "\n NAMESPACE: $namespace \n POD: $pod \n"; kubectl annotate pod -n $namespace $pod "cluster-autoscaler.kubernetes.io/safe-to-evict=true"; done
+```
+## Mutate Image Pull Policy
+
+There are cerntain images which require the enforcement of the ImagePullPolicy according to different user scenarios
+- IfNotPresent
+It can reduce the unnecessary traffic(Auth and Download requests) to Image repository and reuse the image which is cached on the node 
+- Always
+It can be useful when there require the absolute isolation in multi-tenant cluster, which prevents others to reuse the image cached on the node, for example: The image protected with ImagePullSecret from private repository is cached on the node after first successful pull, other use can be directly pull from node without proper auth
+
+### Policy configuration
+
+The Mutate Image Pull Policy can be configured in the k-rail configuration file.
+
+Example
+```yaml
+policy_config:
+  mutate_image_pull_policy:
+    IfNotPresent: 
+      - '^gcr.io/cruise-gcr-prod/daytona.*'
+      - '^gcr.io/cruise-gcr-dev/daytona.*'
+    Always:
+      - '^gcr.io/private-repo/secretimage.*'
 ```
 
 ## Require Ingress Exemption
