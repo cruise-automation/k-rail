@@ -29,37 +29,15 @@ import (
 func TestPolicyImagePullPolicy(t *testing.T) {
 	ctx := context.Background()
 
-	tests := []struct {
+	tests := map[string]struct {
 		config          policies.Config
 		podSpec         v1.PodSpec
 		expectedPatches map[string]*policies.PatchOperation
 	}{
-		{
+		"ImagePullPolicyNoMatch": {
 			config: policies.Config{
 				PolicyImagePullPolicy: map[string][]string{
-					"IfNotPresent": []string{"^gcr.io/cruise-gcr-prod/daytona.*", "^gcr.io/cruise-gcr-dev/daytona.*"},
-				},
-			},
-			podSpec: v1.PodSpec{
-				Containers: []v1.Container{
-					{
-						Image:           "gcr.io/cruise-gcr-prod/daytona@sha256:dad671370a148e9dc2442364406",
-						ImagePullPolicy: "Always",
-					},
-				},
-			},
-			expectedPatches: map[string]*policies.PatchOperation{
-				"spec/containers/0/imagePullPolicy": &policies.PatchOperation{
-					Op:    "replace",
-					Path:  "spec/containers/0/imagePullPolicy",
-					Value: "IfNotPresent",
-				},
-			},
-		},
-		{
-			config: policies.Config{
-				PolicyImagePullPolicy: map[string][]string{
-					"IfNotPresent": []string{"^gcr.io/cruise-gcr-prod/daytona.*", "^gcr.io/cruise-gcr-dev/daytona.*"},
+					"IfNotPresent": []string{"^gcr.io/repo1/daytona.*", "^gcr.io/cruise-gcr-dev/daytona.*"},
 				},
 			},
 			podSpec: v1.PodSpec{
@@ -78,16 +56,39 @@ func TestPolicyImagePullPolicy(t *testing.T) {
 			},
 			expectedPatches: nil,
 		},
-		{
+		"ImagePullPolicyMatchIfNotPresent1": {
 			config: policies.Config{
 				PolicyImagePullPolicy: map[string][]string{
-					"IfNotPresent": []string{"^gcr.io/cruise-gcr-prod/daytona.*", "^gcr.io/cruise-gcr-dev/daytona.*"},
+					"IfNotPresent": []string{"^gcr.io/repo1/image1.*", "^gcr.io/repo2/image1.*"},
 				},
 			},
 			podSpec: v1.PodSpec{
 				Containers: []v1.Container{
 					{
-						Image:           "gcr.io/cruise-gcr-prod/daytona@sha256:dad671370a148e9dc2442364406",
+						Image:           "gcr.io/repo1/image1@sha256:dad671370a148e9dc2442364406",
+						ImagePullPolicy: "Always",
+					},
+				},
+			},
+			expectedPatches: map[string]*policies.PatchOperation{
+				"spec/containers/0/imagePullPolicy": &policies.PatchOperation{
+					Op:    "replace",
+					Path:  "spec/containers/0/imagePullPolicy",
+					Value: "IfNotPresent",
+				},
+			},
+		},
+
+		"ImagePullPolicyMatchIfNotPresent2": {
+			config: policies.Config{
+				PolicyImagePullPolicy: map[string][]string{
+					"IfNotPresent": []string{"^gcr.io/repo1/daytona.*", "^gcr.io/cruise-gcr-dev/daytona.*"},
+				},
+			},
+			podSpec: v1.PodSpec{
+				Containers: []v1.Container{
+					{
+						Image:           "gcr.io/repo1/daytona@sha256:dad671370a148e9dc2442364406",
 						ImagePullPolicy: "Always",
 					},
 				},
@@ -115,17 +116,17 @@ func TestPolicyImagePullPolicy(t *testing.T) {
 				},
 			},
 		},
-		{
+		"ImagePullPolicyMatchAlways": {
 			config: policies.Config{
 				PolicyImagePullPolicy: map[string][]string{
-					"IfNotPresent": []string{"^gcr.io/cruise-gcr-prod/daytona.*", "^gcr.io/cruise-gcr-dev/daytona.*"},
-					"Always":       []string{"gcr.io/cruise-gcr-prod/abcd"},
+					"IfNotPresent": []string{"^gcr.io/repo1/daytona.*", "^gcr.io/cruise-gcr-dev/daytona.*"},
+					"Always":       []string{"gcr.io/repo1/abcd"},
 				},
 			},
 			podSpec: v1.PodSpec{
 				Containers: []v1.Container{
 					{
-						Image:           "gcr.io/cruise-gcr-prod/abcd",
+						Image:           "gcr.io/repo1/abcd",
 						ImagePullPolicy: "IfNotPresent",
 					},
 				},
@@ -135,7 +136,7 @@ func TestPolicyImagePullPolicy(t *testing.T) {
 						ImagePullPolicy: "IfNotPresent",
 					},
 					{
-						Image:           "gcr.io/cruise-gcr-prod/abcd",
+						Image:           "gcr.io/repo1/abcd",
 						ImagePullPolicy: "Never",
 					},
 				},
@@ -154,8 +155,8 @@ func TestPolicyImagePullPolicy(t *testing.T) {
 			},
 		},
 	}
-	for index, tt := range tests {
-		t.Run(fmt.Sprintf("Testcase%d", index), func(t *testing.T) {
+	for k, tt := range tests {
+		t.Run(fmt.Sprintf("Testcase:%s", k), func(t *testing.T) {
 
 			raw, _ := json.Marshal(corev1.Pod{Spec: tt.podSpec})
 			ar := &admissionv1beta1.AdmissionRequest{
@@ -168,15 +169,15 @@ func TestPolicyImagePullPolicy(t *testing.T) {
 			v := PolicyImagePullPolicy{}
 			_, patches := v.Validate(ctx, tt.config, ar)
 			if len(tt.expectedPatches) != len(patches) {
-				t.Errorf("PolicyImagePullPolicy failed, expected number of Patches:%d, returned number of Patches: %d", len(tt.expectedPatches), len(patches))
+				t.Fatalf("PolicyImagePullPolicy failed, expected number of Patches:%d, returned number of Patches: %d", len(tt.expectedPatches), len(patches))
 			}
 			for _, patch := range patches {
 				p, ok := tt.expectedPatches[patch.Path]
 				if !ok {
-					t.Errorf("PolicyImagePullPolicy return unwanted patch: %v", patch)
+					t.Fatalf("PolicyImagePullPolicy return unwanted patch: %v", patch)
 				}
 				if p.Value != patch.Value || p.Op != patch.Op {
-					t.Errorf("PolicyImagePullPolicy expectedPatch: %v, returned patch: %v", p, patch)
+					t.Fatalf("PolicyImagePullPolicy expectedPatch: %v, returned patch: %v", p, patch)
 				}
 			}
 		})

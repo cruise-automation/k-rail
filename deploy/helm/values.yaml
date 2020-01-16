@@ -40,9 +40,8 @@ config:
       maximum_size_limit: "1Gi"
       default_size_limit: "512Mi"
     mutate_image_pull_policy:
-      IfNotPresent: 
-        - '^gcr.io/cruise-gcr-prod/daytona.*'
-        - '^gcr.io/cruise-gcr-dev/daytona.*'
+      IfNotPresent: []
+      Always: []
   policies:
     - name: "pod_no_exec"
       enabled: True

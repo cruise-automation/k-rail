@@ -33,7 +33,7 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
     + [Policy configuration](#policy-configuration-2)
   * [Safe to Evict (DEPRECATED)](#safe-to-evict--deprecated)
   * [Mutate Safe to Evict](#mutate-safe-to-evict)
-  * [Mutate Image Pull Policy] (#mutate-image-pull-policy)
+  * [Mutate Image Pull Policy](#mutate-image-pull-policy)
   * [Require Ingress Exemption](#require-ingress-exemption)
     + [Policy configuration](#policy-configuration-3)
 - [Configuration](#configuration)
@@ -347,9 +347,10 @@ $ kubectl get po --all-namespaces -o json | jq -r '.items[] | select(.spec.volum
 
 There are cerntain images which require the enforcement of the ImagePullPolicy according to different user scenarios
 - IfNotPresent
-It can reduce the unnecessary traffic(Auth and Download requests) to Image repository and reuse the image which is cached on the node 
+It can reduce the unnecessary traffic (Auth and Download requests) to Image repository and reuse the image which is cached on the node 
 - Always
-It can be useful when there require the absolute isolation in multi-tenant cluster, which prevents others to reuse the image cached on the node, for example: The image protected with ImagePullSecret from private repository is cached on the node after first successful pull, other use can be directly pull from node without proper auth
+It can be useful when it requires the absolute isolation in multi-tenant cluster, which prevents others to reuse the image cached on the node, for example: The image protected with ImagePullSecret from private repository is cached on the node after first successful pull, other user can directly pull from node without proper auth.
+However if we force the imagePullPolicy to Always, it would fail without proper ImagePullSecret
 
 ### Policy configuration
 
@@ -360,8 +361,8 @@ Example
 policy_config:
   mutate_image_pull_policy:
     IfNotPresent: 
-      - '^gcr.io/cruise-gcr-prod/daytona.*'
-      - '^gcr.io/cruise-gcr-dev/daytona.*'
+      - '^gcr.io/repo/image1.*'
+      - '^gcr.io/repo/image2.*'
     Always:
       - '^gcr.io/private-repo/secretimage.*'
 ```
