@@ -71,9 +71,9 @@ func TestPolicyImagePullPolicy(t *testing.T) {
 				},
 			},
 			expectedPatches: map[string]*policies.PatchOperation{
-				"spec/containers/0/imagePullPolicy": &policies.PatchOperation{
+				"/spec/containers/0/imagePullPolicy": &policies.PatchOperation{
 					Op:    "replace",
-					Path:  "spec/containers/0/imagePullPolicy",
+					Path:  "/spec/containers/0/imagePullPolicy",
 					Value: "IfNotPresent",
 				},
 			},
@@ -104,14 +104,14 @@ func TestPolicyImagePullPolicy(t *testing.T) {
 				},
 			},
 			expectedPatches: map[string]*policies.PatchOperation{
-				"spec/containers/0/imagePullPolicy": &policies.PatchOperation{
+				"/spec/containers/0/imagePullPolicy": &policies.PatchOperation{
 					Op:    "replace",
-					Path:  "spec/containers/0/imagePullPolicy",
+					Path:  "/spec/containers/0/imagePullPolicy",
 					Value: "IfNotPresent",
 				},
-				"spec/initContainers/1/imagePullPolicy": &policies.PatchOperation{
+				"/spec/initContainers/1/imagePullPolicy": &policies.PatchOperation{
 					Op:    "replace",
-					Path:  "spec/initContainers/1/imagePullPolicy",
+					Path:  "/spec/initContainers/1/imagePullPolicy",
 					Value: "IfNotPresent",
 				},
 			},
@@ -142,14 +142,14 @@ func TestPolicyImagePullPolicy(t *testing.T) {
 				},
 			},
 			expectedPatches: map[string]*policies.PatchOperation{
-				"spec/containers/0/imagePullPolicy": &policies.PatchOperation{
+				"/spec/containers/0/imagePullPolicy": &policies.PatchOperation{
 					Op:    "replace",
 					Path:  "spec/containers/0/imagePullPolicy",
 					Value: "Always",
 				},
-				"spec/initContainers/1/imagePullPolicy": &policies.PatchOperation{
+				"/spec/initContainers/1/imagePullPolicy": &policies.PatchOperation{
 					Op:    "replace",
-					Path:  "spec/initContainers/1/imagePullPolicy",
+					Path:  "/spec/initContainers/1/imagePullPolicy",
 					Value: "Always",
 				},
 			},

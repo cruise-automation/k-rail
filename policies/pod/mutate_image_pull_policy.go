@@ -48,13 +48,13 @@ func (p PolicyImagePullPolicy) Validate(ctx context.Context, config policies.Con
 
 	if podResource.ResourceKind == "Pod" {
 		for index, container := range podResource.PodSpec.InitContainers {
-			patch := checkImagePullPolicy(&container, fmt.Sprintf("spec/initContainers/%d/imagePullPolicy", index), config.PolicyImagePullPolicy)
+			patch := checkImagePullPolicy(&container, fmt.Sprintf("/spec/initContainers/%d/imagePullPolicy", index), config.PolicyImagePullPolicy)
 			if patch != nil {
 				patches = append(patches, *patch)
 			}
 		}
 		for index, container := range podResource.PodSpec.Containers {
-			patch := checkImagePullPolicy(&container, fmt.Sprintf("spec/containers/%d/imagePullPolicy", index), config.PolicyImagePullPolicy)
+			patch := checkImagePullPolicy(&container, fmt.Sprintf("/spec/containers/%d/imagePullPolicy", index), config.PolicyImagePullPolicy)
 			if patch != nil {
 				patches = append(patches, *patch)
 			}
