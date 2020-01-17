@@ -30,7 +30,8 @@ type Config struct {
 	// PolicyDefaultSeccompPolicy contains the seccomp policy that you want to be applied on Pods by default.
 	// Defaults to 'runtime/default'
 	PolicyDefaultSeccompPolicy string `json:"policy_default_seccomp_policy"`
-
+	// PolicyImagePullPolicy contains the images that needs to enforce to a specific ImagePullPolicy
+	PolicyImagePullPolicy   map[string][]string     `json:"mutate_image_pull_policy"`
 	MutateEmptyDirSizeLimit MutateEmptyDirSizeLimit `json:"mutate_empty_dir_size_limit"`
 }
 
