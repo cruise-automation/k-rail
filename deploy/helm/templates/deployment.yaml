@@ -1,3 +1,64 @@
+{{- $cn := printf "k-rail.%s.svc" .Release.Namespace }}
+{{- $ca := genCA "k-rail-admission-ca" 3650 -}}
+{{- $cert := genSignedCert $cn nil nil 3650 $ca -}}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Release.Namespace }}
+  labels:
+    name: {{ .Release.Namespace }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: k-rail-cert
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: k-rail-cert
+type: Opaque
+data:
+  cert.pem: {{ b64enc $cert.Cert }}
+  key.pem: {{ b64enc $cert.Key }}
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: k-rail
+  annotations:
+    checksum/config: {{ print .Values.config | sha256sum }}
+    checksum/exemptions: {{ print .Values.exemptions | sha256sum }}
+webhooks:
+  - name: k-rail.cruise-automation.github.com
+    clientConfig:
+      service:
+        namespace: k-rail
+        name: {{ .Release.Namespace }}
+        path: "/"
+      caBundle: {{ b64enc $ca.Cert }}
+    rules:
+      - operations: ["CREATE","UPDATE","CONNECT"]
+        apiGroups: ["*"]
+        apiVersions: ["*"]
+        resources: 
+          - pods
+          - deployments
+          - replicationcontrollers
+          - replicasets
+          - daemonsets
+          - statefulsets
+          - jobs
+          - cronjobs
+          - ingresses
+          - pods/exec
+    failurePolicy: {{ print .Values.failurePolicy }}
+    sideEffects: None
+    namespaceSelector:
+      matchExpressions:
+        - key: name
+          operator: NotIn
+          values: 
+            - {{ .Release.Namespace }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -19,6 +80,7 @@ spec:
       annotations:
         checksum/config: {{ print .Values.config | sha256sum }}
         checksum/exemptions: {{ print .Values.exemptions | sha256sum }}
+        checksum/tls: {{ print $ca.Cert | sha256sum }}
     spec:
       containers:
         - name: k-rail
@@ -72,3 +134,47 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
     {{- end }}
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: k-rail
+  namespace: {{ .Release.Namespace }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      name: k-rail
+---
+apiVersion: v1
+kind: Service
+metadata:
+ name: k-rail
+ namespace: {{ .Release.Namespace }}
+ labels:
+    name: k-rail
+spec:
+  ports:
+  - name: validatingwebhook
+    port: 443
+    targetPort: 10250
+  selector:
+    name: k-rail
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: k-rail-config
+  namespace: {{ .Release.Namespace }}
+data:
+  config.yml: |
+    {{- toYaml .Values.config | nindent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: k-rail-exemptions
+  namespace: {{ .Release.Namespace }}
+data:
+  config.yml: |
+    {{- toYaml .Values.exemptions | nindent 4 }}
