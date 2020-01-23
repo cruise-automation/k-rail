@@ -15,7 +15,7 @@ import (
 )
 
 type podProvisioner interface {
-	Evict(namespace, podName string) error
+	Evict(pod *v1.Pod, reason string) error
 }
 
 type Controller struct {
@@ -49,6 +49,13 @@ func (c *Controller) processNextItem() bool {
 	return true
 }
 
+const (
+	annotationPreventEviction = "k-rails/tainted-prevent-eviction"
+	annotationTimestamp       = "k-rails/tainted-timestamp"
+	annotationReason          = "k-rails/tainted-reason"
+)
+const defaultEvictionReason = "exec"
+
 // evictPod is the business logic of the controller. it checks the the eviction rules and conditions before calling the pod provisioner.
 func (c *Controller) evictPod(key string) error {
 	obj, exists, err := c.podStore.GetByKey(key)
@@ -58,24 +65,26 @@ func (c *Controller) evictPod(key string) error {
 	case !exists:
 		return nil
 	}
-	pod := obj.(*v1.Pod)
+	pod, ok := obj.(*v1.Pod)
+	if !ok {
+		return fmt.Errorf("unsupported type: %T", obj)
+	}
 	if !canEvict(pod, c.incubationPeriodSeconds) {
 		return nil
 	}
 
-	ns, name, err := cache.SplitMetaNamespaceKey(key)
-	if err != nil {
-		return err
+	reason, ok := pod.Annotations[annotationReason]
+	if !ok || reason == "" {
+		reason = defaultEvictionReason
 	}
-	return c.podProvisioner.Evict(ns, name)
+
+	return c.podProvisioner.Evict(pod, reason)
 }
 
-const (
-	annotationPreventEviction = "k-rails/tainted-prevent-eviction"
-	annotationTimestamp       = "k-rails/tainted-timestamp"
-)
-
 func canEvict(pod *v1.Pod, incubationPeriod time.Duration) bool {
+	if pod == nil {
+		return false
+	}
 	val, ok := pod.Annotations[annotationPreventEviction]
 	if ok {
 		if val == "yes" || val == "true" {
