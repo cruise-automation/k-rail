@@ -50,9 +50,9 @@ func (c *Controller) processNextItem() bool {
 }
 
 const (
-	annotationPreventEviction = "k-rails/tainted-prevent-eviction"
-	annotationTimestamp       = "k-rails/tainted-timestamp"
-	annotationReason          = "k-rails/tainted-reason"
+	annotationPreventEviction = "k-rail/tainted-prevent-eviction"
+	annotationTimestamp       = "k-rail/tainted-timestamp"
+	annotationReason          = "k-rail/tainted-reason"
 )
 const defaultEvictionReason = "exec"
 
