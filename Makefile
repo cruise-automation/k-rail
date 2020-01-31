@@ -25,11 +25,11 @@ clean:
 	go mod verify
 
 build:
-		GO111MODULE=on CGO_ENABLED=0 go build ${BUILD_FLAGS} -o k-rail cmd/k-rail/main.go
-		GO111MODULE=on CGO_ENABLED=0 go build ${BUILD_FLAGS} -o evicter cmd/evicter/*.go
+	GO111MODULE=on CGO_ENABLED=0 go build ${BUILD_FLAGS} -o k-rail cmd/k-rail/main.go
+	GO111MODULE=on CGO_ENABLED=0 go build ${BUILD_FLAGS} -o evicter cmd/evicter/*.go
 
 test:
-		GO111MODULE=on CGO_ENABLED=1 go test -mod=readonly -race  ./...
+	GO111MODULE=on CGO_ENABLED=1 go test -mod=readonly -race  ./...
 
 image: build
 	docker build --pull -t $(IMAGE_NAME) .
