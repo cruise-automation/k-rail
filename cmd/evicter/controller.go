@@ -15,7 +15,7 @@ import (
 )
 
 type podProvisioner interface {
-	Evict(pod *v1.Pod, reason string) error
+	Evict(pod *v1.Pod, reason, msg string) error
 }
 
 type Controller struct {
@@ -50,11 +50,16 @@ func (c *Controller) processNextItem() bool {
 }
 
 const (
+	// annotationPreventEviction is a break-glass annotation to prevent automated eviction
 	annotationPreventEviction = "k-rail/tainted-prevent-eviction"
+	// annotationTimestamp stores the unix timestamp when the root event happened
 	annotationTimestamp       = "k-rail/tainted-timestamp"
+	// annotationReason is used to define any additional reason in a human readable form
 	annotationReason          = "k-rail/tainted-reason"
 )
-const defaultEvictionReason = "exec"
+
+const defaultEvictionReason = "Tainted"
+const noEvictionNote = "Pod was marked as tainted"
 
 // evictPod is the business logic of the controller. it checks the the eviction rules and conditions before calling the pod provisioner.
 func (c *Controller) evictPod(key string) error {
@@ -73,12 +78,11 @@ func (c *Controller) evictPod(key string) error {
 		return nil
 	}
 
-	reason, ok := pod.Annotations[annotationReason]
-	if !ok || reason == "" {
-		reason = defaultEvictionReason
+	msg, ok := pod.Annotations[annotationReason]
+	if !ok || msg == "" {
+		msg = noEvictionNote
 	}
-
-	return c.podProvisioner.Evict(pod, reason)
+	return c.podProvisioner.Evict(pod, defaultEvictionReason, msg)
 }
 
 func canEvict(pod *v1.Pod, incubationPeriod time.Duration) bool {
@@ -138,7 +142,7 @@ func (c *Controller) handleErr(err error, key interface{}) {
 const reconciliationTick = 30 * time.Second
 const startupGracePeriod = 90 * time.Second
 
-func (c *Controller) Run(threadiness int, stopCh chan struct{}) {
+func (c *Controller) Run(threadiness int, stopCh <-chan struct{}) {
 	defer runtime.HandleCrash()
 
 	// Let the workers stop when we are done
