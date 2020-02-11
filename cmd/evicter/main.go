@@ -28,7 +28,6 @@ import (
 	"k8s.io/klog"
 )
 
-
 func main() {
 	var (
 		kubeconfig                     = flag.String("kubeconfig", "", "absolute path to the kubeconfig file: `<home>/.kube/config`")
@@ -165,7 +164,7 @@ func (p *podEvicter) Evict(pod *v1.Pod, reason, msg string) error {
 	if err != nil {
 		return errors.Wrap(err, "eviction")
 	}
-	p.eventRecorder.Eventf(pod,  v1.EventTypeNormal, reason, msg)
+	p.eventRecorder.Eventf(pod, v1.EventTypeNormal, reason, msg)
 	return nil
 }
 

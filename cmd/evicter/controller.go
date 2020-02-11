@@ -19,7 +19,7 @@ type podProvisioner interface {
 }
 
 type Controller struct {
-	podStore                cache.Indexer
+	podStore                cache.Store
 	queue                   workqueue.RateLimitingInterface
 	informer                cache.Controller
 	podProvisioner          podProvisioner
@@ -27,7 +27,7 @@ type Controller struct {
 	started                 time.Time
 }
 
-func NewController(queue workqueue.RateLimitingInterface, indexer cache.Indexer, informer cache.Controller, podProvisioner podProvisioner, incubationPeriodSeconds int64) *Controller {
+func NewController(queue workqueue.RateLimitingInterface, indexer cache.Store, informer cache.Controller, podProvisioner podProvisioner, incubationPeriodSeconds int64) *Controller {
 	return &Controller{
 		informer:                informer,
 		podStore:                indexer,
@@ -53,9 +53,9 @@ const (
 	// annotationPreventEviction is a break-glass annotation to prevent automated eviction
 	annotationPreventEviction = "k-rail/tainted-prevent-eviction"
 	// annotationTimestamp stores the unix timestamp when the root event happened
-	annotationTimestamp       = "k-rail/tainted-timestamp"
+	annotationTimestamp = "k-rail/tainted-timestamp"
 	// annotationReason is used to define any additional reason in a human readable form
-	annotationReason          = "k-rail/tainted-reason"
+	annotationReason = "k-rail/tainted-reason"
 )
 
 const defaultEvictionReason = "Tainted"
@@ -89,14 +89,12 @@ func canEvict(pod *v1.Pod, incubationPeriod time.Duration) bool {
 	if pod == nil {
 		return false
 	}
-	val, ok := pod.Annotations[annotationPreventEviction]
-	if ok {
-		if val == "yes" || val == "true" {
-			return false
-		}
+	switch pod.Annotations[annotationPreventEviction] {
+	case "yes", "true", "1", "YES", "TRUE", "Yes", "True":
+		return false
 	}
 
-	val, ok = pod.Annotations[annotationTimestamp]
+	val, ok := pod.Annotations[annotationTimestamp]
 	if ok {
 		i, err := strconv.ParseInt(val, 10, 64)
 		if err != nil {
