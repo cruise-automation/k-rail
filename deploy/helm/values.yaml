@@ -3,6 +3,7 @@ replicaCount: 3
 
 # Set this to 'Fail if you wish that resources apply fail if k-rail is unreachable.
 failurePolicy: Fail
+#reinvocationPolicy: IfNeeded
 
 image:
   repository: cruise/k-rail

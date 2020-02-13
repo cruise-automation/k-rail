@@ -52,6 +52,9 @@ webhooks:
           - ingresses
           - pods/exec
     failurePolicy: {{ print .Values.failurePolicy }}
+  {{- if .Values.reinvocationPolicy }}
+    reinvocationPolicy: {{  print .Values.reinvocationPolicy }} 
+  {{- end }}
     sideEffects: None
     namespaceSelector:
       matchExpressions:

@@ -387,6 +387,24 @@ policy_config:
 
 For the Helm deployment, all configuration is contained in [`deploy/helm/values.yaml`](deploy/helm/values.yaml).
 
+## Webhook Configuration
+
+By default, k-rail will "fail close" if it cannot be reached by the API server. k-rail can be changed to
+"fail open" by changing the `failurePolicy` directive from `Fail` to `Ignore`, in [`deploy/helm/values.yaml`](deploy/helm/values.yaml).
+See the Kubernetes [docs](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#failure-policy) for
+more details.
+
+In Kubernetes 1.15 and beyond, mutating admission webhooks (e.g. k-rail) can elect to be polled again, if a subsequent admission plugin
+(such as another webhook) modifies an object the webhook has interacted with. 
+They do so with a 
+[`reinvocationPolicy`](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#reinvocation-policy) 
+value of `IfNeeded`; the Kubernetes default value is `Never`, which does not reinvoke
+the mutating admission webhook(s). 
+Since this is a [newer](https://kubernetes.io/blog/2019/06/19/kubernetes-1-15-release-announcement/) type field, k-rail omits by default,
+but operators can set a chosen value by commenting out `reinvocationPolicy` in [`deploy/helm/values.yaml`](deploy/helm/values.yaml).
+See the [associated KEP](https://github.com/kubernetes/enhancements/blob/master/keps/sig-api-machinery/00xx-admission-webhooks-to-ga.md#mutating-plugin-ordering) for more details on `reinvocationPolicy` and admission plugin ordering.
+
+
 ## Logging
 
 Log levels can be set in the k-rail configuration file. Acceptable values are `debug`, `warn`, and `info`. The default log level is `info`.
