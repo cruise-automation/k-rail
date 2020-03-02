@@ -212,8 +212,7 @@ Since the violations are outputted as structured data, you are encouraged to agg
 ## No ShareProcessNamespace
 
 `shareProcessNamespace: true` is a Pod Spec directive that puts all containers in a Pod within
-the same PID Namespace. When this occurs, containers can, for example, [access each others' filesystem and memory]
-(https://kubernetes.io/docs/tasks/configure-pod-container/share-process-namespace/#understanding-process-namespace-sharing),
+the same PID Namespace. When this occurs, containers can, for example, [access each others' filesystem and memory](https://kubernetes.io/docs/tasks/configure-pod-container/share-process-namespace/#understanding-process-namespace-sharing),
 as long as they share user and group IDs. These effects could be unexpected, especially if security (e.g. egress controls)
 occurs in a sidecar container.
 
