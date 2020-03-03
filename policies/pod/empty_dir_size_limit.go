@@ -33,7 +33,7 @@ const violationText = "Empty dir size limit: size limit exceeds the max value"
 func (p PolicyEmptyDirSizeLimit) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 	var resourceViolations []policies.ResourceViolation
 
-	podResource := resource.GetPodResource(ar, ctx)
+	podResource := resource.GetPodResource(ctx, ar)
 	if podResource == nil {
 		return resourceViolations, nil
 	}
