@@ -15,6 +15,7 @@ package pod
 import (
 	"context"
 	"encoding/json"
+	"reflect"
 	"testing"
 
 	"github.com/cruise-automation/k-rail/policies"
@@ -41,7 +42,7 @@ func TestPolicyDefaultSeccompPolicy(t *testing.T) {
 			},
 			expectedPatches: map[string]*policies.PatchOperation{
 				"/metadata/annotations/seccomp.security.alpha.kubernetes.io~1pod": &policies.PatchOperation{
-					Op:    "add",
+					Op:    "replace",
 					Path:  "/metadata/annotations/seccomp.security.alpha.kubernetes.io~1pod",
 					Value: "runtime/default",
 				},
@@ -52,10 +53,12 @@ func TestPolicyDefaultSeccompPolicy(t *testing.T) {
 			podSpec:     corev1.PodSpec{},
 			annotations: nil,
 			expectedPatches: map[string]*policies.PatchOperation{
-				"/metadata/annotations/seccomp.security.alpha.kubernetes.io~1pod": &policies.PatchOperation{
-					Op:    "replace",
-					Path:  "/metadata/annotations",
-					Value: "seccomp.security.alpha.kubernetes.io/pod:runtime/default",
+				"/metadata/annotations": &policies.PatchOperation{
+					Op:   "add",
+					Path: "/metadata/annotations",
+					Value: map[string]string{
+						"seccomp.security.alpha.kubernetes.io/pod": "runtime/default",
+					},
 				},
 			},
 		},
@@ -82,7 +85,7 @@ func TestPolicyDefaultSeccompPolicy(t *testing.T) {
 				if !ok {
 					t.Fatalf("PolicyDefaultSeccompPolicy return unwanted patch: %v", patch)
 				}
-				if p.Value != patch.Value || p.Op != patch.Op {
+				if !reflect.DeepEqual(p.Value, patch.Value) || p.Op != patch.Op {
 					t.Fatalf("PolicyDefaultSeccompPolicy expectedPatch: %v, returned patch: %v", p, patch)
 				}
 			}
