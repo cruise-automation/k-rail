@@ -143,7 +143,7 @@ func (s *Server) validateResources(ar v1beta1.AdmissionReview) v1beta1.Admission
 		// TODO: This could use a bit of refactoring so there is less repetition and we could
 		// have the relevant resource name available for any resource being checked for exemptions.
 		// The AdmissionReview Name is often empty and populated by an downstream controller.
-		podResource := resource.GetPodResource(ar.Request, ctx)
+		podResource := resource.GetPodResource(ctx, ar.Request)
 		if len(violations) == 0 && patches != nil && !policies.IsExempt(
 			podResource.ResourceName,
 			ar.Request.Namespace,

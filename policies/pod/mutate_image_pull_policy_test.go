@@ -16,6 +16,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/cruise-automation/k-rail/policies"
@@ -176,7 +177,7 @@ func TestPolicyImagePullPolicy(t *testing.T) {
 				if !ok {
 					t.Fatalf("PolicyImagePullPolicy return unwanted patch: %v", patch)
 				}
-				if p.Value != patch.Value || p.Op != patch.Op {
+				if !reflect.DeepEqual(p.Value, patch.Value) || p.Op != patch.Op {
 					t.Fatalf("PolicyImagePullPolicy expectedPatch: %v, returned patch: %v", p, patch)
 				}
 			}
