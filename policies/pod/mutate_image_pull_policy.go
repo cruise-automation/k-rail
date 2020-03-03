@@ -34,7 +34,7 @@ func (p PolicyImagePullPolicy) Name() string {
 // Validate is to enforce the imagePullPolicy
 func (p PolicyImagePullPolicy) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
-	podResource := resource.GetPodResource(ar, ctx)
+	podResource := resource.GetPodResource(ctx, ar)
 	if podResource == nil {
 		return nil, nil
 	}

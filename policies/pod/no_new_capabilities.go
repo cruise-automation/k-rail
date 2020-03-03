@@ -32,7 +32,7 @@ func (p PolicyNoNewCapabilities) Validate(ctx context.Context, config policies.C
 
 	resourceViolations := []policies.ResourceViolation{}
 
-	podResource := resource.GetPodResource(ar, ctx)
+	podResource := resource.GetPodResource(ctx, ar)
 	if podResource == nil {
 		return resourceViolations, nil
 	}
