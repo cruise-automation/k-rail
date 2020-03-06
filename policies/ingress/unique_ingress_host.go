@@ -26,7 +26,6 @@ import (
 )
 
 //Helper initialization function (create object, create clientset, and return new struct PolicyRequireUniqueHost)
-//Q: where is Policy interface implemented or declared specifically? Doesnt need to? Since it just implements Name() and Validate()
 func NewPolicyRequireUniqueHost() PolicyRequireUniqueHost {
 
 	p := PolicyRequireUniqueHost{}
