@@ -95,6 +95,9 @@ config:
     - name: "ingress_require_ingress_exemption"
       enabled: True
       report_only: False
+    - name: "ingress_unique_ingress_host"
+      enabled: True
+      report_only: False
 
 exemptions:
   - resource_name: "*"
