@@ -54,7 +54,7 @@ type PolicyRequireUniqueHost struct {
 
 //Method that implements Policy interface's Name() method
 func (p PolicyRequireUniqueHost) Name() string {
-	return "ingress_require_unique_host"
+	return "ingress_unique_ingress_host"
 }
 
 //Method that queries K8s cluster for all Ingress configs with given host, returns namespaces for each ingress host
