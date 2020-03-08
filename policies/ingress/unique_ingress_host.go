@@ -15,10 +15,10 @@ package ingress
 import (
 	"context"
 	"flag"
-	"log"
 
 	"github.com/cruise-automation/k-rail/policies"
 	"github.com/cruise-automation/k-rail/resource"
+	log "github.com/sirupsen/logrus"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -46,7 +46,6 @@ func NewPolicyRequireUniqueHost() PolicyRequireUniqueHost {
 	}
 	p.client = clientset
 	return p
-	//TODO: will need to query K8 with K8 SA and create K8 role-binding
 }
 
 type PolicyRequireUniqueHost struct {
@@ -100,22 +99,24 @@ func (p PolicyRequireUniqueHost) Validate(ctx context.Context, config policies.C
 	violationText := "Requires Unique Ingress Host: Ingress Host should not point to multiple namespaces"
 
 	//--------------------------------INGRESSEXT----------------------------------
+	//TODO: CONVERT TO FUNCTION
 	for _, rule := range ingressResource.IngressExt.Spec.Rules {
 		namespaces, err := p.CheckIngresses(ctx, rule.Host)
 		if err != nil {
-			panic(err)
+			log.Error(err)
+			return nil, nil
 		}
-		if len(namespaces) != 0 {
-			foundNamespace := Find(namespaces, ar.Namespace)
-			if !foundNamespace {
-				resourceViolations = append(resourceViolations, policies.ResourceViolation{
-					Namespace:    ar.Namespace,
-					ResourceName: ingressResource.ResourceName,
-					ResourceKind: ingressResource.ResourceKind,
-					Violation:    violationText,
-					Policy:       p.Name(),
-				})
-			}
+		foundNamespace := Find(namespaces, ar.Namespace)
+		if (len(namespaces) == 0) || (len(namespaces) == 1 && foundNamespace) {
+			return resourceViolations, nil
+		} else {
+			resourceViolations = append(resourceViolations, policies.ResourceViolation{
+				Namespace:    ar.Namespace,
+				ResourceName: ingressResource.ResourceName,
+				ResourceKind: ingressResource.ResourceKind,
+				Violation:    violationText,
+				Policy:       p.Name(),
+			})
 		}
 	}
 
@@ -123,19 +124,20 @@ func (p PolicyRequireUniqueHost) Validate(ctx context.Context, config policies.C
 	for _, rule := range ingressResource.IngressNet.Spec.Rules {
 		namespaces, err := p.CheckIngresses(ctx, rule.Host)
 		if err != nil {
-			panic(err)
+			log.Error(err)
+			return nil, nil
 		}
-		if len(namespaces) != 0 {
-			foundNamespace := Find(namespaces, ar.Namespace)
-			if !foundNamespace {
-				resourceViolations = append(resourceViolations, policies.ResourceViolation{
-					Namespace:    ar.Namespace,
-					ResourceName: ingressResource.ResourceName,
-					ResourceKind: ingressResource.ResourceKind,
-					Violation:    violationText,
-					Policy:       p.Name(),
-				})
-			}
+		foundNamespace := Find(namespaces, ar.Namespace)
+		if (len(namespaces) == 0) || (len(namespaces) == 1 && foundNamespace) {
+			return resourceViolations, nil
+		} else {
+			resourceViolations = append(resourceViolations, policies.ResourceViolation{
+				Namespace:    ar.Namespace,
+				ResourceName: ingressResource.ResourceName,
+				ResourceKind: ingressResource.ResourceKind,
+				Violation:    violationText,
+				Policy:       p.Name(),
+			})
 		}
 	}
 	return resourceViolations, nil

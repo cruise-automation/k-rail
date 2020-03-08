@@ -5,7 +5,6 @@ go 1.12
 require (
 	github.com/gobwas/glob v0.2.3
 	github.com/golang/protobuf v1.3.4 // indirect
-	github.com/googleapis/gnostic v0.4.1 // indirect
 	github.com/gorilla/mux v1.7.0
 	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
