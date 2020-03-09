@@ -25,22 +25,19 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-//Helper initialization function (create object, create clientset, and return new struct PolicyRequireUniqueHost)
 func NewPolicyRequireUniqueHost() PolicyRequireUniqueHost {
-
 	p := PolicyRequireUniqueHost{}
 
-	//initialize clientset as *Clientset
 	var kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file: `<home>/.kube/config`")
 	flag.Parse()
-	flag.Set("logtostderr", "true") // glog: no disk log
+	flag.Set("logtostderr", "true")
 
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig) //builds configs from a master url or a kubeconfig filepath. These are passed in as command line flags for cluster components
+	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	clientset, err := kubernetes.NewForConfig(config) //Creates a new *Clientset for the given config.
+	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,18 +46,16 @@ func NewPolicyRequireUniqueHost() PolicyRequireUniqueHost {
 }
 
 type PolicyRequireUniqueHost struct {
-	client *kubernetes.Clientset //clientset with pointer
+	client *kubernetes.Clientset
 }
 
-//Method that implements Policy interface's Name() method
 func (p PolicyRequireUniqueHost) Name() string {
 	return "ingress_unique_ingress_host"
 }
 
-//Method that queries K8s cluster for all Ingress configs with given host, returns namespaces for each ingress host
-func (p PolicyRequireUniqueHost) CheckIngresses(ctx context.Context, host string) ([]string, error) {
+func (p PolicyRequireUniqueHost) CheckIngressNamespaces(ctx context.Context, host string) ([]string, error) {
 	ingressNamespaces := []string{}
-	ingresses, err := p.client.ExtensionsV1beta1().Ingresses("").List(metav1.ListOptions{}) //Returns *v1beta1.IngressList, and catches error find out what package its from and import; https://godoc.org/k8s.io/client-go/kubernetes/typed/extensions/v1beta1#ExtensionsV1beta1Interface
+	ingresses, err := p.client.ExtensionsV1beta1().Ingresses("").List(metav1.ListOptions{})
 	if err != nil {
 		return ingressNamespaces, err
 	}
@@ -76,7 +71,6 @@ func (p PolicyRequireUniqueHost) CheckIngresses(ctx context.Context, host string
 	return ingressNamespaces, nil
 }
 
-//Helper function to find if string in a slice
 func Find(slice []string, val string) bool {
 	for _, item := range slice {
 		if item == val {
@@ -86,7 +80,6 @@ func Find(slice []string, val string) bool {
 	return false
 }
 
-//Method that implements Policy interface's Validate() method; given context, config policies, and admission request, return ResourceViolation slice and PatchOperation slice
 func (p PolicyRequireUniqueHost) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
@@ -98,10 +91,8 @@ func (p PolicyRequireUniqueHost) Validate(ctx context.Context, config policies.C
 
 	violationText := "Requires Unique Ingress Host: Ingress Host should not point to multiple namespaces"
 
-	//--------------------------------INGRESSEXT----------------------------------
-	//TODO: CONVERT TO FUNCTION
 	for _, rule := range ingressResource.IngressExt.Spec.Rules {
-		namespaces, err := p.CheckIngresses(ctx, rule.Host)
+		namespaces, err := p.CheckIngressNamespaces(ctx, rule.Host)
 		if err != nil {
 			log.Error(err)
 			return nil, nil
@@ -120,9 +111,8 @@ func (p PolicyRequireUniqueHost) Validate(ctx context.Context, config policies.C
 		}
 	}
 
-	//--------------------------------INGRESSNET----------------------------------
 	for _, rule := range ingressResource.IngressNet.Spec.Rules {
-		namespaces, err := p.CheckIngresses(ctx, rule.Host)
+		namespaces, err := p.CheckIngressNamespaces(ctx, rule.Host)
 		if err != nil {
 			log.Error(err)
 			return nil, nil
