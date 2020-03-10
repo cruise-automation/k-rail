@@ -57,7 +57,6 @@ func (s *Server) registerPolicies() {
 	if err == nil {
 		s.registerPolicy(requireUniqueHostPolicy)
 	}
-	}
 }
 
 func (s *Server) registerPolicy(v Policy) {
