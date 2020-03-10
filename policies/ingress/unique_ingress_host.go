@@ -25,7 +25,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-func NewPolicyRequireUniqueHost() PolicyRequireUniqueHost {
+func NewPolicyRequireUniqueHost() (PolicyRequireUniqueHost, error) {
 	p := PolicyRequireUniqueHost{}
 
 	var kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file: `<home>/.kube/config`")
@@ -34,15 +34,15 @@ func NewPolicyRequireUniqueHost() PolicyRequireUniqueHost {
 
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
-		log.Error(err)
+		return p, err
 	}
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		log.Error(err)
+		return p, err
 	}
 	p.client = clientset
-	return p
+	return p, err
 }
 
 type PolicyRequireUniqueHost struct {

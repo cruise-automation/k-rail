@@ -53,7 +53,11 @@ func (s *Server) registerPolicies() {
 	s.registerPolicy(pod.PolicyNoShareProcessNamespace{})
 	s.registerPolicy(pod.PolicyImagePullPolicy{})
 	s.registerPolicy(ingress.PolicyRequireIngressExemption{})
-	s.registerPolicy(ingress.NewPolicyRequireUniqueHost())
+	requireUniqueHostPolicy, err := ingress.NewPolicyRequireUniqueHost()
+	if err == nil {
+		s.registerPolicy(requireUniqueHostPolicy)
+	}
+	}
 }
 
 func (s *Server) registerPolicy(v Policy) {
