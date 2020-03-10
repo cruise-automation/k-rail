@@ -34,12 +34,12 @@ func NewPolicyRequireUniqueHost() PolicyRequireUniqueHost {
 
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 	p.client = clientset
 	return p
