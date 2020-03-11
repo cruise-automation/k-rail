@@ -85,6 +85,7 @@ spec:
         checksum/exemptions: {{ print .Values.exemptions | sha256sum }}
         checksum/tls: {{ print $ca.Cert | sha256sum }}
     spec:
+      serviceAccountName: k-rail
       containers:
         - name: k-rail
           command: ["/k-rail", "-config=/config/config.yml", "-exemptions-path-glob=/exemptions/*.yml"]
@@ -181,3 +182,39 @@ metadata:
 data:
   config.yml: |
     {{- toYaml .Values.exemptions | nindent 4 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  name: k-rail
+rules:
+- apiGroups:
+  - "*"
+  resources:
+  - ingresses
+  verbs:
+  - list
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  name: k-rail
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: k-rail
+subjects:
+- kind: ServiceAccount
+  name: k-rail
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: k-rail
+  namespace: {{ .Release.Namespace }} 

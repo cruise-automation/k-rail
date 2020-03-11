@@ -53,6 +53,12 @@ func (s *Server) registerPolicies() {
 	s.registerPolicy(pod.PolicyNoShareProcessNamespace{})
 	s.registerPolicy(pod.PolicyImagePullPolicy{})
 	s.registerPolicy(ingress.PolicyRequireIngressExemption{})
+	requireUniqueHostPolicy, err := ingress.NewPolicyRequireUniqueHost()
+	if err != nil {
+		log.WithError(err).Error("could not load RequireUniqueHostPolicy")
+	} else {
+		s.registerPolicy(requireUniqueHostPolicy)
+	}
 }
 
 func (s *Server) registerPolicy(v Policy) {
