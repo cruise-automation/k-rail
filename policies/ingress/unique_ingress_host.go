@@ -20,6 +20,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -27,7 +28,7 @@ import (
 func NewPolicyRequireUniqueHost() (PolicyRequireUniqueHost, error) {
 	p := PolicyRequireUniqueHost{}
 
-	config, err := clientcmd.BuildConfigFromFlags("", "")
+	config, err := rest.InClusterConfig()
 	if err != nil {
 		return p, err
 	}
