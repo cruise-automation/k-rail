@@ -28,7 +28,7 @@ import (
 func NewPolicyRequireUniqueHost() (PolicyRequireUniqueHost, error) {
 	p := PolicyRequireUniqueHost{}
 
-	var kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file: `<home>/.kube/config`")
+	var kubeconfig = flag.String("kubeConfig", "", "absolute path to the kubeconfig file: `<home>/.kube/config`")
 	flag.Parse()
 	flag.Set("logtostderr", "true")
 
