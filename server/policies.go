@@ -54,7 +54,9 @@ func (s *Server) registerPolicies() {
 	s.registerPolicy(pod.PolicyImagePullPolicy{})
 	s.registerPolicy(ingress.PolicyRequireIngressExemption{})
 	requireUniqueHostPolicy, err := ingress.NewPolicyRequireUniqueHost()
-	if err == nil {
+	if err != nil {
+		log.WithError(err).Error("could not load RequireUniqueHostPolicy")
+	} else {
 		s.registerPolicy(requireUniqueHostPolicy)
 	}
 }
