@@ -14,7 +14,6 @@ package ingress
 
 import (
 	"context"
-	"flag"
 
 	"github.com/cruise-automation/k-rail/policies"
 	"github.com/cruise-automation/k-rail/resource"
@@ -28,11 +27,7 @@ import (
 func NewPolicyRequireUniqueHost() (PolicyRequireUniqueHost, error) {
 	p := PolicyRequireUniqueHost{}
 
-	// var kubeconfig = flag.String("kubeConfig", "", "absolute path to the kubeconfig file: `<home>/.kube/config`")
-	// flag.Parse()
-	// flag.Set("logtostderr", "true")
-	kubeconfigFlag := flag.Lookup("kubeconfig").Value.(flag.Getter).Get().(string)
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigFlag)
+	config, err := clientcmd.BuildConfigFromFlags("", "")
 	if err != nil {
 		return p, err
 	}
