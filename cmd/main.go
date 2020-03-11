@@ -14,12 +14,18 @@ package main
 
 import (
 	"context"
+	"flag"
 
 	"github.com/cruise-automation/k-rail/server"
 )
 
+var kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file: `<home>/.kube/config`")
+
 func main() {
+	flag.Parse()
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	defer cancelFunc()
 	server.Run(ctx)
 }
+
+//TODO: add kubeconfig flags (from unique_ingress_host)
