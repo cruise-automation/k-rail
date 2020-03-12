@@ -36,6 +36,7 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
   * [Mutate Image Pull Policy](#mutate-image-pull-policy)
   * [Require Ingress Exemption](#require-ingress-exemption)
     + [Policy configuration](#policy-configuration-3)
+  * [Unique Ingress Host](#unique-ingress-host)
 - [Configuration](#configuration)
   * [Logging](#logging)
   * [Modes of operation](#modes-of-operation)
@@ -91,6 +92,7 @@ By default, the Kubernetes APIs allow for a variety of easy privilege escalation
   Error from server (InternalError): error when creating "deploy/non-compliant-ingress.yaml":
   Internal error occurred: admission webhook "k-rail.cruise-automation.github.com" denied the request:
   Ingress bad-ingress had violation: Require Ingress Exemption: Using the 'public' Ingress class requires an exemption
+  Ingress bad-ingress had violation: Requires Unique Ingress Host: Ingress Host should not point to multiple namespaces
   ```
 
 By leveraging the first three features you can quickly and easily roll out enforcement to deployments without breaking them and monitor violations with confidence. The interactive feedback informs and educates engineers during future policy violations.
@@ -380,6 +382,10 @@ policy_config:
   policy_require_ingress_exemption_classes:
     - nginx-public
 ```
+
+## Unique Ingress Host
+
+Unique Ingress Host policy requires the configured ingress hosts to be unique across cluster namespaces. This is helps to prevent ingress host collisions.
 
 
 # Configuration
