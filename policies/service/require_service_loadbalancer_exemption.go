@@ -22,7 +22,6 @@ import (
 )
 
 const LOADBALANCER_TYPE = "cloud.google.com/load-balancer-type"
-const LOADBALANCER_TYPE_INTERNAL = "Internal"
 
 type PolicyRequireServiceLoadbalancerExemption struct{}
 
@@ -42,8 +41,10 @@ func (p PolicyRequireServiceLoadbalancerExemption) Validate(ctx context.Context,
 	violationText := "Require Service LoadBalancer Exemption: Only specific LoadBalancer Types are allowed"
 
 	if value, exists := serviceResource.Service.ObjectMeta.GetAnnotations()[LOADBALANCER_TYPE]; exists {
-		if value == LOADBALANCER_TYPE_INTERNAL {
-			return []policies.ResourceViolation{}, nil
+		for _, annotationType := range config.PolicyRequireServiceLoadBalancerType {
+			if value == annotationType {
+				return []policies.ResourceViolation{}, nil
+			}
 		}
 	}
 
