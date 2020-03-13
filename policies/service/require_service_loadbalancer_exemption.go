@@ -8,7 +8,7 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.package ingress
+// limitations under the License
 
 package service
 
@@ -21,6 +21,9 @@ import (
 	"github.com/cruise-automation/k-rail/resource"
 )
 
+const LOADBALANCER_TYPE = "cloud.google.com/load-balancer-type"
+const LOADBALANCER_TYPE_INTERNAL = "Internal"
+
 type PolicyRequireServiceLoadbalancerExemption struct{}
 
 func (p PolicyRequireServiceLoadbalancerExemption) Name() string {
@@ -31,40 +34,26 @@ func (p PolicyRequireServiceLoadbalancerExemption) Validate(ctx context.Context,
 
 	resourceViolations := []policies.ResourceViolation{}
 
-	ingressResource := resource.GetIngressResource(ctx, ar)
-	if ingressResource == nil {
+	serviceResource := resource.GetServiceResource(ctx, ar)
+	if serviceResource == nil {
 		return resourceViolations, nil
 	}
 
-	violationText := "Require Ingress Exemption: Using certain Ingress classes requires an exemption"
+	violationText := "Require Service LoadBalancer Exemption: Only specific LoadBalancer Types are allowed"
 
-	for _, ingressClass := range config.PolicyRequireIngressExemptionClasses {
-		for annotation, value := range ingressResource.IngressExt.ObjectMeta.GetAnnotations() {
-			if annotation == "kubernetes.io/ingress.class" {
-				if value == ingressClass {
-					resourceViolations = append(resourceViolations, policies.ResourceViolation{
-						Namespace:    ar.Namespace,
-						ResourceName: ingressResource.ResourceName,
-						ResourceKind: ingressResource.ResourceKind,
-						Violation:    violationText,
-						Policy:       p.Name(),
-					})
-				}
-			}
-		}
-		for annotation, value := range ingressResource.IngressNet.ObjectMeta.GetAnnotations() {
-			if annotation == "kubernetes.io/ingress.class" {
-				if value == ingressClass {
-					resourceViolations = append(resourceViolations, policies.ResourceViolation{
-						Namespace:    ar.Namespace,
-						ResourceName: ingressResource.ResourceName,
-						ResourceKind: ingressResource.ResourceKind,
-						Violation:    violationText,
-						Policy:       p.Name(),
-					})
-				}
-			}
+	if value, exists := serviceResource.Service.ObjectMeta.GetAnnotations()[LOADBALANCER_TYPE]; exists {
+		if value == LOADBALANCER_TYPE_INTERNAL {
+			return []policies.ResourceViolation{}, nil
 		}
 	}
-	return resourceViolations, nil
+
+	return []policies.ResourceViolation{
+		policies.ResourceViolation{
+			Namespace:    ar.Namespace,
+			ResourceName: serviceResource.ResourceName,
+			ResourceKind: serviceResource.ResourceKind,
+			Violation:    violationText,
+			Policy:       p.Name(),
+		},
+	}, nil
 }
