@@ -19,17 +19,17 @@ import (
 
 	"github.com/gobwas/glob"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
 	authenticationv1 "k8s.io/api/authentication/v1"
+	"sigs.k8s.io/yaml"
 )
 
 // RawExemption is the configuration for a policy exemption
 type RawExemption struct {
-	ResourceName   string   `yaml:"resource_name"`
-	Namespace      string   `yaml:"namespace"`
-	Username       string   `yaml:"username"`
-	Group          string   `yaml:"group"`
-	ExemptPolicies []string `yaml:"exempt_policies"`
+	ResourceName   string   `json:"resource_name"`
+	Namespace      string   `json:"namespace"`
+	Username       string   `json:"username"`
+	Group          string   `json:"group"`
+	ExemptPolicies []string `json:"exempt_policies"`
 }
 
 // CompiledExemption is the compiled configuration for a policy exemption

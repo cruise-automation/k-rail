@@ -22,6 +22,7 @@ import (
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	authenticationv1 "k8s.io/api/authentication/v1"
 	corev1 "k8s.io/api/core/v1"
+	apiresource "k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -54,6 +55,12 @@ func test_setup() (Server, []test) {
 					Name:       "pod_no_host_network",
 					Enabled:    true,
 					ReportOnly: false,
+				},
+			},
+			PolicyConfig: policies.Config{
+				MutateEmptyDirSizeLimit: policies.MutateEmptyDirSizeLimit{
+					MaximumSizeLimit: apiresource.MustParse("2Gi"),
+					DefaultSizeLimit: apiresource.MustParse("1Gi"),
 				},
 			},
 		},

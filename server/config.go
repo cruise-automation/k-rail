@@ -19,17 +19,17 @@ import (
 type PolicySettings struct {
 	Name       string
 	Enabled    bool
-	ReportOnly bool `yaml:"report_only"`
+	ReportOnly bool `json:"report_only"`
 }
 
 type Config struct {
-	LogLevel              string   `yaml:"log_level"`
-	BlacklistedNamespaces []string `yaml:"blacklisted_namespaces"`
+	LogLevel              string   `json:"log_level"`
+	BlacklistedNamespaces []string `json:"blacklisted_namespaces"`
 	TLS                   struct {
 		Cert string
 		Key  string
 	}
-	GlobalReportOnly bool `yaml:"global_report_only"`
+	GlobalReportOnly bool `json:"global_report_only"`
 	Policies         []PolicySettings
-	PolicyConfig     policies.Config `yaml:"policy_config"`
+	PolicyConfig     policies.Config `json:"policy_config"`
 }

@@ -33,7 +33,7 @@ func (p PolicyTrustedRepository) Validate(ctx context.Context, config policies.C
 
 	resourceViolations := []policies.ResourceViolation{}
 
-	podResource := resource.GetPodResource(ar)
+	podResource := resource.GetPodResource(ctx, ar)
 	if podResource == nil {
 		return resourceViolations, nil
 	}

@@ -3,10 +3,11 @@ replicaCount: 3
 
 # Set this to 'Fail if you wish that resources apply fail if k-rail is unreachable.
 failurePolicy: Fail
+#reinvocationPolicy: IfNeeded
 
 image:
   repository: cruise/k-rail
-  tag: release-v1.1.1
+  tag: release-v1.4.0
   pullPolicy: IfNotPresent
 
 resources:
@@ -36,6 +37,12 @@ config:
       - '^k8s.gcr.io/.*'               # official k8s GCR repo
       - '^[A-Za-z0-9\-:@]+$'           # official docker hub images
     policy_default_seccomp_policy: "runtime/default"
+    mutate_empty_dir_size_limit:
+      maximum_size_limit: "1Gi"
+      default_size_limit: "512Mi"
+    mutate_image_pull_policy:
+      IfNotPresent: []
+      Always: []
   policies:
     - name: "pod_no_exec"
       enabled: True
@@ -73,13 +80,22 @@ config:
     - name: "pod_mutate_safe_to_evict"
       enabled: True
       report_only: False
+    - name: "pod_empty_dir_size_limit"
+      enabled: True
+      report_only: False
     - name: "pod_default_seccomp_policy"
       enabled: True
       report_only: False
     - name: "pod_no_shareprocessnamespace"
       enabled: True
       report_only: False
+    - name: "pod_image_pull_policy"
+      enabled: True
+      report_only: False
     - name: "ingress_require_ingress_exemption"
+      enabled: True
+      report_only: False
+    - name: "ingress_unique_ingress_host"
       enabled: True
       report_only: False
 

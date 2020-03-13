@@ -19,8 +19,10 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
   * [No Exec](#no-exec)
   * [No Bind Mounts](#no-bind-mounts)
   * [No Docker Sock Mount](#no-docker-sock-mount)
-  * [Mutate Default Seccomp Profile](#mutate-default-seccomp-profile)
+  * [EmptyDir size limit](#emptyDir-size-limit)
     + [Policy configuration](#policy-configuration)
+  * [Mutate Default Seccomp Profile](#mutate-default-seccomp-profile)
+    + [Policy configuration](#policy-configuration-1)
   * [Immutable Image Reference](#immutable-image-reference)
   * [No Host Network](#no-host-network)
   * [No Host PID](#no-host-pid)
@@ -28,11 +30,13 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
   * [No Privileged Container](#no-privileged-container)
   * [No Helm Tiller](#no-helm-tiller)
   * [Trusted Image Repository](#trusted-image-repository)
-    + [Policy configuration](#policy-configuration-1)
+    + [Policy configuration](#policy-configuration-2)
   * [Safe to Evict (DEPRECATED)](#safe-to-evict--deprecated)
   * [Mutate Safe to Evict](#mutate-safe-to-evict)
+  * [Mutate Image Pull Policy](#mutate-image-pull-policy)
   * [Require Ingress Exemption](#require-ingress-exemption)
-    + [Policy configuration](#policy-configuration-2)
+    + [Policy configuration](#policy-configuration-3)
+  * [Unique Ingress Host](#unique-ingress-host)
 - [Configuration](#configuration)
   * [Logging](#logging)
   * [Modes of operation](#modes-of-operation)
@@ -88,6 +92,7 @@ By default, the Kubernetes APIs allow for a variety of easy privilege escalation
   Error from server (InternalError): error when creating "deploy/non-compliant-ingress.yaml":
   Internal error occurred: admission webhook "k-rail.cruise-automation.github.com" denied the request:
   Ingress bad-ingress had violation: Require Ingress Exemption: Using the 'public' Ingress class requires an exemption
+  Ingress bad-ingress had violation: Requires Unique Ingress Host: Ingress Host should not point to multiple namespaces
   ```
 
 By leveraging the first three features you can quickly and easily roll out enforcement to deployments without breaking them and monitor violations with confidence. The interactive feedback informs and educates engineers during future policy violations.
@@ -209,8 +214,7 @@ Since the violations are outputted as structured data, you are encouraged to agg
 ## No ShareProcessNamespace
 
 `shareProcessNamespace: true` is a Pod Spec directive that puts all containers in a Pod within
-the same PID Namespace. When this occurs, containers can, for example, [access each others' filesystem and memory]
-(https://kubernetes.io/docs/tasks/configure-pod-container/share-process-namespace/#understanding-process-namespace-sharing),
+the same PID Namespace. When this occurs, containers can, for example, [access each others' filesystem and memory](https://kubernetes.io/docs/tasks/configure-pod-container/share-process-namespace/#understanding-process-namespace-sharing),
 as long as they share user and group IDs. These effects could be unexpected, especially if security (e.g. egress controls)
 occurs in a sidecar container.
 
@@ -229,6 +233,21 @@ Host bind mounts (also called `hostPath` mounts) can be used to exfiltrate data 
 The Docker socket bind mount provides API access to the host Docker daemon, which can be used for privilege escalation or otherwise control the container host. Using Docker sock mounts can cause unreliability of the node because of the extra workloads that the Kubernetes schedulers are not aware of.
 
 **Note:** It is recommended to use the `No Bind Mounts` policy to disable all `hostPath` mounts rather than only this policy.
+
+## EmptyDir size limit
+By [default](https://kubernetes.io/docs/concepts/storage/volumes/#example-pod), an `emptyDir` lacks a `sizeLimit` parameter, and is disk-based;
+a Pod with access to said `emptyDir` can consume the Node's entire disk (i.e. the limit is unbounded) until the offending Pod is deleted or evicted, which can constitute a denial-of-service condition at the affected Node (i.e. DiskPressure).
+This policy
+* sets the configured default size when none is set for an `emptyDir` volume
+* reports a violation when the size is greater then the configured max size
+
+### Policy configuration
+```yaml
+policy_config:
+    mutate_empty_dir_size_limit:
+      maximum_size_limit: "1Gi"
+      default_size_limit: "512Mi"
+```
 
 ## Mutate Default Seccomp Profile
 
@@ -325,6 +344,29 @@ You can also set the annoation on existing Pods with this one-liner:
 ```bash
 $ kubectl get po --all-namespaces -o json | jq -r '.items[] | select(.spec.volumes[].hostPath or .spec.volumes[].emptyDir) | [ .metadata.namespace, .metadata.name ] | @tsv' | while IFS=$'\t' read -r namespace pod; do echo "\n NAMESPACE: $namespace \n POD: $pod \n"; kubectl annotate pod -n $namespace $pod "cluster-autoscaler.kubernetes.io/safe-to-evict=true"; done
 ```
+## Mutate Image Pull Policy
+
+There are cerntain images which require the enforcement of the ImagePullPolicy according to different user scenarios
+- IfNotPresent
+It can reduce the unnecessary traffic (Auth and Download requests) to Image repository and reuse the image which is cached on the node 
+- Always
+It can be useful when it requires the absolute isolation in multi-tenant cluster, which prevents others to reuse the image cached on the node, for example: The image protected with ImagePullSecret from private repository is cached on the node after first successful pull, other user can directly pull from node without proper auth.
+However if we force the imagePullPolicy to Always, it would fail without proper ImagePullSecret
+
+### Policy configuration
+
+The Mutate Image Pull Policy can be configured in the k-rail configuration file.
+
+Example
+```yaml
+policy_config:
+  mutate_image_pull_policy:
+    IfNotPresent: 
+      - '^gcr.io/repo/image1.*'
+      - '^gcr.io/repo/image2.*'
+    Always:
+      - '^gcr.io/private-repo/secretimage.*'
+```
 
 ## Require Ingress Exemption
 
@@ -341,10 +383,32 @@ policy_config:
     - nginx-public
 ```
 
+## Unique Ingress Host
+
+Unique Ingress Host policy requires the configured ingress hosts to be unique across cluster namespaces. This is helps to prevent ingress host collisions.
+
 
 # Configuration
 
 For the Helm deployment, all configuration is contained in [`deploy/helm/values.yaml`](deploy/helm/values.yaml).
+
+## Webhook Configuration
+
+By default, k-rail will "fail close" if it cannot be reached by the API server. k-rail can be changed to
+"fail open" by changing the `failurePolicy` directive from `Fail` to `Ignore`, in [`deploy/helm/values.yaml`](deploy/helm/values.yaml).
+See the Kubernetes [docs](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#failure-policy) for
+more details.
+
+In Kubernetes 1.15 and beyond, mutating admission webhooks (e.g. k-rail) can elect to be polled again, if a subsequent admission plugin
+(such as another webhook) modifies an object the webhook has interacted with. 
+They do so with a 
+[`reinvocationPolicy`](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#reinvocation-policy) 
+value of `IfNeeded`; the Kubernetes default value is `Never`, which does not reinvoke
+the mutating admission webhook(s). 
+Since this is a [newer](https://kubernetes.io/blog/2019/06/19/kubernetes-1-15-release-announcement/) type field, k-rail omits by default,
+but operators can set a chosen value by commenting out `reinvocationPolicy` in [`deploy/helm/values.yaml`](deploy/helm/values.yaml).
+See the [associated KEP](https://github.com/kubernetes/enhancements/blob/master/keps/sig-api-machinery/00xx-admission-webhooks-to-ga.md#mutating-plugin-ordering) for more details on `reinvocationPolicy` and admission plugin ordering.
+
 
 ## Logging
 

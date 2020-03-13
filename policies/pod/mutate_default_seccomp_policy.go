@@ -28,7 +28,7 @@ func (p PolicyDefaultSeccompPolicy) Name() string {
 
 func (p PolicyDefaultSeccompPolicy) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
-	podResource := resource.GetPodResource(ar)
+	podResource := resource.GetPodResource(ctx, ar)
 	if podResource == nil {
 		return nil, nil
 	}

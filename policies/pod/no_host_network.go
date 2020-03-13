@@ -31,7 +31,7 @@ func (p PolicyNoHostNetwork) Validate(ctx context.Context, config policies.Confi
 
 	resourceViolations := []policies.ResourceViolation{}
 
-	podResource := resource.GetPodResource(ar)
+	podResource := resource.GetPodResource(ctx, ar)
 	if podResource == nil {
 		return resourceViolations, nil
 	}
