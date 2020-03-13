@@ -25,6 +25,9 @@ type Config struct {
 	// PolicyRequireIngressExemptionClasses contains the Ingress classes that an exemption is required for
 	// to use. Typically this would include your public ingress classes.
 	PolicyRequireIngressExemptionClasses []string `json:"policy_require_ingress_exemption_classes"`
+	// PolicyRequireServiceLoadBalancerType contains the Service LB types that an exemption is required for
+	// to use. Typically this would include your public load balancers.
+	PolicyRequireServiceLoadBalancerType []string `json:"policy_require_service_loadbalancer_type"`
 	// PolicyTrustedRepositoryRegexes contains regexes that match image repositories that you want to allow.
 	PolicyTrustedRepositoryRegexes []string `json:"policy_trusted_repository_regexes"`
 	// PolicyDefaultSeccompPolicy contains the seccomp policy that you want to be applied on Pods by default.
