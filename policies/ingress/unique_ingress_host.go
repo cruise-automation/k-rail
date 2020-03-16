@@ -14,14 +14,15 @@ package ingress
 
 import (
 	"context"
+	"strings"
 
 	"github.com/cruise-automation/k-rail/policies"
 	"github.com/cruise-automation/k-rail/resource"
 	log "github.com/sirupsen/logrus"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 func NewPolicyRequireUniqueHost() (PolicyRequireUniqueHost, error) {
@@ -84,7 +85,7 @@ func (p PolicyRequireUniqueHost) Validate(ctx context.Context, config policies.C
 		return resourceViolations, nil
 	}
 
-	violationText := "Requires Unique Ingress Host: Ingress Host should not point to multiple namespaces"
+	violationText := "Requires Unique Ingress Host: Ingress Host should not point to multiple namespaces."
 
 	for _, rule := range ingressResource.IngressExt.Spec.Rules {
 		namespaces, err := p.CheckIngressNamespaces(ctx, rule.Host)
@@ -96,11 +97,12 @@ func (p PolicyRequireUniqueHost) Validate(ctx context.Context, config policies.C
 		if (len(namespaces) == 0) || (len(namespaces) == 1 && foundNamespace) {
 			return resourceViolations, nil
 		} else {
+			namespacesStr := strings.Join(namespaces, "'")
 			resourceViolations = append(resourceViolations, policies.ResourceViolation{
 				Namespace:    ar.Namespace,
 				ResourceName: ingressResource.ResourceName,
 				ResourceKind: ingressResource.ResourceKind,
-				Violation:    violationText,
+				Violation:    violationText + ": " + namespacesStr,
 				Policy:       p.Name(),
 			})
 		}
@@ -116,11 +118,12 @@ func (p PolicyRequireUniqueHost) Validate(ctx context.Context, config policies.C
 		if (len(namespaces) == 0) || (len(namespaces) == 1 && foundNamespace) {
 			return resourceViolations, nil
 		} else {
+			namespacesStr := strings.Join(namespaces, "'")
 			resourceViolations = append(resourceViolations, policies.ResourceViolation{
 				Namespace:    ar.Namespace,
 				ResourceName: ingressResource.ResourceName,
 				ResourceKind: ingressResource.ResourceKind,
-				Violation:    violationText,
+				Violation:    violationText + ": " + namespacesStr,
 				Policy:       p.Name(),
 			})
 		}
