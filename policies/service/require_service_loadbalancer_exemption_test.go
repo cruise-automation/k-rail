@@ -43,6 +43,9 @@ func TestPolicyRequireServiceLoadbalancerExemption_Validate(t *testing.T) {
 						"cloud.google.com/load-balancer-type": "internal",
 					},
 				},
+				Spec: corev1.ServiceSpec{
+					Type: corev1.ServiceTypeLoadBalancer,
+				},
 			},
 			config: &policies.Config{
 				PolicyRequireServiceLoadBalancerAnnotations: []*policies.AnnotationConfig{
@@ -63,6 +66,9 @@ func TestPolicyRequireServiceLoadbalancerExemption_Validate(t *testing.T) {
 						"cloud.google.com/load-balancer-type": "whatever123",
 					},
 				},
+				Spec: corev1.ServiceSpec{
+					Type: corev1.ServiceTypeLoadBalancer,
+				},
 			},
 			config: &policies.Config{
 				PolicyRequireServiceLoadBalancerAnnotations: []*policies.AnnotationConfig{
@@ -81,6 +87,9 @@ func TestPolicyRequireServiceLoadbalancerExemption_Validate(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{},
 				},
+				Spec: corev1.ServiceSpec{
+					Type: corev1.ServiceTypeLoadBalancer,
+				},
 			},
 			config: &policies.Config{
 				PolicyRequireServiceLoadBalancerAnnotations: []*policies.AnnotationConfig{
@@ -98,6 +107,9 @@ func TestPolicyRequireServiceLoadbalancerExemption_Validate(t *testing.T) {
 			service: &corev1.Service{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{},
+				},
+				Spec: corev1.ServiceSpec{
+					Type: corev1.ServiceTypeLoadBalancer,
 				},
 			},
 			config: &policies.Config{
@@ -118,6 +130,9 @@ func TestPolicyRequireServiceLoadbalancerExemption_Validate(t *testing.T) {
 					Annotations: map[string]string{
 						"cloud.google.com/load-balancer-type": "internal",
 					},
+				},
+				Spec: corev1.ServiceSpec{
+					Type: corev1.ServiceTypeLoadBalancer,
 				},
 			},
 			config: &policies.Config{
@@ -141,6 +156,9 @@ func TestPolicyRequireServiceLoadbalancerExemption_Validate(t *testing.T) {
 						"anotherannotation":                   "yup",
 					},
 				},
+				Spec: corev1.ServiceSpec{
+					Type: corev1.ServiceTypeLoadBalancer,
+				},
 			},
 			config: &policies.Config{
 				PolicyRequireServiceLoadBalancerAnnotations: []*policies.AnnotationConfig{
@@ -152,6 +170,28 @@ func TestPolicyRequireServiceLoadbalancerExemption_Validate(t *testing.T) {
 					&policies.AnnotationConfig{
 						Annotation:    "myannotation",
 						AllowedValues: []string{"yes", "internal"},
+						AllowMissing:  false,
+					},
+				},
+			},
+		},
+
+		{
+			name:       "no annotation present, but not type LB, no violation",
+			violations: 0,
+			service: &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{},
+				},
+				Spec: corev1.ServiceSpec{
+					Type: corev1.ServiceTypeClusterIP,
+				},
+			},
+			config: &policies.Config{
+				PolicyRequireServiceLoadBalancerAnnotations: []*policies.AnnotationConfig{
+					&policies.AnnotationConfig{
+						Annotation:    "cloud.google.com/load-balancer-type",
+						AllowedValues: []string{"internal"},
 						AllowMissing:  false,
 					},
 				},

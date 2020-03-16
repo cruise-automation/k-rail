@@ -17,6 +17,7 @@ import (
 	"fmt"
 
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/cruise-automation/k-rail/policies"
 	"github.com/cruise-automation/k-rail/resource"
@@ -37,7 +38,10 @@ func (p PolicyRequireServiceLoadbalancerExemption) Validate(ctx context.Context,
 		return resourceViolations, nil
 	}
 
-	if serviceResource.Service.Ty
+	// Only Servcices of type LoadBalancers are policed.
+	if serviceResource.Service.Spec.Type != corev1.ServiceTypeLoadBalancer {
+		return resourceViolations, nil
+	}
 
 	// Each annotation entry in the config is tested sequentially
 	for _, annotationConfig := range config.PolicyRequireServiceLoadBalancerAnnotations {
