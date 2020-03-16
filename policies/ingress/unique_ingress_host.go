@@ -14,7 +14,6 @@ package ingress
 
 import (
 	"context"
-	"strings"
 
 	"github.com/cruise-automation/k-rail/policies"
 	"github.com/cruise-automation/k-rail/resource"
@@ -49,22 +48,22 @@ func (p PolicyRequireUniqueHost) Name() string {
 	return "ingress_unique_ingress_host"
 }
 
-func (p PolicyRequireUniqueHost) CheckIngressNamespaces(ctx context.Context, host string) ([]string, error) {
-	ingressNamespaces := []string{}
+func (p PolicyRequireUniqueHost) CheckIngressNamespaces(ctx context.Context, host string) (map[string]struct{}, error) {
+	ingressNamespacesMap := make(map[string]struct{})
 	ingresses, err := p.client.ExtensionsV1beta1().Ingresses("").List(metav1.ListOptions{})
 	if err != nil {
-		return ingressNamespaces, err
+		return ingressNamespacesMap, err
 	}
 	for _, ingress := range ingresses.Items {
 		rules := ingress.Spec.Rules
 		for _, rule := range rules {
 			if rule.Host == host {
 				ingressNamespace := ingress.ObjectMeta.Namespace
-				ingressNamespaces = append(ingressNamespaces, ingressNamespace)
+				ingressNamespacesMap[ingressNamespace] = struct{}{}
 			}
 		}
 	}
-	return ingressNamespaces, nil
+	return ingressNamespacesMap, nil
 }
 
 func Find(slice []string, val string) bool {
@@ -85,19 +84,26 @@ func (p PolicyRequireUniqueHost) Validate(ctx context.Context, config policies.C
 		return resourceViolations, nil
 	}
 
-	violationText := "Requires Unique Ingress Host: Ingress Host should not point to multiple namespaces"
+	violationText := "Requires Unique Ingress Host: Ingress Host should not point to multiple namespaces. Host already in:"
 
 	for _, rule := range ingressResource.IngressExt.Spec.Rules {
-		namespaces, err := p.CheckIngressNamespaces(ctx, rule.Host)
+		ingressNamespacesMap, err := p.CheckIngressNamespaces(ctx, rule.Host)
 		if err != nil {
 			log.Error(err)
 			return nil, nil
 		}
-		foundNamespace := Find(namespaces, ar.Namespace)
-		if (len(namespaces) == 0) || (len(namespaces) == 1 && foundNamespace) {
+		foundNamespace := false
+		_, ok := ingressNamespacesMap[ar.Namespace]
+		if ok {
+			foundNamespace = true
+		}
+		if (len(ingressNamespacesMap) == 0) || (len(ingressNamespacesMap) == 1 && foundNamespace) {
 			return resourceViolations, nil
 		} else {
-			namespacesStr := strings.Join(namespaces, ", ")
+			namespacesStr := ""
+			for k := range ingressNamespacesMap {
+				namespacesStr = namespacesStr + " " + k
+			}
 			resourceViolations = append(resourceViolations, policies.ResourceViolation{
 				Namespace:    ar.Namespace,
 				ResourceName: ingressResource.ResourceName,
@@ -109,16 +115,23 @@ func (p PolicyRequireUniqueHost) Validate(ctx context.Context, config policies.C
 	}
 
 	for _, rule := range ingressResource.IngressNet.Spec.Rules {
-		namespaces, err := p.CheckIngressNamespaces(ctx, rule.Host)
+		ingressNamespacesMap, err := p.CheckIngressNamespaces(ctx, rule.Host)
 		if err != nil {
 			log.Error(err)
 			return nil, nil
 		}
-		foundNamespace := Find(namespaces, ar.Namespace)
-		if (len(namespaces) == 0) || (len(namespaces) == 1 && foundNamespace) {
+		foundNamespace := false
+		_, ok := ingressNamespacesMap[ar.Namespace]
+		if ok {
+			foundNamespace = true
+		}
+		if (len(ingressNamespacesMap) == 0) || (len(ingressNamespacesMap) == 1 && foundNamespace) {
 			return resourceViolations, nil
 		} else {
-			namespacesStr := strings.Join(namespaces, ", ")
+			namespacesStr := ""
+			for k := range ingressNamespacesMap {
+				namespacesStr = namespacesStr + " " + k
+			}
 			resourceViolations = append(resourceViolations, policies.ResourceViolation{
 				Namespace:    ar.Namespace,
 				ResourceName: ingressResource.ResourceName,
