@@ -14,6 +14,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 
@@ -38,32 +39,33 @@ func (p PolicyRequireServiceLoadbalancerExemption) Validate(ctx context.Context,
 		return resourceViolations, nil
 	}
 
-	violationTextMissing := "Require Service LoadBalancer Exemption: Only specific LoadBalancer Types are allowed"
-
-
 	for _, annotationConfig := range config.PolicyRequireServiceLoadBalancerAnnotations {
 		value, exists := serviceResource.Service.ObjectMeta.GetAnnotations()[annotationConfig.Annotation]
 		if exists {
+			valueAllowed := false
 			for _, allowedValue := range annotationConfig.AllowedValues {
-				if value := allowedValue {
+				if value == allowedValue {
+					valueAllowed = true
 					break
 				}
 			}
 
-			resourceViolations = append(resourceViolations, policies.ResourceViolation{
-				Namespace:    ar.Namespace,
-				ResourceName: ingressResource.ResourceName,
-				ResourceKind: ingressResource.ResourceKind,
-				Violation:    fmt.Sprintf("Require Service LoadBalancer annotations: Annotation %s value %s is not allowed",annotationConfig.Annotation,value),
-				Policy:       p.Name(),
-			})
+			if !valueAllowed {
+				resourceViolations = append(resourceViolations, policies.ResourceViolation{
+					Namespace:    ar.Namespace,
+					ResourceName: serviceResource.ResourceName,
+					ResourceKind: serviceResource.ResourceKind,
+					Violation:    fmt.Sprintf("Require Service LoadBalancer annotations: Annotation %s value %s is not allowed", annotationConfig.Annotation, value),
+					Policy:       p.Name(),
+				})
+			}
 
 		} else if !annotationConfig.AllowMissing {
 			resourceViolations = append(resourceViolations, policies.ResourceViolation{
 				Namespace:    ar.Namespace,
-				ResourceName: ingressResource.ResourceName,
-				ResourceKind: ingressResource.ResourceKind,
-				Violation:    fmt.Sprintf("Require Service LoadBalancer annotations: Annotation %s cannot be empty",annotationConfig.Annotation),
+				ResourceName: serviceResource.ResourceName,
+				ResourceKind: serviceResource.ResourceKind,
+				Violation:    fmt.Sprintf("Require Service LoadBalancer annotations: Annotation %s cannot be empty", annotationConfig.Annotation),
 				Policy:       p.Name(),
 			})
 		}

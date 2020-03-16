@@ -31,6 +31,7 @@ func TestPolicyRequireServiceLoadbalancerExemption_Validate(t *testing.T) {
 	tests := []struct {
 		name       string
 		service    *corev1.Service
+		config     *policies.Config
 		violations int
 	}{
 		{
@@ -40,6 +41,15 @@ func TestPolicyRequireServiceLoadbalancerExemption_Validate(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						"cloud.google.com/load-balancer-type": "internal",
+					},
+				},
+			},
+			config: &policies.Config{
+				PolicyRequireServiceLoadBalancerAnnotations: []*policies.AnnotationConfig{
+					&policies.AnnotationConfig{
+						Annotation:    "cloud.google.com/load-balancer-type",
+						AllowedValues: []string{"internal"},
+						AllowMissing:  false,
 					},
 				},
 			},
@@ -54,6 +64,15 @@ func TestPolicyRequireServiceLoadbalancerExemption_Validate(t *testing.T) {
 					},
 				},
 			},
+			config: &policies.Config{
+				PolicyRequireServiceLoadBalancerAnnotations: []*policies.AnnotationConfig{
+					&policies.AnnotationConfig{
+						Annotation:    "cloud.google.com/load-balancer-type",
+						AllowedValues: []string{"internal"},
+						AllowMissing:  false,
+					},
+				},
+			},
 		},
 		{
 			name:       "no annotation present, violation",
@@ -61,6 +80,80 @@ func TestPolicyRequireServiceLoadbalancerExemption_Validate(t *testing.T) {
 			service: &corev1.Service{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{},
+				},
+			},
+			config: &policies.Config{
+				PolicyRequireServiceLoadBalancerAnnotations: []*policies.AnnotationConfig{
+					&policies.AnnotationConfig{
+						Annotation:    "cloud.google.com/load-balancer-type",
+						AllowedValues: []string{"internal"},
+						AllowMissing:  false,
+					},
+				},
+			},
+		},
+		{
+			name:       "no annotation present, but empty ok, no violation",
+			violations: 0,
+			service: &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{},
+				},
+			},
+			config: &policies.Config{
+				PolicyRequireServiceLoadBalancerAnnotations: []*policies.AnnotationConfig{
+					&policies.AnnotationConfig{
+						Annotation:    "cloud.google.com/load-balancer-type",
+						AllowedValues: []string{"internal"},
+						AllowMissing:  true,
+					},
+				},
+			},
+		},
+		{
+			name:       "annotation present, multiple possibilities, no violation",
+			violations: 0,
+			service: &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"cloud.google.com/load-balancer-type": "internal",
+					},
+				},
+			},
+			config: &policies.Config{
+				PolicyRequireServiceLoadBalancerAnnotations: []*policies.AnnotationConfig{
+					&policies.AnnotationConfig{
+						Annotation:    "cloud.google.com/load-balancer-type",
+						AllowedValues: []string{"external", "internal"},
+						AllowMissing:  false,
+					},
+				},
+			},
+		},
+		{
+			name:       "multiple annotations present, multiple possibilities, no violation",
+			violations: 0,
+			service: &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"cloud.google.com/load-balancer-type": "internal",
+						"myannotation":                        "yes",
+						"anotherannotation":                   "yup",
+					},
+				},
+			},
+			config: &policies.Config{
+				PolicyRequireServiceLoadBalancerAnnotations: []*policies.AnnotationConfig{
+					&policies.AnnotationConfig{
+						Annotation:    "cloud.google.com/load-balancer-type",
+						AllowedValues: []string{"external", "internal"},
+						AllowMissing:  false,
+					},
+					&policies.AnnotationConfig{
+						Annotation:    "myannotation",
+						AllowedValues: []string{"yes", "internal"},
+						AllowMissing:  false,
+					},
 				},
 			},
 		},
@@ -78,7 +171,7 @@ func TestPolicyRequireServiceLoadbalancerExemption_Validate(t *testing.T) {
 			}
 
 			v := PolicyRequireServiceLoadbalancerExemption{}
-			if got, _ := v.Validate(ctx, policies.Config{PolicyRequireServiceLoadBalancerType: []string{"internal"}}, ar); !reflect.DeepEqual(len(got), tt.violations) {
+			if got, _ := v.Validate(ctx, *tt.config, ar); !reflect.DeepEqual(len(got), tt.violations) {
 				t.Errorf("PolicyRequireServiceLoadbalancerExemption() %s got %v want %v violations", tt.name, len(got), tt.violations)
 			}
 		})
