@@ -396,7 +396,7 @@ This policy validates the annotations put on a service and will reject services 
 
 ### Policy configuration
 
-Each annotation to polce is configured with a list of possible values and a parameter `allow_missing` which defines if a service is allowed to be configured without this annotation present.
+Each annotation to police is configured with a list of possible values and a parameter `allow_missing` which defines if a service is allowed without this annotation present.
 
 ```yaml
 policy_config:
