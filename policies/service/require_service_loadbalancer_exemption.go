@@ -38,23 +38,36 @@ func (p PolicyRequireServiceLoadbalancerExemption) Validate(ctx context.Context,
 		return resourceViolations, nil
 	}
 
-	violationText := "Require Service LoadBalancer Exemption: Only specific LoadBalancer Types are allowed"
+	violationTextMissing := "Require Service LoadBalancer Exemption: Only specific LoadBalancer Types are allowed"
 
-	if value, exists := serviceResource.Service.ObjectMeta.GetAnnotations()[LOADBALANCER_TYPE]; exists {
-		for _, annotationType := range config.PolicyRequireServiceLoadBalancerType {
-			if value == annotationType {
-				return []policies.ResourceViolation{}, nil
+
+	for _, annotationConfig := range config.PolicyRequireServiceLoadBalancerAnnotations {
+		value, exists := serviceResource.Service.ObjectMeta.GetAnnotations()[annotationConfig.Annotation]
+		if exists {
+			for _, allowedValue := range annotationConfig.AllowedValues {
+				if value := allowedValue {
+					break
+				}
 			}
+
+			resourceViolations = append(resourceViolations, policies.ResourceViolation{
+				Namespace:    ar.Namespace,
+				ResourceName: ingressResource.ResourceName,
+				ResourceKind: ingressResource.ResourceKind,
+				Violation:    fmt.Sprintf("Require Service LoadBalancer annotations: Annotation %s value %s is not allowed",annotationConfig.Annotation,value),
+				Policy:       p.Name(),
+			})
+
+		} else if !annotationConfig.AllowMissing {
+			resourceViolations = append(resourceViolations, policies.ResourceViolation{
+				Namespace:    ar.Namespace,
+				ResourceName: ingressResource.ResourceName,
+				ResourceKind: ingressResource.ResourceKind,
+				Violation:    fmt.Sprintf("Require Service LoadBalancer annotations: Annotation %s cannot be empty",annotationConfig.Annotation),
+				Policy:       p.Name(),
+			})
 		}
 	}
 
-	return []policies.ResourceViolation{
-		policies.ResourceViolation{
-			Namespace:    ar.Namespace,
-			ResourceName: serviceResource.ResourceName,
-			ResourceKind: serviceResource.ResourceKind,
-			Violation:    violationText,
-			Policy:       p.Name(),
-		},
-	}, nil
+	return resourceViolations, nil
 }

@@ -25,8 +25,8 @@ type Config struct {
 	// PolicyRequireIngressExemptionClasses contains the Ingress classes that an exemption is required for
 	// to use. Typically this would include your public ingress classes.
 	PolicyRequireIngressExemptionClasses []string `json:"policy_require_ingress_exemption_classes"`
-	// PolicyRequireServiceLoadBalancerType contains the Service LB types annotation that are allowed with this policy.
-	PolicyRequireServiceLoadBalancerType []string `json:"policy_require_service_loadbalancer_type"`
+	// PolicyRequireServiceLoadBalancerAnnotations contains the Service LB types annotation that are allowed with this policy.
+	PolicyRequireServiceLoadBalancerAnnotations []*AnnotationConfig `json:"policy_require_service_loadbalancer_annotations"`
 	// PolicyTrustedRepositoryRegexes contains regexes that match image repositories that you want to allow.
 	PolicyTrustedRepositoryRegexes []string `json:"policy_trusted_repository_regexes"`
 	// PolicyDefaultSeccompPolicy contains the seccomp policy that you want to be applied on Pods by default.
@@ -35,6 +35,13 @@ type Config struct {
 	// PolicyImagePullPolicy contains the images that needs to enforce to a specific ImagePullPolicy
 	PolicyImagePullPolicy   map[string][]string     `json:"mutate_image_pull_policy"`
 	MutateEmptyDirSizeLimit MutateEmptyDirSizeLimit `json:"mutate_empty_dir_size_limit"`
+}
+
+// AnnotationConfig defines a single annotation config
+type AnnotationConfig struct {
+	Annotation    string   `json:"annotation"`
+	AllowedValues []string `json:"allowed_values"`
+	AllowMissing  bool     `json:"allow_missing"`
 }
 
 type MutateEmptyDirSizeLimit struct {
