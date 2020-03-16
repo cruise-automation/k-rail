@@ -22,8 +22,6 @@ import (
 	"github.com/cruise-automation/k-rail/resource"
 )
 
-const LOADBALANCER_TYPE = "cloud.google.com/load-balancer-type"
-
 type PolicyRequireServiceLoadbalancerExemption struct{}
 
 func (p PolicyRequireServiceLoadbalancerExemption) Name() string {
@@ -38,6 +36,8 @@ func (p PolicyRequireServiceLoadbalancerExemption) Validate(ctx context.Context,
 	if serviceResource == nil {
 		return resourceViolations, nil
 	}
+
+	if serviceResource.Service.Ty
 
 	// Each annotation entry in the config is tested sequentially
 	for _, annotationConfig := range config.PolicyRequireServiceLoadBalancerAnnotations {
