@@ -14,6 +14,7 @@ const (
 	cacheKeyPod = iota
 	cacheKeyPodExec
 	cacheKeyIngress
+	cacheKeyService
 )
 
 type cache struct {

@@ -18,6 +18,7 @@ import (
 	"github.com/cruise-automation/k-rail/policies"
 	"github.com/cruise-automation/k-rail/policies/ingress"
 	"github.com/cruise-automation/k-rail/policies/pod"
+	"github.com/cruise-automation/k-rail/policies/service"
 	log "github.com/sirupsen/logrus"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 )
@@ -53,6 +54,7 @@ func (s *Server) registerPolicies() {
 	s.registerPolicy(pod.PolicyNoShareProcessNamespace{})
 	s.registerPolicy(pod.PolicyImagePullPolicy{})
 	s.registerPolicy(ingress.PolicyRequireIngressExemption{})
+	s.registerPolicy(service.PolicyRequireServiceLoadbalancerExemption{})
 	requireUniqueHostPolicy, err := ingress.NewPolicyRequireUniqueHost()
 	if err != nil {
 		log.WithError(err).Error("could not load RequireUniqueHostPolicy")
