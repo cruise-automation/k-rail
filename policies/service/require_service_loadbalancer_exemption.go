@@ -39,8 +39,11 @@ func (p PolicyRequireServiceLoadbalancerExemption) Validate(ctx context.Context,
 		return resourceViolations, nil
 	}
 
+	// Each annotation entry in the config is tested sequentially
 	for _, annotationConfig := range config.PolicyRequireServiceLoadBalancerAnnotations {
 		value, exists := serviceResource.Service.ObjectMeta.GetAnnotations()[annotationConfig.Annotation]
+
+		// The annotation si only tested against possible values if it exists
 		if exists {
 			valueAllowed := false
 			for _, allowedValue := range annotationConfig.AllowedValues {
@@ -59,7 +62,7 @@ func (p PolicyRequireServiceLoadbalancerExemption) Validate(ctx context.Context,
 					Policy:       p.Name(),
 				})
 			}
-
+			// If the annotation is not present, the policy config defines if this is acceptable.
 		} else if !annotationConfig.AllowMissing {
 			resourceViolations = append(resourceViolations, policies.ResourceViolation{
 				Namespace:    ar.Namespace,
