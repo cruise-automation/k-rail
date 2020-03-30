@@ -38,7 +38,7 @@ func (p PolicyNoPersistentVolumeHost) Validate(ctx context.Context, config polic
 
 	violationText := "No Persistent Volume Host Path: Using the host path is forbidden"
 
-	if pvResource.PersistentVolume.Spec.PersistentVolumeSource.HostPath.Path {
+	if pvResource.PersistentVolume.Spec.PersistentVolumeSource.HostPath != nil {
 		resourceViolations = append(resourceViolations, policies.ResourceViolation{
 			Namespace:    ar.Namespace,
 			ResourceName: pvResource.ResourceName,
