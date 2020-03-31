@@ -389,7 +389,6 @@ policy_config:
 
 Unique Ingress Host policy requires the configured ingress hosts to be unique across cluster namespaces. This is helps to prevent ingress host collisions.
 
-
 ## Service annotation policy
 
 Annotations used on services are used to configure public IPs or other cloud provider specific parameters. 
