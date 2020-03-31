@@ -37,7 +37,7 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
   * [Require Ingress Exemption](#require-ingress-exemption)
     + [Policy configuration](#policy-configuration-3)
   * [Unique Ingress Host](#unique-ingress-host)
-  * [Service type LoadBalancer annotation check](#service-annotations)
+  * [Service type LoadBalancer annotation check](#service-type-loadbalancer-annotation-check)
   * [No Persistent Volume Host Path](#no-persistent-volume-host-path)
 - [Configuration](#configuration)
   * [Logging](#logging)
@@ -389,7 +389,7 @@ policy_config:
 
 Unique Ingress Host policy requires the configured ingress hosts to be unique across cluster namespaces. This is helps to prevent ingress host collisions.
 
-## Service annotation policy
+## Service type LoadBalancer annotation check
 
 Annotations used on services are used to configure public IPs or other cloud provider specific parameters. 
 
