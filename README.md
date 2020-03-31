@@ -38,6 +38,7 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
     + [Policy configuration](#policy-configuration-3)
   * [Unique Ingress Host](#unique-ingress-host)
   * [Service type LoadBalancer annotation check](#service-annotations)
+  * [No Persistent Volume Host Path](#no-persistent-volume-host-path)
 - [Configuration](#configuration)
   * [Logging](#logging)
   * [Modes of operation](#modes-of-operation)
@@ -388,6 +389,7 @@ policy_config:
 
 Unique Ingress Host policy requires the configured ingress hosts to be unique across cluster namespaces. This is helps to prevent ingress host collisions.
 
+
 ## Service annotation policy
 
 Annotations used on services are used to configure public IPs or other cloud provider specific parameters. 
@@ -408,6 +410,9 @@ policy_config:
       allow_missing: false
 ```
 
+## No Persistent Volume Host Path
+
+Enforcing the policy prevents direct access to potentially sensitive files or directories at the Node-level via Persistent Volumes. Production clusters should not use HostPath. Instead a cluster administrator would provision a network resource like a Google Compute Engine persistent disk, an NFS share, or an Amazon Elastic Block Store volume.
 
 # Configuration
 
