@@ -37,7 +37,7 @@ func GetPersistentVolumeResource(ctx context.Context, ar *admissionv1beta1.Admis
 
 func decodePersistentVolumeResource(ar *admissionv1beta1.AdmissionRequest) *PersistentVolumeResource {
 	switch ar.Kind {
-	case metav1.GroupVersionKind{Group: "", Version: "v1", Resource: "PersistentVolume"}:
+	case metav1.GroupVersionKind{Group: "", Version: "v1", Kind: "PersistentVolume"}:
 		pv := corev1.PersistentVolume{}
 		if err := decodeObject(ar.Object.Raw, &pv); err != nil {
 			return nil
