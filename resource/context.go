@@ -15,6 +15,7 @@ const (
 	cacheKeyPodExec
 	cacheKeyIngress
 	cacheKeyService
+	cacheKeyPersistentVolume
 )
 
 type cache struct {

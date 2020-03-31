@@ -51,6 +51,7 @@ webhooks:
           - cronjobs
           - ingresses
           - pods/exec
+          - persistentvolumes
     failurePolicy: {{ print .Values.failurePolicy }}
   {{- if .Values.reinvocationPolicy }}
     reinvocationPolicy: {{  print .Values.reinvocationPolicy }} 
