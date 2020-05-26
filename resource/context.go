@@ -16,6 +16,7 @@ const (
 	cacheKeyIngress
 	cacheKeyService
 	cacheKeyPersistentVolume
+	cacheKeyClusterRoleBinding
 )
 
 type cache struct {
