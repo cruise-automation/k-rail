@@ -32,15 +32,15 @@ webhooks:
   - name: k-rail.cruise-automation.github.com
     clientConfig:
       service:
-        namespace: k-rail
-        name: {{ .Release.Namespace }}
+        namespace: {{ .Release.Namespace }}
+        name: k-rail
         path: "/"
       caBundle: {{ b64enc $ca.Cert }}
     rules:
       - operations: ["CREATE","UPDATE","CONNECT"]
         apiGroups: ["*"]
         apiVersions: ["*"]
-        resources: 
+        resources:
           - pods
           - deployments
           - replicationcontrollers
@@ -54,14 +54,14 @@ webhooks:
           - persistentvolumes
     failurePolicy: {{ print .Values.failurePolicy }}
   {{- if .Values.reinvocationPolicy }}
-    reinvocationPolicy: {{  print .Values.reinvocationPolicy }} 
+    reinvocationPolicy: {{  print .Values.reinvocationPolicy }}
   {{- end }}
     sideEffects: None
     namespaceSelector:
       matchExpressions:
         - key: name
           operator: NotIn
-          values: 
+          values:
             - {{ .Release.Namespace }}
 ---
 apiVersion: apps/v1
@@ -80,7 +80,7 @@ spec:
     metadata:
       name: k-rail
       labels:
-        name: k-rail 
+        name: k-rail
       annotations:
         checksum/config: {{ print .Values.config | sha256sum }}
         checksum/exemptions: {{ print .Values.exemptions | sha256sum }}
@@ -218,4 +218,4 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: k-rail
-  namespace: {{ .Release.Namespace }} 
+  namespace: {{ .Release.Namespace }}
