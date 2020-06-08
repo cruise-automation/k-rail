@@ -38,13 +38,13 @@ func GetRoleBindingResource(ctx context.Context, ar *admissionv1beta1.AdmissionR
 func decodeRoleBindingResource(ar *admissionv1beta1.AdmissionRequest) *RoleBindingResource {
 	switch ar.Kind {
 	case metav1.GroupVersionKind{Group: "", Version: "v1", Kind: "RoleBinding"}:
-		crb := rbacv1.RoleBinding{}
-		if err := decodeObject(ar.Object.Raw, &crb); err != nil {
+		rb := rbacv1.RoleBinding{}
+		if err := decodeObject(ar.Object.Raw, &rb); err != nil {
 			return nil
 		}
 		return &RoleBindingResource{
-			RoleBinding:  crb,
-			ResourceName: GetResourceName(crb.ObjectMeta),
+			RoleBinding:  rb,
+			ResourceName: GetResourceName(rb.ObjectMeta),
 			ResourceKind: "RoleBinding",
 		}
 	default:
