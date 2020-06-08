@@ -31,18 +31,18 @@ func (p PolicyNoAnonymousRoleBinding) Name() string {
 func (p PolicyNoAnonymousRoleBinding) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
-	crbResource := resource.GetRoleBindingResource(ctx, ar)
-	if crbResource == nil {
+	rbResource := resource.GetRoleBindingResource(ctx, ar)
+	if rbResource == nil {
 		return resourceViolations, nil
 	}
 
 	violationText := "No Anonymous Role Binding: Granting permissions to anonymous subject is forbidden"
-	for _, subject := range crbResource.RoleBinding.Subjects {
+	for _, subject := range rbResource.RoleBinding.Subjects {
 		if (strings.ToLower(subject.Name) == "system:anonymous") || (strings.ToLower(subject.Name) == "system:unauthenticated") {
 			resourceViolations = append(resourceViolations, policies.ResourceViolation{
 				Namespace:    ar.Namespace,
-				ResourceName: crbResource.ResourceName,
-				ResourceKind: crbResource.ResourceKind,
+				ResourceName: rbResource.ResourceName,
+				ResourceKind: rbResource.ResourceKind,
 				Violation:    violationText,
 				Policy:       p.Name(),
 			})
