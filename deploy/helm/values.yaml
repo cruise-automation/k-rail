@@ -1,5 +1,5 @@
 
-replicaCount: 3
+replicaCount: 1
 
 # Set this to 'Fail if you wish that resources apply fail if k-rail is unreachable.
 failurePolicy: Fail
@@ -99,6 +99,12 @@ config:
       enabled: True
       report_only: False
     - name: "persistent_volume_no_host_path"
+      enabled: True
+      report_only: False
+    - name: "cluster_role_binding_no_anonymous_subject"
+      enabled: True
+      report_only: False
+    - name: "role_binding_no_anonymous_subject"
       enabled: True
       report_only: False
 
