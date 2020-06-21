@@ -37,7 +37,7 @@ func GetRoleBindingResource(ctx context.Context, ar *admissionv1beta1.AdmissionR
 
 func decodeRoleBindingResource(ar *admissionv1beta1.AdmissionRequest) *RoleBindingResource {
 	switch ar.Kind {
-	case metav1.GroupVersionKind{Group: "", Version: "v1", Kind: "RoleBinding"}:
+	case metav1.GroupVersionKind{Group: "rbac.authorization.k8s.io", Version: "v1", Kind: "RoleBinding"}:
 		rb := rbacv1.RoleBinding{}
 		if err := decodeObject(ar.Object.Raw, &rb); err != nil {
 			return nil

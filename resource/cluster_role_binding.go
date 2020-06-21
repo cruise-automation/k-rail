@@ -37,7 +37,7 @@ func GetClusterRoleBindingResource(ctx context.Context, ar *admissionv1beta1.Adm
 
 func decodeClusterRoleBindingResource(ar *admissionv1beta1.AdmissionRequest) *ClusterRoleBindingResource {
 	switch ar.Kind {
-	case metav1.GroupVersionKind{Group: "", Version: "v1", Kind: "ClusterRoleBinding"}:
+	case metav1.GroupVersionKind{Group: "rbac.authorization.k8s.io", Version: "v1", Kind: "ClusterRoleBinding"}:
 		crb := rbacv1.ClusterRoleBinding{}
 		if err := decodeObject(ar.Object.Raw, &crb); err != nil {
 			return nil
