@@ -36,7 +36,7 @@ func (p PolicyNoAnonymousRoleBinding) Validate(ctx context.Context, config polic
 		return resourceViolations, nil
 	}
 
-	violationText := "No Anonymous Role Binding: Granting permissions to anonymous subject is forbidden"
+	violationText := "No Anonymous Role Binding: Granting permissions to anonymous or unauthenticated subject is forbidden"
 	for _, subject := range rbResource.RoleBinding.Subjects {
 		if (strings.ToLower(subject.Name) == "system:anonymous") || (strings.ToLower(subject.Name) == "system:unauthenticated") {
 			resourceViolations = append(resourceViolations, policies.ResourceViolation{

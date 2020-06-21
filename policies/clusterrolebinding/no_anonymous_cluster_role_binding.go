@@ -36,7 +36,7 @@ func (p PolicyNoAnonymousClusterRoleBinding) Validate(ctx context.Context, confi
 		return resourceViolations, nil
 	}
 
-	violationText := "No Anonymous Cluster Role Binding: Granting permissions to anonymous subject is forbidden"
+	violationText := "No Anonymous Cluster Role Binding: Granting permissions to anonymous or unauthenticated subject is forbidden"
 	for _, subject := range crbResource.ClusterRoleBinding.Subjects {
 		if (strings.ToLower(subject.Name) == "system:anonymous") || (strings.ToLower(subject.Name) == "system:unauthenticated") {
 			resourceViolations = append(resourceViolations, policies.ResourceViolation{
