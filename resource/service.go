@@ -37,7 +37,7 @@ func GetServiceResource(ctx context.Context, ar *admissionv1beta1.AdmissionReque
 
 func decodeServiceResource(ar *admissionv1beta1.AdmissionRequest) *ServiceResource {
 	switch ar.Resource {
-	case metav1.GroupVersionResource{Group: "core", Version: "v1", Resource: "services"}:
+	case metav1.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}:
 		svc := corev1.Service{}
 		if err := decodeObject(ar.Object.Raw, &svc); err != nil {
 			return nil
