@@ -101,6 +101,12 @@ config:
     - name: "persistent_volume_no_host_path"
       enabled: True
       report_only: False
+    - name: "cluster_role_binding_no_anonymous_subject"
+      enabled: True
+      report_only: False
+    - name: "role_binding_no_anonymous_subject"
+      enabled: True
+      report_only: False
 
 exemptions:
   - resource_name: "*"

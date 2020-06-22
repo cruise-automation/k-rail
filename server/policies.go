@@ -16,9 +16,11 @@ import (
 	"context"
 
 	"github.com/cruise-automation/k-rail/policies"
+	clusterrolebinding "github.com/cruise-automation/k-rail/policies/clusterrolebinding"
 	"github.com/cruise-automation/k-rail/policies/ingress"
 	"github.com/cruise-automation/k-rail/policies/persistentVolume"
 	"github.com/cruise-automation/k-rail/policies/pod"
+	rolebinding "github.com/cruise-automation/k-rail/policies/rolebinding"
 	"github.com/cruise-automation/k-rail/policies/service"
 	log "github.com/sirupsen/logrus"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
@@ -57,6 +59,8 @@ func (s *Server) registerPolicies() {
 	s.registerPolicy(ingress.PolicyRequireIngressExemption{})
 	s.registerPolicy(service.PolicyRequireServiceLoadbalancerExemption{})
 	s.registerPolicy(persistentVolume.PolicyNoPersistentVolumeHost{})
+	s.registerPolicy(clusterrolebinding.PolicyNoAnonymousClusterRoleBinding{})
+	s.registerPolicy(rolebinding.PolicyNoAnonymousRoleBinding{})
 	requireUniqueHostPolicy, err := ingress.NewPolicyRequireUniqueHost()
 	if err != nil {
 		log.WithError(err).Error("could not load RequireUniqueHostPolicy")

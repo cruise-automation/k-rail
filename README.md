@@ -41,6 +41,8 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
   - [Service type LoadBalancer annotation check](#service-type-loadbalancer-annotation-check)
     - [Policy configuration](#policy-configuration-5)
   - [No Persistent Volume Host Path](#no-persistent-volume-host-path)
+  - [No Anonymous Cluster Role Binding](#no-anonymous-cluster-role-binding)
+  - [No Anonymous Role Binding](#no-anonymous-role-binding)
 - [Configuration](#configuration)
   - [Webhook Configuration](#webhook-configuration)
   - [Logging](#logging)
@@ -421,6 +423,14 @@ policy_config:
 ## No Persistent Volume Host Path
 
 Enforcing the policy prevents direct access to potentially sensitive files or directories at the Node-level via Persistent Volumes. Production clusters should not use HostPath. Instead a cluster administrator would provision a network resource like a Google Compute Engine persistent disk, an NFS share, or an Amazon Elastic Block Store volume.
+
+## No Anonymous Cluster Role Binding
+
+Enforcing the policy prevents the creation of cluster level role bindings that authorize unathenticated or anonymous users to access resources.
+
+## No Anonymous Role Binding
+
+Enforcing the policy prevents the creation of namespace level role bindings that authorize unathenticated or anonymous users to access resources. 
 
 # Configuration
 

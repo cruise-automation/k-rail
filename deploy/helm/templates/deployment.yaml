@@ -52,6 +52,8 @@ webhooks:
           - ingresses
           - pods/exec
           - persistentvolumes
+          - clusterrolebindings
+          - rolebindings
     failurePolicy: {{ print .Values.failurePolicy }}
   {{- if .Values.reinvocationPolicy }}
     reinvocationPolicy: {{  print .Values.reinvocationPolicy }}
