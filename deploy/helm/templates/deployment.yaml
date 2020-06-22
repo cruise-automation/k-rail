@@ -54,11 +54,13 @@ webhooks:
           - persistentvolumes
           - clusterrolebindings
           - rolebindings
+          - services
     failurePolicy: {{ print .Values.failurePolicy }}
   {{- if .Values.reinvocationPolicy }}
     reinvocationPolicy: {{  print .Values.reinvocationPolicy }}
   {{- end }}
     sideEffects: None
+    timeoutSeconds: 1  # doesn't do anything until 1.14
     namespaceSelector:
       matchExpressions:
         - key: name
