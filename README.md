@@ -117,9 +117,16 @@ If you have a cluster with existing workloads, run it in monitor mode for a few 
 You can install or update k-rail using the helm chart in [`charts/k-rail`](charts/k-rail). You can install the latest chart directly from our repo, by running:
 
 ```bash
+# add the helm repo
 helm repo add k-rail https://cruise-automation.github.io/k-rail/
 helm repo update
-helm install k-rail/k-rail
+
+# prepare the namespace
+kubectl create namespace k-rail
+kubectl label namespace k-rail k-rail/ignore=true
+
+# install
+helm install k-rail k-rail/k-rail --namespace k-rail
 ```
 
 For the Helm deployment, all configuration for policies and exemptions are contained in [`charts/k-rail/values.yaml`](charts/k-rail/values.yaml).
@@ -140,7 +147,13 @@ kubectl apply --namespace default -f examples/non-compliant-deployment.yaml
 
 # Removal
 
-Removing k-rail is similar to the installation, but you use `delete` instead of `apply`:
+If ussing `helm install`,
+
+```bash
+helm uninstall k-rail --namespace k-rail
+```
+
+If using `helm template`,
 
 ```bash
 helm template --namespace k-rail charts/k-rail | kubectl delete -f -
