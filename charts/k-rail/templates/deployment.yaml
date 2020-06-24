@@ -3,13 +3,6 @@
 {{- $cert := genSignedCert $cn nil nil 3650 $ca -}}
 ---
 apiVersion: v1
-kind: Namespace
-metadata:
-  name: {{ .Release.Namespace }}
-  labels:
-    name: {{ .Release.Namespace }}
----
-apiVersion: v1
 kind: Secret
 metadata:
   name: k-rail-cert
@@ -63,10 +56,8 @@ webhooks:
     timeoutSeconds: 1  # doesn't do anything until 1.14
     namespaceSelector:
       matchExpressions:
-        - key: name
-          operator: NotIn
-          values:
-            - {{ .Release.Namespace }}
+        - key: k-rail/ignore
+          operator: DoesNotExist
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -94,7 +85,7 @@ spec:
       containers:
         - name: k-rail
           command: ["/k-rail", "-config=/config/config.yml", "-exemptions-path-glob=/exemptions/*.yml"]
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.image.repository }}:{{ default (printf "release-%s" .Chart.Version) .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
@@ -165,7 +156,7 @@ metadata:
 spec:
   ports:
   - name: validatingwebhook
-    port: 443
+    port: 10250
     targetPort: 10250
   selector:
     name: k-rail

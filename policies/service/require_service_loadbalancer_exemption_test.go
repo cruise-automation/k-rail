@@ -207,7 +207,7 @@ func TestPolicyRequireServiceLoadbalancerExemption_Validate(t *testing.T) {
 				Namespace: "namespace",
 				Name:      "name",
 				Object:    runtime.RawExtension{Raw: raw},
-				Resource:  metav1.GroupVersionResource{Group: "core", Version: "v1", Resource: "services"},
+				Resource:  metav1.GroupVersionResource{Group: "", Version: "v1", Resource: "services"},
 			}
 
 			v := PolicyRequireServiceLoadbalancerExemption{}

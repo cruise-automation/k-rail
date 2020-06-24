@@ -95,8 +95,8 @@ By default, the Kubernetes APIs allow for a variety of easy privilege escalation
   ```
 - Realtime interactive feedback for engineers and systems that apply resources
   ```bash
-  $ kubectl apply --namespace default -f deploy/non-compliant-ingress.yaml
-  Error from server (InternalError): error when creating "deploy/non-compliant-ingress.yaml":
+  $ kubectl apply --namespace default -f examples/non-compliant-ingress.yaml
+  Error from server (InternalError): error when creating "examples/non-compliant-ingress.yaml":
   Internal error occurred: admission webhook "k-rail.cruise-automation.github.com" denied the request:
   Ingress bad-ingress had violation: Require Ingress Exemption: Using the 'public' Ingress class requires an exemption
   Ingress bad-ingress had violation: Requires Unique Ingress Host: Ingress Host should not point to multiple namespaces
@@ -114,20 +114,20 @@ If you have a cluster with existing workloads, run it in monitor mode for a few 
 
 # Installation
 
-You can install or update k-rail using the helm chart in [`deploy/helm`](deploy/helm). You can install the latest chart directly from our repo, by running:
+You can install or update k-rail using the helm chart in [`charts/k-rail`](charts/k-rail). You can install the latest chart directly from our repo, by running:
 
-```
+```bash
 helm repo add k-rail https://cruise-automation.github.io/k-rail/
 helm repo update
 helm install k-rail/k-rail
 ```
 
-For the Helm deployment, all configuration for policies and exemptions are contained in [`deploy/helm/values.yaml`](deploy/helm/values.yaml).
+For the Helm deployment, all configuration for policies and exemptions are contained in [`charts/k-rail/values.yaml`](charts/k-rail/values.yaml).
 
 For Helm 2 and below, it is recommended to use `helm template` render the YAML for applying rather than using Helm Tiller:
 
 ```bash
-helm template --namespace k-rail deploy/helm | kubectl apply -f - 
+helm template --namespace k-rail charts/k-rail | kubectl apply -f -
 ```
 
 By default all policies are enforced (`report_only: false`).
@@ -135,7 +135,7 @@ By default all policies are enforced (`report_only: false`).
 Test the default configuration by applying the provided non-compliant deployment:
 
 ```bash
-kubectl apply --namespace default -f deploy/non-compliant-deployment.yaml
+kubectl apply --namespace default -f examples/non-compliant-deployment.yaml
 ```
 
 # Removal
@@ -143,7 +143,7 @@ kubectl apply --namespace default -f deploy/non-compliant-deployment.yaml
 Removing k-rail is similar to the installation, but you use `delete` instead of `apply`:
 
 ```bash
-helm template --namespace k-rail deploy/helm | kubectl delete -f -
+helm template --namespace k-rail charts/k-rail | kubectl delete -f -
 ```
 
 # Viewing policy violations
@@ -155,9 +155,9 @@ There are a few ways of viewing violations. Violations from realtime feedback an
 You may see violations when applying your resources:
 
 ```bash
-$ kubectl apply -f deploy/non-compliant-deployment.yaml
+$ kubectl apply -f examples/non-compliant-deployment.yaml
 
-Error from server (k-rail): error when creating "deploy/non-compliant-deployment.yaml": admission webhook "k-rail.cruise-automation.github.com" denied the request:
+Error from server (k-rail): error when creating "examples/non-compliant-deployment.yaml": admission webhook "k-rail.cruise-automation.github.com" denied the request:
 Deployment bad-deployment had violation: Host Bind Mounts: host bind mounts are forbidden
 Deployment bad-deployment had violation: Docker Sock Mount: mounting the Docker socket is forbidden
 Deployment bad-deployment had violation: Immutable Image Reference: image tag must include its sha256 digest
@@ -168,11 +168,9 @@ Deployment bad-deployment had violation: No Host PID: Using the host PID namespa
 Deployment bad-deployment had violation: Safe to evict: annotation is required for Pods that use emptyDir or hostPath mounts to enable cluster autoscaling
 ```
 
-
 ## Violations from the Events API
 
 You can also see violations that have occurred recently with the events API:
-
 
 ```bash
 $ kubectl get events --namespace default
@@ -180,7 +178,6 @@ LAST SEEN   TYPE      REASON         KIND         MESSAGE
 3m41s       Warning   FailedCreate   ReplicaSet   Error creating: admission webhook "k-rail.cruise-automation.github.com" denied the request:
 bad-pod-5f7cd9bf45-rbhsb had violation: Docker Sock Mount: mounting the Docker socket is forbidden
 ```
-
 
 ## Violations from logs
 
@@ -221,7 +218,6 @@ $ kubectl logs --namespace k-rail --selector name=k-rail | jq '.'
 
 Since the violations are outputted as structured data, you are encouraged to aggregate and display that information. GCP BigQuery + Data Studio, Sumologic, Elasticsearch + Kibana, Splunk, etc are all capable of this.
 
-
 # Supported policies
 
 ## No ShareProcessNamespace
@@ -248,6 +244,7 @@ The Docker socket bind mount provides API access to the host Docker daemon, whic
 **Note:** It is recommended to use the `No Bind Mounts` policy to disable all `hostPath` mounts rather than only this policy.
 
 ## EmptyDir size limit
+
 By [default](https://kubernetes.io/docs/concepts/storage/volumes/#example-pod), an `emptyDir` lacks a `sizeLimit` parameter, and is disk-based;
 a Pod with access to said `emptyDir` can consume the Node's entire disk (i.e. the limit is unbounded) until the offending Pod is deleted or evicted, which can constitute a denial-of-service condition at the affected Node (i.e. DiskPressure).
 This policy
@@ -255,6 +252,7 @@ This policy
 * reports a violation when the size is greater then the configured max size
 
 ### Policy configuration
+
 ```yaml
 policy_config:
     mutate_empty_dir_size_limit:
@@ -322,6 +320,7 @@ There are many malicious, poorly configured, and outdated and vulnerable images 
 The Trusted Image Repository policy can be configured in the k-rail configuration file.
 
 Example
+
 ```yaml
 policy_config:
   policy_trusted_repository_regexes:
@@ -357,9 +356,11 @@ You can also set the annoation on existing Pods with this one-liner:
 ```bash
 $ kubectl get po --all-namespaces -o json | jq -r '.items[] | select(.spec.volumes[].hostPath or .spec.volumes[].emptyDir) | [ .metadata.namespace, .metadata.name ] | @tsv' | while IFS=$'\t' read -r namespace pod; do echo "\n NAMESPACE: $namespace \n POD: $pod \n"; kubectl annotate pod -n $namespace $pod "cluster-autoscaler.kubernetes.io/safe-to-evict=true"; done
 ```
+
 ## Mutate Image Pull Policy
 
 There are cerntain images which require the enforcement of the ImagePullPolicy according to different user scenarios
+
 - IfNotPresent
 It can reduce the unnecessary traffic (Auth and Download requests) to Image repository and reuse the image which is cached on the node 
 - Always
@@ -371,6 +372,7 @@ However if we force the imagePullPolicy to Always, it would fail without proper 
 The Mutate Image Pull Policy can be configured in the k-rail configuration file.
 
 Example
+
 ```yaml
 policy_config:
   mutate_image_pull_policy:
@@ -390,6 +392,7 @@ The Require Ingress Exemption policy requires the configured ingress classes to 
 The Require Ingress Exemption policy can be configured in the k-rail configuration file.
 
 Example
+
 ```yaml
 policy_config:
   policy_require_ingress_exemption_classes:
@@ -434,12 +437,12 @@ Enforcing the policy prevents the creation of namespace level role bindings that
 
 # Configuration
 
-For the Helm deployment, all configuration is contained in [`deploy/helm/values.yaml`](deploy/helm/values.yaml).
+For the Helm deployment, all configuration is contained in [`charts/k-rail/values.yaml`](charts/k-rail/values.yaml).
 
 ## Webhook Configuration
 
 By default, k-rail will "fail close" if it cannot be reached by the API server. k-rail can be changed to
-"fail open" by changing the `failurePolicy` directive from `Fail` to `Ignore`, in [`deploy/helm/values.yaml`](deploy/helm/values.yaml).
+"fail open" by changing the `failurePolicy` directive from `Fail` to `Ignore`, in [`charts/k-rail/values.yaml`](charts/k-rail/values.yaml).
 See the Kubernetes [docs](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#failure-policy) for
 more details.
 
@@ -450,9 +453,8 @@ They do so with a
 value of `IfNeeded`; the Kubernetes default value is `Never`, which does not reinvoke
 the mutating admission webhook(s). 
 Since this is a [newer](https://kubernetes.io/blog/2019/06/19/kubernetes-1-15-release-announcement/) type field, k-rail omits by default,
-but operators can set a chosen value by commenting out `reinvocationPolicy` in [`deploy/helm/values.yaml`](deploy/helm/values.yaml).
+but operators can set a chosen value by commenting out `reinvocationPolicy` in [`charts/k-rail/values.yaml`](charts/k-rail/values.yaml).
 See the [associated KEP](https://github.com/kubernetes/enhancements/blob/master/keps/sig-api-machinery/00xx-admission-webhooks-to-ga.md#mutating-plugin-ordering) for more details on `reinvocationPolicy` and admission plugin ordering.
-
 
 ## Logging
 
@@ -476,7 +478,7 @@ Policies can be enabled/disabled, and run in report-only or enforcement mode as 
 
 A folder to load policy exemptions from can be specified from config. Load exemptions by specifying the `-exemptions-path-glob` parameter, and specify a path glob that includes the exemptions, such as `/config/policies/*.yaml`.
 
-For the Helm deployment, all policy and exemption configuration is contained in [`deploy/helm/values.yaml`](deploy/helm/values.yaml).
+For the Helm deployment, all policy and exemption configuration is contained in [`charts/k-rail/values.yaml`](charts/k-rail/values.yaml).
 
 The format of an exemption config is YAML, and looks like this:
 
@@ -485,7 +487,7 @@ The format of an exemption config is YAML, and looks like this:
 # exempt all kube-system pods since they are largely provided by GKE
 - resource_name: "*"
   namespace: "kube-system"
-  exempt_policies: 
+  exempt_policies:
   - "*"
 
 # malicious-pod needs host network to escalate access via GCE metadata API
@@ -505,8 +507,7 @@ The format of an exemption config is YAML, and looks like this:
 
 Some policies are configurable. Policy configuration is contained in the k-rail configuration file, and documentation for a policy's configuration can be found in the Supported policies heading above.
 
-For the Helm deployment, all policy and exemption configuration is contained in [`deploy/helm/values.yaml`](deploy/helm/values.yaml).
-
+For the Helm deployment, all policy and exemption configuration is contained in [`charts/k-rail/values.yaml`](charts/k-rail/values.yaml).
 
 # Adding new policies
 
@@ -516,21 +517,18 @@ Policies must satisfy this interface:
 // Policy specifies how a Policy is implemented
 // Returns an optional slice of violations and an optional slice of patch operations if mutation is desired.
 type Policy interface {
-	Name() string
-	Validate(ctx context.Context,
-		config policies.Config,
-		ar *admissionv1beta1.AdmissionRequest,
-	) ([]policies.ResourceViolation, []policies.PatchOperation)
+  Name() string
+  Validate(ctx context.Context,
+    config policies.Config,
+    ar *admissionv1beta1.AdmissionRequest,
+  ) ([]policies.ResourceViolation, []policies.PatchOperation)
 }
 ```
 
 `Name()` must return a string that matches a policy name that is provided in configuration.
 Validate accepts an AdmissionRequest, and the resource of interest must be extracted from it. See `resource/pod.go` for an example of extracting PodSpecs from an AdmissionRequest. If mutation on a resource is desired, you can return a slice of JSONPatch operations and `nil` for the violations.
 
-
 Policies can be registered in `internal/policies.go`. Any policies that are registered but do not have configuration provided get enabled in report-only mode.
-
-
 
 # Debugging
 
@@ -540,6 +538,7 @@ If you see timeout events on resources, this may be because the `k-rail` service
 Newer versions (1.14+) of Kubernetes are not likely to have this issue if the `MutatingWebhookConfiguration` `failurePolicy` is set to `Ignore` and `timeoutSeconds` is set to a lower number (such as `5` or less).
 
 To determine if this is occuring because the service is unreachable, check the `kube-apiserver` logs. You will see logs similar to,
+
 ```
 E0911 04:57:22.686526       1 dispatcher.go:68] failed calling webhook "k-rail.cruise-automation.github.com": Post https://k-rail.k-rail.svc:443/?timeout=30s: dial tcp 10.110.63.191:443: connect: connection refused
 ```
@@ -547,12 +546,14 @@ E0911 04:57:22.686526       1 dispatcher.go:68] failed calling webhook "k-rail.c
 ### Checking kube-apiserver logs
 
 Checking `kube-apiserver` logs depends on what Kubernetes distribution you use.
+
 - For minikube and other self hosted (meaning Kubernetes runs its infra on itself) clusters, you can typically just view the logs for the `apiserver` pod in the `kube-system` namespace.
 - For some non self-hosted clusters, such as GKE, you can download the `apiserver` logs through the Kubernetes proxy:
-```bash
-kubectl proxy --port 8001 &
-curl http://localhost:8001/logs/kube-apiserver.log > /tmp/out.log
-```
+
+  ```bash
+  kubectl proxy --port 8001 &
+  curl http://localhost:8001/logs/kube-apiserver.log > /tmp/out.log
+  ```
 
 ### Viewing webhook latency and status code metrics
 
@@ -585,7 +586,6 @@ $ kubectl get secret --namespace k-rail k-rail-cert -o json | jq -r '.data["cert
             Not After : Oct 21 05:40:16 2029 GMT
         Subject: CN = k-rail.k-rail.svc
 ```
-
 
 # License
 

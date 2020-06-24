@@ -13,19 +13,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
           
-      - name: Run chart-testing (lint)
-        id: lint
-        uses: helm/chart-testing-action@v1.0.0-rc.1
-        with:
-          config: .ci/ct-config.yaml
-          command: lint
+      # - name: Run chart-testing (lint)
+      #   id: lint
+      #   uses: helm/chart-testing-action@v1.0.0-rc.1
+      #   with:
+      #     config: .ci/ct-config.yaml
+      #     command: lint
 
       - name: Create kind cluster
-        uses: helm/kind-action@v1.0.0-alpha.3
+        uses: helm/kind-action@v1.0.0-rc.1
         with:
           install_local_path_provisioner: true
         # Only build a kind cluster if there are chart changes to test.
-        if: steps.lint.outputs.changed == 'true'
+        # if: steps.lint.outputs.changed == 'true'
+
+      - name: Prepare namespace
+        run: |
+          kubectl create namespace k-rail
+          kubectl label namespace k-rail k-rail/ignore=true
 
       - name: Run chart-testing (install)
         uses: helm/chart-testing-action@v1.0.0-rc.1
