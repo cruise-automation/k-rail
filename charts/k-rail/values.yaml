@@ -7,7 +7,7 @@ failurePolicy: Fail
 
 image:
   repository: cruise/k-rail
-  tag: release-v1.5.1
+  tag:  # left empty for setting override, otherwise uses template default
   pullPolicy: IfNotPresent
 
 resources:
