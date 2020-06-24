@@ -43,6 +43,11 @@ config:
     mutate_image_pull_policy:
       IfNotPresent: []
       Always: []
+    policy_require_service_loadbalancer_annotations:
+      - annotation: "cloud.google.com/load-balancer-type"
+        allowed_values: 
+          - internal
+        allow_missing: false
   policies:
     - name: "pod_no_exec"
       enabled: True
@@ -99,6 +104,9 @@ config:
       enabled: True
       report_only: False
     - name: "persistent_volume_no_host_path"
+      enabled: True
+      report_only: False
+    - name: "service_require_loadbalancer_exemption"
       enabled: True
       report_only: False
     - name: "cluster_role_binding_no_anonymous_subject"
