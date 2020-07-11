@@ -38,8 +38,6 @@ func (p PolicyTrustedRepository) Validate(ctx context.Context, config policies.C
 		return resourceViolations, nil
 	}
 
-	violationText := "Trusted Image Repository: image must be sourced from a trusted repository"
-
 	validateContainer := func(container corev1.Container) {
 		matches := 0
 		for _, pattern := range config.PolicyTrustedRepositoryRegexes {
@@ -49,6 +47,7 @@ func (p PolicyTrustedRepository) Validate(ctx context.Context, config policies.C
 		}
 
 		if matches == 0 {
+			violationText := "Trusted Image Repository: image must be sourced from a trusted repository. Untrusted Images: " + container.Image
 			resourceViolations = append(resourceViolations, policies.ResourceViolation{
 				Namespace:    ar.Namespace,
 				ResourceName: podResource.ResourceName,
