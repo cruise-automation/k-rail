@@ -14,7 +14,7 @@ require (
 	k8s.io/api v0.17.2
 	k8s.io/apimachinery v0.17.2
 	k8s.io/client-go v0.17.2 //v11.0.0+incompatible
-	k8s.io/utils v0.0.0-20200229041039-0a110f9eb7ab // indirect
+	k8s.io/utils v0.0.0-20200229041039-0a110f9eb7ab
 	sigs.k8s.io/yaml v1.1.0
 )
 
