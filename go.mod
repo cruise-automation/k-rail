@@ -21,5 +21,3 @@ require (
 	k8s.io/utils v0.0.0-20200229041039-0a110f9eb7ab
 	sigs.k8s.io/yaml v1.1.0
 )
-
-replace git.apache.org/thrift.git => github.com/apache/thrift v0.12.0
