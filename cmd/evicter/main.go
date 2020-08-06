@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -38,9 +39,16 @@ func main() {
 		instanceID                     = flag.String("instance", uuid.New().String(), "the unique holder identity. used for leader lock")
 		leaseLockName                  = flag.String("lease-lock-name", "k-rail-evicter-lock", "the lease lock resource name")
 		leaseLockNamespace             = flag.String("lease-lock-namespace", "k-rail", "the lease lock resource namespace")
+		probeServerAddress             = flag.String("probe-listen-address", ":8080", "server address for healthz/readiness server")
 	)
 	flag.Parse()
 	flag.Set("logtostderr", "true") // glog: no disk log
+
+	defer func() {
+		if err := recover(); err != nil {
+			klog.Fatal(err)
+		}
+	}()
 
 	config, err := clientcmd.BuildConfigFromFlags(*master, *kubeconfig)
 	if err != nil {
@@ -55,6 +63,11 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	watchSigTerm(cancel)
+
+	probeServer := newProbeServer(*probeServerAddress)
+	go func() {
+		klog.Fatal(probeServer.ListenAndServe())
+	}()
 
 	br := record.NewBroadcaster()
 	br.StartRecordingToSink(&corev1.EventSinkImpl{Interface: clientset.CoreV1().Events(metav1.NamespaceAll)})
@@ -120,6 +133,9 @@ func main() {
 			},
 			OnStoppedLeading: func() {
 				// we can do cleanup here
+				cancel()
+				ctx, _ := context.WithTimeout(ctx, 100*time.Millisecond)
+				_ = probeServer.Shutdown(ctx)
 				klog.Infof("Leader lost: %s", *instanceID)
 				os.Exit(0)
 			},
@@ -131,6 +147,15 @@ func main() {
 			},
 		},
 	})
+}
+
+func newProbeServer(listenAddr string) http.Server {
+	okHandler := func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}
+	http.HandleFunc("/healthz", okHandler)
+	http.HandleFunc("/readyness", okHandler)
+	return http.Server{Addr: listenAddr, Handler: nil}
 }
 
 func watchSigTerm(cancel context.CancelFunc) {
