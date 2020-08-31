@@ -34,20 +34,21 @@ webhooks:
         apiGroups: ["*"]
         apiVersions: ["*"]
         resources:
-          - pods
+          - clusterrolebindings
+          - cronjobs
+          - daemonsets
           - deployments
+          - ingresses
+          - jobs
+          - persistentvolumes
+          - poddisruptionbudgets
+          - pods
+          - pods/exec
           - replicationcontrollers
           - replicasets
-          - daemonsets
-          - statefulsets
-          - jobs
-          - cronjobs
-          - ingresses
-          - pods/exec
-          - persistentvolumes
-          - clusterrolebindings
           - rolebindings
           - services
+          - statefulsets
     failurePolicy: {{ print .Values.failurePolicy }}
   {{- if .Values.reinvocationPolicy }}
     reinvocationPolicy: {{  print .Values.reinvocationPolicy }}

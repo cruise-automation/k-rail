@@ -4,11 +4,10 @@ go 1.12
 
 require (
 	github.com/gobwas/glob v0.2.3
-	github.com/golang/protobuf v1.3.4 // indirect
-	github.com/gorilla/mux v1.7.0
-	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
+	github.com/gorilla/mux v1.7.3
 	github.com/opencontainers/go-digest v1.0.0-rc1
-	github.com/sirupsen/logrus v1.3.0
+	github.com/prometheus/common v0.13.0
+	github.com/sirupsen/logrus v1.6.0
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	k8s.io/api v0.17.2

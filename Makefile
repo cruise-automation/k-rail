@@ -10,6 +10,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+default: build
+
 ensure:
 		dep ensure
 
@@ -18,4 +20,3 @@ build:
 
 test:
 		GO111MODULE=on CGO_ENABLED=1 go test -race -cover $(shell go list ./... | grep -v /vendor/)
-		
