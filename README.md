@@ -453,7 +453,7 @@ Enforcing the policy prevents the creation of namespace level role bindings that
 
 Prevent misconfigured pod disruption budgets from disrupting normal system maintenance such as node drains. Ensure that
 - minAvailable is less than the items replicas
-- maxUnavailable is bigger than 1
+- maxUnavailable is greater than or equal to 1
 
 # Configuration
 
