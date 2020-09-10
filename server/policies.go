@@ -20,6 +20,7 @@ import (
 	"github.com/cruise-automation/k-rail/policies/ingress"
 	"github.com/cruise-automation/k-rail/policies/persistentVolume"
 	"github.com/cruise-automation/k-rail/policies/pod"
+	"github.com/cruise-automation/k-rail/policies/poddisruptionbudget"
 	rolebinding "github.com/cruise-automation/k-rail/policies/rolebinding"
 	"github.com/cruise-automation/k-rail/policies/service"
 	log "github.com/sirupsen/logrus"
@@ -66,6 +67,12 @@ func (s *Server) registerPolicies() {
 		log.WithError(err).Error("could not load RequireUniqueHostPolicy")
 	} else {
 		s.registerPolicy(requireUniqueHostPolicy)
+	}
+	pdbMinAvailableTooBig, err := poddisruptionbudget.NewPolicyInvalidPodDisruptionBudget()
+	if err != nil {
+		log.WithError(err).Error("could not load InvalidPodDisruptionBudget policy")
+	} else {
+		s.registerPolicy(pdbMinAvailableTooBig)
 	}
 }
 

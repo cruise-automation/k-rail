@@ -18,6 +18,7 @@ const (
 	cacheKeyPersistentVolume
 	cacheKeyClusterRoleBinding
 	cacheKeyRoleBinding
+	cacheKeyPodDisruptionBudget
 )
 
 type cache struct {

@@ -43,6 +43,7 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
   - [No Persistent Volume Host Path](#no-persistent-volume-host-path)
   - [No Anonymous Cluster Role Binding](#no-anonymous-cluster-role-binding)
   - [No Anonymous Role Binding](#no-anonymous-role-binding)
+  - [Invalid Pod Disruption Budget](#invalid-pod-disruption-budget)
 - [Configuration](#configuration)
   - [Webhook Configuration](#webhook-configuration)
   - [Logging](#logging)
@@ -447,6 +448,12 @@ Enforcing the policy prevents the creation of cluster level role bindings that a
 ## No Anonymous Role Binding
 
 Enforcing the policy prevents the creation of namespace level role bindings that authorize unathenticated or anonymous users to access resources. 
+
+## Invalid Pod Disruption Budget
+
+Prevent misconfigured pod disruption budgets from disrupting normal system maintenance such as node drains. Ensure that
+- minAvailable is less than the items replicas
+- maxUnavailable is bigger than 1
 
 # Configuration
 

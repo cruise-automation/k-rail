@@ -1,0 +1,43 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-nginx-pdb
+  labels:
+    app: test-nginx-pdb
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: test-nginx-pdb
+  template:
+    metadata:
+      labels:
+        app: test-nginx-pdb
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.7.9
+        ports:
+        - containerPort: 80
+---
+  apiVersion: policy/v1beta1
+  kind: PodDisruptionBudget
+  metadata:
+    name: bad-pdb-min
+  spec:
+    minAvailable: 2
+    selector:
+      matchLabels:
+        app: test-nginx-pdb
+---
+  apiVersion: policy/v1beta1
+  kind: PodDisruptionBudget
+  metadata:
+    name: bad-pdb-max
+  spec:
+    maxUnavailable: 49%
+    selector:
+      matchLabels:
+        app: test-nginx-pdb
+  
