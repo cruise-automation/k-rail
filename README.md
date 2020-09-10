@@ -451,7 +451,7 @@ Enforcing the policy prevents the creation of namespace level role bindings that
 
 ## Invalid Pod Disruption Budget
 
-Prevent misconfigured pod disruption budgets from disrupting normal system maintenance such as node drains. Ensure that
+Prevent misconfigured pod disruption budgets from disrupting normal system maintenance such as node drains. Ensures that
 - minAvailable is less than the items replicas
 - maxUnavailable is greater than or equal to 1
 
