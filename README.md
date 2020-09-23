@@ -255,7 +255,7 @@ Host bind mounts (also called `hostPath` mounts) can be used to exfiltrate data 
 
 The Docker socket bind mount provides API access to the host Docker daemon, which can be used for privilege escalation or otherwise control the container host. Using Docker sock mounts can cause unreliability of the node because of the extra workloads that the Kubernetes schedulers are not aware of.
 
-**Note:** It is recommended to use the `No Bind Mounts` policy to disable all `hostPath` mounts rather than only this policy.
+**Note:** It is recommended to use the `No Bind Mounts` policy to disable all `hostPath` mounts rather than only this policy, because it is easily bypassed. This policy does not provide meaningful protection and is here for informative purposes.
 
 ## EmptyDir size limit
 
