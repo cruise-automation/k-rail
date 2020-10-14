@@ -24,6 +24,7 @@ type PolicySettings struct {
 
 type Config struct {
 	LogLevel              string   `json:"log_level"`
+	ClusterName           string   `json:"cluster_name"`
 	BlacklistedNamespaces []string `json:"blacklisted_namespaces"`
 	TLS                   struct {
 		Cert string

@@ -25,6 +25,7 @@ import (
 
 // RawExemption is the configuration for a policy exemption
 type RawExemption struct {
+	ClusterName    string   `json:"cluster_name"`
 	ResourceName   string   `json:"resource_name"`
 	Namespace      string   `json:"namespace"`
 	Username       string   `json:"username"`
@@ -34,6 +35,7 @@ type RawExemption struct {
 
 // CompiledExemption is the compiled configuration for a policy exemption
 type CompiledExemption struct {
+	ClusterName    glob.Glob
 	ResourceName   glob.Glob
 	Namespace      glob.Glob
 	Username       glob.Glob
@@ -51,6 +53,9 @@ func (r *RawExemption) Compile() CompiledExemption {
 		r.ResourceName = r.ResourceName + "*"
 	}
 
+	if r.ClusterName == "" {
+		r.ClusterName = "*"
+	}
 	if r.Namespace == "" {
 		r.Namespace = "*"
 	}
@@ -70,6 +75,7 @@ func (r *RawExemption) Compile() CompiledExemption {
 		policies = append(policies, glob.MustCompile(p))
 	}
 	return CompiledExemption{
+		ClusterName:    glob.MustCompile(r.ClusterName),
 		ResourceName:   glob.MustCompile(r.ResourceName),
 		Namespace:      glob.MustCompile(r.Namespace),
 		Username:       glob.MustCompile(r.Username),
@@ -116,9 +122,10 @@ func ExemptionsFromDirectory(directory string) ([]CompiledExemption, error) {
 }
 
 // IsExempt returns whether a resource is exempt from a given policy
-func IsExempt(resourceName string, namespace string, userInfo authenticationv1.UserInfo, policyName string, exemptions []CompiledExemption) bool {
+func IsExempt(clusterName, resourceName, namespace string, userInfo authenticationv1.UserInfo, policyName string, exemptions []CompiledExemption) bool {
 	for _, e := range exemptions {
-		if e.Namespace.Match(namespace) &&
+		if e.ClusterName.Match(clusterName) &&
+			e.Namespace.Match(namespace) &&
 			e.ResourceName.Match(resourceName) &&
 			e.Username.Match(userInfo.Username) {
 			for _, p := range e.ExemptPolicies {

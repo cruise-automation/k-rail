@@ -145,6 +145,7 @@ func (s *Server) validateResources(ar v1beta1.AdmissionReview) v1beta1.Admission
 		// The AdmissionReview Name is often empty and populated by an downstream controller.
 		podResource := resource.GetPodResource(ctx, ar.Request)
 		if len(violations) == 0 && patches != nil && !policies.IsExempt(
+			s.Config.ClusterName,
 			podResource.ResourceName,
 			ar.Request.Namespace,
 			ar.Request.UserInfo,
@@ -157,6 +158,7 @@ func (s *Server) validateResources(ar v1beta1.AdmissionReview) v1beta1.Admission
 		// apply exempt and non-exempt violations
 		if len(violations) > 0 {
 			if policies.IsExempt(
+				s.Config.ClusterName,
 				violations[0].ResourceName,
 				ar.Request.Namespace,
 				ar.Request.UserInfo,
@@ -176,6 +178,7 @@ func (s *Server) validateResources(ar v1beta1.AdmissionReview) v1beta1.Admission
 		violations, _ := val.Validate(ctx, s.Config.PolicyConfig, ar.Request)
 		if len(violations) > 0 {
 			if policies.IsExempt(
+				s.Config.ClusterName,
 				violations[0].ResourceName,
 				ar.Request.Namespace,
 				ar.Request.UserInfo,
