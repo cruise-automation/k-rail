@@ -79,10 +79,11 @@ By default, the Kubernetes APIs allow for a variety of easy privilege escalation
     "time": "2019-11-03T06:28:07Z"
   }
   ```
-- Flexible and powerful policy exemptions by resource name, namespace, groups, and users
+- Flexible and powerful policy exemptions by cluster, resource name, namespace, groups, and users
   ```yaml
   ---
-  - resource_name: "*"
+  - cluster_name: paas-ci-us-west1
+    resource_name: "*"
     namespace: "cluster-conformance-testing"
     username: "cluster-ci@paas-ci.iam.gserviceaccount.com"
     group: "*"
