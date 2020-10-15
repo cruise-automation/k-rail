@@ -17,7 +17,7 @@ import (
 
 	"github.com/cruise-automation/k-rail/policies"
 	"github.com/cruise-automation/k-rail/resource"
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 )
 
 type PolicyDefaultSeccompPolicy struct{}
@@ -26,7 +26,7 @@ func (p PolicyDefaultSeccompPolicy) Name() string {
 	return "pod_default_seccomp_policy"
 }
 
-func (p PolicyDefaultSeccompPolicy) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
+func (p PolicyDefaultSeccompPolicy) Validate(ctx context.Context, config policies.Config, ar *admissionv1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	podResource := resource.GetPodResource(ctx, ar)
 	if podResource == nil {

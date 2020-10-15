@@ -15,7 +15,7 @@ package resource
 import (
 	"context"
 
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -28,14 +28,14 @@ type PodDisruptionBudgetResource struct {
 }
 
 // GetPodDisruptionBudgetResource extracts an PodDisruptionBudgetResource from an AdmissionRequest
-func GetPodDisruptionBudgetResource(ctx context.Context, ar *admissionv1beta1.AdmissionRequest) *PodDisruptionBudgetResource {
+func GetPodDisruptionBudgetResource(ctx context.Context, ar *admissionv1.AdmissionRequest) *PodDisruptionBudgetResource {
 	c := GetResourceCache(ctx)
 	return c.getOrSet(cacheKeyPodDisruptionBudget, func() interface{} {
 		return decodePodDisruptionBudgetResource(ar)
 	}).(*PodDisruptionBudgetResource)
 }
 
-func decodePodDisruptionBudgetResource(ar *admissionv1beta1.AdmissionRequest) *PodDisruptionBudgetResource {
+func decodePodDisruptionBudgetResource(ar *admissionv1.AdmissionRequest) *PodDisruptionBudgetResource {
 	switch ar.Resource {
 	case metav1.GroupVersionResource{Group: "policy", Version: "v1beta1", Resource: "poddisruptionbudgets"}:
 		pdb := policyv1beta1.PodDisruptionBudget{}

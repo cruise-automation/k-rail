@@ -14,13 +14,10 @@ data:
   cert.pem: {{ b64enc $cert.Cert }}
   key.pem: {{ b64enc $cert.Key }}
 ---
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   name: k-rail
-  annotations:
-    checksum/config: {{ print .Values.config | sha256sum }}
-    checksum/exemptions: {{ print .Values.exemptions | sha256sum }}
 webhooks:
   - name: k-rail.cruise-automation.github.com
     clientConfig:
@@ -54,7 +51,8 @@ webhooks:
     reinvocationPolicy: {{  print .Values.reinvocationPolicy }}
   {{- end }}
     sideEffects: None
-    timeoutSeconds: 1  # doesn't do anything until 1.14
+    timeoutSeconds: 3
+    admissionReviewVersions: ["v1"]
     namespaceSelector:
       matchExpressions:
         - key: k-rail/ignore

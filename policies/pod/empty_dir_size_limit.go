@@ -18,7 +18,7 @@ import (
 
 	"github.com/cruise-automation/k-rail/policies"
 	"github.com/cruise-automation/k-rail/resource"
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 )
 
 type PolicyEmptyDirSizeLimit struct {
@@ -30,7 +30,7 @@ func (p PolicyEmptyDirSizeLimit) Name() string {
 
 const violationText = "Empty dir size limit: size limit exceeds the max value"
 
-func (p PolicyEmptyDirSizeLimit) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
+func (p PolicyEmptyDirSizeLimit) Validate(ctx context.Context, config policies.Config, ar *admissionv1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 	var resourceViolations []policies.ResourceViolation
 
 	podResource := resource.GetPodResource(ctx, ar)

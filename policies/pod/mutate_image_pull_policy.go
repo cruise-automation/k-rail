@@ -19,7 +19,7 @@ import (
 
 	"github.com/cruise-automation/k-rail/policies"
 	"github.com/cruise-automation/k-rail/resource"
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -32,7 +32,7 @@ func (p PolicyImagePullPolicy) Name() string {
 }
 
 // Validate is to enforce the imagePullPolicy
-func (p PolicyImagePullPolicy) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
+func (p PolicyImagePullPolicy) Validate(ctx context.Context, config policies.Config, ar *admissionv1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	podResource := resource.GetPodResource(ctx, ar)
 	if podResource == nil {

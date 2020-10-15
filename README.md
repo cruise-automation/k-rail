@@ -541,7 +541,7 @@ type Policy interface {
   Name() string
   Validate(ctx context.Context,
     config policies.Config,
-    ar *admissionv1beta1.AdmissionRequest,
+    ar *admissionv1.AdmissionRequest,
   ) ([]policies.ResourceViolation, []policies.PatchOperation)
 }
 ```

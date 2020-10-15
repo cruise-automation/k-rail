@@ -15,7 +15,7 @@ package resource
 import (
 	"context"
 
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	appsv1beta1 "k8s.io/api/apps/v1beta1"
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
@@ -36,14 +36,14 @@ type PodResource struct {
 }
 
 // GetPodResource extracts a PodResource from an AdmissionRequest
-func GetPodResource(ctx context.Context, ar *admissionv1beta1.AdmissionRequest) *PodResource {
+func GetPodResource(ctx context.Context, ar *admissionv1.AdmissionRequest) *PodResource {
 	c := GetResourceCache(ctx)
 	return c.getOrSet(cacheKeyPod, func() interface{} {
 		return decodePodResource(ar)
 	}).(*PodResource)
 }
 
-func decodePodResource(ar *admissionv1beta1.AdmissionRequest) *PodResource {
+func decodePodResource(ar *admissionv1.AdmissionRequest) *PodResource {
 	// omit Pod exec
 	switch ar.Kind {
 	case metav1.GroupVersionKind{Group: "", Version: "v1", Kind: "PodExecOptions"}:

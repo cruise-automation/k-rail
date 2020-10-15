@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -36,8 +36,8 @@ func TestWithPodExec(t *testing.T) {
 	}
 }
 
-func fakePodExecReq(b []byte) *admissionv1beta1.AdmissionRequest {
-	return &admissionv1beta1.AdmissionRequest{
+func fakePodExecReq(b []byte) *admissionv1.AdmissionRequest {
+	return &admissionv1.AdmissionRequest{
 		Kind:      metav1.GroupVersionKind{Group: "", Version: "v1", Kind: "PodExecOptions"},
 		Name:      "any",
 		Namespace: "test",
@@ -45,8 +45,8 @@ func fakePodExecReq(b []byte) *admissionv1beta1.AdmissionRequest {
 	}
 }
 
-func fakeReq(b []byte) *admissionv1beta1.AdmissionRequest {
-	return &admissionv1beta1.AdmissionRequest{
+func fakeReq(b []byte) *admissionv1.AdmissionRequest {
+	return &admissionv1.AdmissionRequest{
 		Resource:  metav1.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"},
 		Name:      "any",
 		Namespace: "test",

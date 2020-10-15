@@ -15,6 +15,9 @@ package server
 import (
 	"context"
 
+	log "github.com/sirupsen/logrus"
+	admissionv1 "k8s.io/api/admission/v1"
+
 	"github.com/cruise-automation/k-rail/policies"
 	clusterrolebinding "github.com/cruise-automation/k-rail/policies/clusterrolebinding"
 	"github.com/cruise-automation/k-rail/policies/ingress"
@@ -23,8 +26,6 @@ import (
 	"github.com/cruise-automation/k-rail/policies/poddisruptionbudget"
 	rolebinding "github.com/cruise-automation/k-rail/policies/rolebinding"
 	"github.com/cruise-automation/k-rail/policies/service"
-	log "github.com/sirupsen/logrus"
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 )
 
 // Policy specifies how a Policy is implemented
@@ -33,7 +34,7 @@ type Policy interface {
 	Name() string
 	Validate(ctx context.Context,
 		config policies.Config,
-		ar *admissionv1beta1.AdmissionRequest,
+		ar *admissionv1.AdmissionRequest,
 	) ([]policies.ResourceViolation, []policies.PatchOperation)
 }
 

@@ -16,15 +16,16 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/cruise-automation/k-rail/policies"
-	"github.com/cruise-automation/k-rail/resource"
 	log "github.com/sirupsen/logrus"
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+
+	"github.com/cruise-automation/k-rail/policies"
+	"github.com/cruise-automation/k-rail/resource"
 )
 
 // NewPolicyInvalidPodDisruptionBudget new
@@ -199,7 +200,7 @@ func (p PolicyInvalidPodDisruptionBudget) GetMatchingItems(namespace string, lab
 }
 
 // Validate poddisruptionbudget checks
-func (p PolicyInvalidPodDisruptionBudget) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
+func (p PolicyInvalidPodDisruptionBudget) Validate(ctx context.Context, config policies.Config, ar *admissionv1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 

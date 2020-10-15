@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/cruise-automation/k-rail/policies"
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	apiresource "k8s.io/apimachinery/pkg/api/resource"
@@ -188,7 +188,7 @@ func TestResourceVolumePatchPath(t *testing.T) {
 
 }
 
-func asFakeAdmissionRequest(src v1.PodSpec) *admissionv1beta1.AdmissionRequest {
+func asFakeAdmissionRequest(src v1.PodSpec) *admissionv1.AdmissionRequest {
 	xxx := appsv1.Deployment{
 		TypeMeta:   metav1.TypeMeta{},
 		ObjectMeta: metav1.ObjectMeta{Name: "test"},
@@ -204,7 +204,7 @@ func asFakeAdmissionRequest(src v1.PodSpec) *admissionv1beta1.AdmissionRequest {
 	if err != nil {
 		panic(err)
 	}
-	return &admissionv1beta1.AdmissionRequest{
+	return &admissionv1.AdmissionRequest{
 		Resource:  metav1.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"},
 		Name:      "any",
 		Namespace: "test",

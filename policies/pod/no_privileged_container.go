@@ -15,7 +15,7 @@ package pod
 import (
 	"context"
 
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 
 	"github.com/cruise-automation/k-rail/policies"
@@ -28,7 +28,7 @@ func (p PolicyNoPrivilegedContainer) Name() string {
 	return "pod_no_privileged_container"
 }
 
-func (p PolicyNoPrivilegedContainer) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
+func (p PolicyNoPrivilegedContainer) Validate(ctx context.Context, config policies.Config, ar *admissionv1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 
