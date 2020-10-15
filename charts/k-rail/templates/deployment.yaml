@@ -191,6 +191,10 @@ rules:
   - "*"
   resources:
   - ingresses
+  - deployments
+  - replicasets
+  - statefulsets
+  - poddisruptionbudgets
   verbs:
   - list
   - get
