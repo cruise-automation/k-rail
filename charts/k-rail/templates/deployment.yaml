@@ -54,7 +54,7 @@ webhooks:
     reinvocationPolicy: {{  print .Values.reinvocationPolicy }}
   {{- end }}
     sideEffects: None
-    timeoutSeconds: 1  # doesn't do anything until 1.14
+    timeoutSeconds: {{ .Values.webhookTimeout }}
     namespaceSelector:
       matchExpressions:
         - key: k-rail/ignore
