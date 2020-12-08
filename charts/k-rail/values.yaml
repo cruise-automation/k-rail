@@ -120,6 +120,9 @@ config:
     - name: "role_binding_no_anonymous_subject"
       enabled: True
       report_only: False
+    - name: "service_no_external_ip"
+      enabled: True
+      report_only: False
 
 exemptions:
   - resource_name: "*"
