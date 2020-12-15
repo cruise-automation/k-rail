@@ -44,6 +44,7 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
   - [No Anonymous Cluster Role Binding](#no-anonymous-cluster-role-binding)
   - [No Anonymous Role Binding](#no-anonymous-role-binding)
   - [Invalid Pod Disruption Budget](#invalid-pod-disruption-budget)
+  - [No External IP on Service](#no-external-ip-on-service)
 - [Configuration](#configuration)
   - [Webhook Configuration](#webhook-configuration)
   - [Logging](#logging)
@@ -455,6 +456,10 @@ Enforcing the policy prevents the creation of namespace level role bindings that
 Prevent misconfigured pod disruption budgets from disrupting normal system maintenance such as node drains. Ensures that
 - minAvailable is less than the items replicas
 - maxUnavailable is greater than or equal to 1
+
+## No External IP on Service
+
+Prevents providing External IPs on a Service to mitigate [CVE-2020-8554](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-8554).
 
 # Configuration
 

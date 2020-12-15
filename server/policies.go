@@ -59,6 +59,7 @@ func (s *Server) registerPolicies() {
 	s.registerPolicy(pod.PolicyImagePullPolicy{})
 	s.registerPolicy(ingress.PolicyRequireIngressExemption{})
 	s.registerPolicy(service.PolicyRequireServiceLoadbalancerExemption{})
+	s.registerPolicy(service.PolicyServiceNoExternalIP{})
 	s.registerPolicy(persistentVolume.PolicyNoPersistentVolumeHost{})
 	s.registerPolicy(clusterrolebinding.PolicyNoAnonymousClusterRoleBinding{})
 	s.registerPolicy(rolebinding.PolicyNoAnonymousRoleBinding{})
