@@ -50,7 +50,7 @@ func (p PolicyRequireUniqueHost) Name() string {
 
 func (p PolicyRequireUniqueHost) CheckIngressNamespaces(ctx context.Context, host string) (map[string]struct{}, error) {
 	ingressNamespacesMap := make(map[string]struct{})
-	ingresses, err := p.client.ExtensionsV1beta1().Ingresses("").List(metav1.ListOptions{})
+	ingresses, err := p.client.ExtensionsV1beta1().Ingresses("").List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return ingressNamespacesMap, err
 	}

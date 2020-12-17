@@ -15,11 +15,11 @@ require (
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
-	k8s.io/api v0.17.2
-	k8s.io/apimachinery v0.17.2
-	k8s.io/client-go v0.17.2 //v11.0.0+incompatible
-	k8s.io/utils v0.0.0-20200229041039-0a110f9eb7ab
-	sigs.k8s.io/yaml v1.1.0
+	k8s.io/api v0.18.10
+	k8s.io/apimachinery v0.18.10
+	k8s.io/client-go v0.18.10 //v11.0.0+incompatible
+	k8s.io/utils v0.0.0-20200324210504-a9aa75ae1b89
+	sigs.k8s.io/yaml v1.2.0
 )
 
 replace git.apache.org/thrift.git => github.com/apache/thrift v0.12.0
