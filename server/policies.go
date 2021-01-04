@@ -57,6 +57,7 @@ func (s *Server) registerPolicies() {
 	s.registerPolicy(pod.PolicyDefaultSeccompPolicy{})
 	s.registerPolicy(pod.PolicyNoShareProcessNamespace{})
 	s.registerPolicy(pod.PolicyImagePullPolicy{})
+	s.registerPolicy(pod.PolicyDenyUnconfinedApparmorPolicy{})
 	s.registerPolicy(ingress.PolicyRequireIngressExemption{})
 	s.registerPolicy(service.PolicyRequireServiceLoadbalancerExemption{})
 	s.registerPolicy(service.PolicyServiceNoExternalIP{})
