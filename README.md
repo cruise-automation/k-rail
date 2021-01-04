@@ -529,6 +529,8 @@ The format of an exemption config is YAML, and looks like this:
 #   exempt_policies: ["*"]
 ```
 
+*Note:* The resource name automatically has a trailing glob appended in order to match resources created by controllers. This could lead to unintended matches.
+
 ## Policy configuration
 
 Some policies are configurable. Policy configuration is contained in the k-rail configuration file, and documentation for a policy's configuration can be found in the Supported policies heading above.
