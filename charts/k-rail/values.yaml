@@ -123,6 +123,9 @@ config:
     - name: "service_no_external_ip"
       enabled: True
       report_only: False
+    - name: "pod_deny_unconfined_apparmor_policy"
+      enabled: True
+      report_only: False
 
 exemptions:
   - resource_name: "*"
