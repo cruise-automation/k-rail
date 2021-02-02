@@ -14,6 +14,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -22,16 +23,13 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-
-	"encoding/json"
-
-	"github.com/cruise-automation/k-rail/policies"
-	"github.com/cruise-automation/k-rail/resource"
-
-	"k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+
+	"github.com/cruise-automation/k-rail/policies"
+	"github.com/cruise-automation/k-rail/resource"
 )
 
 var (
@@ -39,9 +37,9 @@ var (
 	codecs        = serializer.NewCodecFactory(runtimeScheme)
 )
 
-func writeAdmissionError(w http.ResponseWriter, ar v1beta1.AdmissionReview, e error) {
+func writeAdmissionError(w http.ResponseWriter, ar admissionv1.AdmissionReview, e error) {
 	w.WriteHeader(http.StatusBadRequest)
-	ar.Response = &v1beta1.AdmissionResponse{
+	ar.Response = &admissionv1.AdmissionResponse{
 		Result: &metav1.Status{
 			Message: e.Error(),
 		},
@@ -53,8 +51,8 @@ func writeAdmissionError(w http.ResponseWriter, ar v1beta1.AdmissionReview, e er
 // ValidatingWebhook is a ValidatingWebhook endpoint that accepts K8s resources to process
 func (s *Server) ValidatingWebhook(w http.ResponseWriter, r *http.Request) {
 
-	ar := v1beta1.AdmissionReview{
-		Response: &v1beta1.AdmissionResponse{
+	ar := admissionv1.AdmissionReview{
+		Response: &admissionv1.AdmissionResponse{
 			Allowed: true,
 			Result: &metav1.Status{
 				Reason:  "k-rail admission review",
@@ -106,7 +104,7 @@ func (s *Server) ValidatingWebhook(w http.ResponseWriter, r *http.Request) {
 }
 
 // validateResources accepts K8s resources to process
-func (s *Server) validateResources(ar v1beta1.AdmissionReview) v1beta1.AdmissionReview {
+func (s *Server) validateResources(ar admissionv1.AdmissionReview) admissionv1.AdmissionReview {
 	ctx := resource.WithResourceCache(context.Background())
 	ctx, cancelfn := context.WithTimeout(ctx, 5*time.Second)
 	defer cancelfn()
@@ -125,7 +123,7 @@ func (s *Server) validateResources(ar v1beta1.AdmissionReview) v1beta1.Admission
 	// allow resource if namespace is blacklisted
 	for _, namespace := range s.Config.BlacklistedNamespaces {
 		if namespace == ar.Request.Namespace {
-			ar.Response = &v1beta1.AdmissionResponse{
+			ar.Response = &admissionv1.AdmissionResponse{
 				Allowed: true,
 				Result: &metav1.Status{
 					Reason:  "k-rail admission review",
@@ -247,7 +245,7 @@ func (s *Server) validateResources(ar v1beta1.AdmissionReview) v1beta1.Admission
 			violations = violations + "\n" + v.HumanString()
 		}
 
-		ar.Response = &v1beta1.AdmissionResponse{
+		ar.Response = &admissionv1.AdmissionResponse{
 			UID:     ar.Request.UID,
 			Allowed: false,
 			Result: &metav1.Status{
@@ -271,12 +269,12 @@ func (s *Server) validateResources(ar v1beta1.AdmissionReview) v1beta1.Admission
 
 	patches, _ := json.Marshal(mutationPatches)
 
-	ar.Response = &v1beta1.AdmissionResponse{
+	ar.Response = &admissionv1.AdmissionResponse{
 		UID:     ar.Request.UID,
 		Allowed: true,
 		Patch:   patches,
-		PatchType: func() *v1beta1.PatchType {
-			pt := v1beta1.PatchTypeJSONPatch
+		PatchType: func() *admissionv1.PatchType {
+			pt := admissionv1.PatchTypeJSONPatch
 			return &pt
 		}(),
 		Result: &metav1.Status{

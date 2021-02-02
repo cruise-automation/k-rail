@@ -16,7 +16,7 @@ import (
 	"context"
 	"strings"
 
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 
 	"github.com/cruise-automation/k-rail/policies"
 	"github.com/cruise-automation/k-rail/resource"
@@ -28,7 +28,7 @@ func (p PolicyNoAnonymousRoleBinding) Name() string {
 	return "role_binding_no_anonymous_subject"
 }
 
-func (p PolicyNoAnonymousRoleBinding) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
+func (p PolicyNoAnonymousRoleBinding) Validate(ctx context.Context, config policies.Config, ar *admissionv1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 	rbResource := resource.GetRoleBindingResource(ctx, ar)

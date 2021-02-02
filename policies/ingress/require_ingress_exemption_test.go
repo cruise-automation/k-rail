@@ -19,7 +19,7 @@ import (
 	"testing"
 
 	"github.com/cruise-automation/k-rail/policies"
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	networkingv1beta1 "k8s.io/api/networking/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -82,11 +82,11 @@ func TestPolicyRequireIngressExemption(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var ar = &admissionv1beta1.AdmissionRequest{}
+			var ar = &admissionv1.AdmissionRequest{}
 
 			if tt.ingressExt != nil {
 				raw, _ := json.Marshal(tt.ingressExt)
-				ar = &admissionv1beta1.AdmissionRequest{
+				ar = &admissionv1.AdmissionRequest{
 					Namespace: "namespace",
 					Name:      "name",
 					Object:    runtime.RawExtension{Raw: raw},
@@ -96,7 +96,7 @@ func TestPolicyRequireIngressExemption(t *testing.T) {
 
 			if tt.ingressNet != nil {
 				raw, _ := json.Marshal(tt.ingressNet)
-				ar = &admissionv1beta1.AdmissionRequest{
+				ar = &admissionv1.AdmissionRequest{
 					Namespace: "namespace",
 					Name:      "name",
 					Object:    runtime.RawExtension{Raw: raw},

@@ -15,10 +15,9 @@ package pod
 import (
 	"context"
 
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
-
 	"github.com/cruise-automation/k-rail/policies"
 	"github.com/cruise-automation/k-rail/resource"
+	admissionv1 "k8s.io/api/admission/v1"
 )
 
 type PolicyNoHostPID struct{}
@@ -27,7 +26,7 @@ func (p PolicyNoHostPID) Name() string {
 	return "pod_no_host_pid"
 }
 
-func (p PolicyNoHostPID) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
+func (p PolicyNoHostPID) Validate(ctx context.Context, config policies.Config, ar *admissionv1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 

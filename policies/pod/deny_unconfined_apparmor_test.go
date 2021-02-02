@@ -18,7 +18,7 @@ import (
 	"testing"
 
 	"github.com/cruise-automation/k-rail/policies"
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -29,7 +29,7 @@ func TestPolicyDenyUnconfinedApparmorPolicy(t *testing.T) {
 	type args struct {
 		ctx    context.Context
 		config policies.Config
-		ar     *admissionv1beta1.AdmissionRequest
+		ar     *admissionv1.AdmissionRequest
 	}
 	tests := []struct {
 		name        string
@@ -64,7 +64,7 @@ func TestPolicyDenyUnconfinedApparmorPolicy(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			p := PolicyDenyUnconfinedApparmorPolicy{}
 			raw, _ := json.Marshal(corev1.Pod{Spec: tt.podSpec, ObjectMeta: metav1.ObjectMeta{Annotations: tt.annotations}})
-			ar := &admissionv1beta1.AdmissionRequest{
+			ar := &admissionv1.AdmissionRequest{
 				Namespace: "namespace",
 				Name:      "name",
 				Object:    runtime.RawExtension{Raw: raw},

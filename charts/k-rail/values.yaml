@@ -2,7 +2,9 @@
 replicaCount: 3
 
 # Set this to 'Fail' if you wish that resources apply fail if k-rail is unreachable.
+# Use 'Ignore' if you wish resources to apply if k-rail is unreachable.
 failurePolicy: Fail
+
 #reinvocationPolicy: IfNeeded
 
 image:

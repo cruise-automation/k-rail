@@ -15,7 +15,7 @@ package resource
 import (
 	"context"
 
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -28,14 +28,14 @@ type ServiceResource struct {
 }
 
 // GetServiceResource extracts and ServiceResource from an AdmissionRequest
-func GetServiceResource(ctx context.Context, ar *admissionv1beta1.AdmissionRequest) *ServiceResource {
+func GetServiceResource(ctx context.Context, ar *admissionv1.AdmissionRequest) *ServiceResource {
 	c := GetResourceCache(ctx)
 	return c.getOrSet(cacheKeyService, func() interface{} {
 		return decodeServiceResource(ar)
 	}).(*ServiceResource)
 }
 
-func decodeServiceResource(ar *admissionv1beta1.AdmissionRequest) *ServiceResource {
+func decodeServiceResource(ar *admissionv1.AdmissionRequest) *ServiceResource {
 	switch ar.Resource {
 	case metav1.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}:
 		svc := corev1.Service{}
