@@ -1,6 +1,7 @@
 {{- $cn := printf "k-rail.%s.svc" .Release.Namespace }}
 {{- $ca := genCA "k-rail-admission-ca" 3650 -}}
-{{- $cert := genSignedCert $cn nil nil 3650 $ca -}}
+{{- $san := printf "k-rail.%s.svc" .Release.Namespace }}
+{{- $cert := genSignedCert $cn nil (list $san) 3650 $ca -}}
 ---
 apiVersion: v1
 kind: Secret
@@ -51,8 +52,8 @@ webhooks:
     reinvocationPolicy: {{  print .Values.reinvocationPolicy }}
   {{- end }}
     sideEffects: None
-    timeoutSeconds: 3
     admissionReviewVersions: ["v1"]
+    timeoutSeconds: {{ .Values.webhookTimeout }}
     namespaceSelector:
       matchExpressions:
         - key: k-rail/ignore

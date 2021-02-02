@@ -26,6 +26,10 @@ tolerations: []
 
 affinity: {}
 
+# Set to the value (in seconds) which the mutatingwebhook should use for a timeout
+# for slower clusters (or larger workloads) this may need to be increased
+webhookTimeout: 1
+
 config:
   cluster_name: default
   log_level: info
@@ -116,6 +120,12 @@ config:
       enabled: True
       report_only: False
     - name: "role_binding_no_anonymous_subject"
+      enabled: True
+      report_only: False
+    - name: "service_no_external_ip"
+      enabled: True
+      report_only: False
+    - name: "pod_deny_unconfined_apparmor_policy"
       enabled: True
       report_only: False
 

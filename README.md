@@ -44,6 +44,8 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
   - [No Anonymous Cluster Role Binding](#no-anonymous-cluster-role-binding)
   - [No Anonymous Role Binding](#no-anonymous-role-binding)
   - [Invalid Pod Disruption Budget](#invalid-pod-disruption-budget)
+  - [No External IP on Service](#no-external-ip-on-service)
+  - [Deny Unconfined AppArmor Policies](#deny-unconfined-apparmor-policies)
 - [Configuration](#configuration)
   - [Webhook Configuration](#webhook-configuration)
   - [Logging](#logging)
@@ -456,6 +458,14 @@ Prevent misconfigured pod disruption budgets from disrupting normal system maint
 - minAvailable is less than the items replicas
 - maxUnavailable is greater than or equal to 1
 
+## No External IP on Service
+
+Prevents providing External IPs on a Service to mitigate [CVE-2020-8554](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-8554).
+
+## Deny Unconfined AppArmor Policies
+
+Prevents users from specifing an unconfined apparmor policy which can be used with other conditions to lead to [container escape](https://blog.trailofbits.com/2019/07/19/understanding-docker-container-escapes/).
+
 # Configuration
 
 For the Helm deployment, all configuration is contained in [`charts/k-rail/values.yaml`](charts/k-rail/values.yaml).
@@ -523,6 +533,8 @@ The format of an exemption config is YAML, and looks like this:
 #   group: "*"
 #   exempt_policies: ["*"]
 ```
+
+*Note:* The resource name automatically has a trailing glob appended in order to match resources created by controllers. This could lead to unintended matches.
 
 ## Policy configuration
 

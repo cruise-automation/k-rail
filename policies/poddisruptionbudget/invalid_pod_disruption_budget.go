@@ -63,7 +63,7 @@ func (p PolicyInvalidPodDisruptionBudget) Name() string {
 }
 
 // GetMatchingItems find all deployments, replicasets, and statefulsets which match the pdb labelselector
-func (p PolicyInvalidPodDisruptionBudget) GetMatchingItems(namespace string, labelSelector *metav1.LabelSelector) ([]Item, error) {
+func (p PolicyInvalidPodDisruptionBudget) GetMatchingItems(namespace string, labelSelector *metav1.LabelSelector, ctx context.Context) ([]Item, error) {
 	match := make([]Item, 0)
 
 	labelMap, err := metav1.LabelSelectorAsMap(labelSelector)
@@ -77,7 +77,7 @@ func (p PolicyInvalidPodDisruptionBudget) GetMatchingItems(namespace string, lab
 
 	// Check all types & versions, fail silently when a an api version does not exist
 	// extensionsv1beta1/deployments
-	if extsv1b1Deployments, err := p.client.ExtensionsV1beta1().Deployments(namespace).List(options); err == nil {
+	if extsv1b1Deployments, err := p.client.ExtensionsV1beta1().Deployments(namespace).List(ctx, options); err == nil {
 		for _, item := range extsv1b1Deployments.Items {
 			do := Item{
 				Name:     item.Name,
@@ -89,7 +89,7 @@ func (p PolicyInvalidPodDisruptionBudget) GetMatchingItems(namespace string, lab
 	}
 
 	// appsv1beta1/deployments
-	if appsv1b1Deployments, err := p.client.AppsV1beta1().Deployments(namespace).List(options); err == nil {
+	if appsv1b1Deployments, err := p.client.AppsV1beta1().Deployments(namespace).List(ctx, options); err == nil {
 		for _, item := range appsv1b1Deployments.Items {
 			do := Item{
 				Name:     item.Name,
@@ -101,7 +101,7 @@ func (p PolicyInvalidPodDisruptionBudget) GetMatchingItems(namespace string, lab
 	}
 
 	// appsv1beta2/deployments
-	if appsv1b2Deployments, err := p.client.AppsV1beta2().Deployments(namespace).List(options); err == nil {
+	if appsv1b2Deployments, err := p.client.AppsV1beta2().Deployments(namespace).List(ctx, options); err == nil {
 		for _, item := range appsv1b2Deployments.Items {
 			do := Item{
 				Name:     item.Name,
@@ -113,7 +113,7 @@ func (p PolicyInvalidPodDisruptionBudget) GetMatchingItems(namespace string, lab
 	}
 
 	// appsv1/deployments
-	if appsV1Deployments, err := p.client.AppsV1().Deployments(namespace).List(options); err == nil {
+	if appsV1Deployments, err := p.client.AppsV1().Deployments(namespace).List(ctx, options); err == nil {
 		for _, item := range appsV1Deployments.Items {
 			do := Item{
 				Name:     item.Name,
@@ -125,7 +125,7 @@ func (p PolicyInvalidPodDisruptionBudget) GetMatchingItems(namespace string, lab
 	}
 
 	// extensionsv1beta1/replicasets
-	if extsv1b1ReplicaSets, err := p.client.ExtensionsV1beta1().ReplicaSets(namespace).List(options); err == nil {
+	if extsv1b1ReplicaSets, err := p.client.ExtensionsV1beta1().ReplicaSets(namespace).List(ctx, options); err == nil {
 		for _, item := range extsv1b1ReplicaSets.Items {
 			do := Item{
 				Name:     item.Name,
@@ -137,7 +137,7 @@ func (p PolicyInvalidPodDisruptionBudget) GetMatchingItems(namespace string, lab
 	}
 
 	// appsv1beta2/replicasets
-	if appsv1b2ReplicaSets, err := p.client.AppsV1beta2().ReplicaSets(namespace).List(options); err == nil {
+	if appsv1b2ReplicaSets, err := p.client.AppsV1beta2().ReplicaSets(namespace).List(ctx, options); err == nil {
 		for _, item := range appsv1b2ReplicaSets.Items {
 			do := Item{
 				Name:     item.Name,
@@ -149,7 +149,7 @@ func (p PolicyInvalidPodDisruptionBudget) GetMatchingItems(namespace string, lab
 	}
 
 	// appsv1/replicasets
-	if appsv1ReplicaSets, err := p.client.AppsV1().ReplicaSets(namespace).List(options); err == nil {
+	if appsv1ReplicaSets, err := p.client.AppsV1().ReplicaSets(namespace).List(ctx, options); err == nil {
 		for _, item := range appsv1ReplicaSets.Items {
 			do := Item{
 				Name:     item.Name,
@@ -161,7 +161,7 @@ func (p PolicyInvalidPodDisruptionBudget) GetMatchingItems(namespace string, lab
 	}
 
 	// appsv1beta1/statefulsets
-	if appsv1b1StatefulSets, err := p.client.AppsV1beta1().StatefulSets(namespace).List(options); err == nil {
+	if appsv1b1StatefulSets, err := p.client.AppsV1beta1().StatefulSets(namespace).List(ctx, options); err == nil {
 		for _, item := range appsv1b1StatefulSets.Items {
 			do := Item{
 				Name:     item.Name,
@@ -173,7 +173,7 @@ func (p PolicyInvalidPodDisruptionBudget) GetMatchingItems(namespace string, lab
 	}
 
 	// appsv1beta2/statefulsets
-	if appsv1b2StatefulSets, err := p.client.AppsV1beta2().StatefulSets(namespace).List(options); err == nil {
+	if appsv1b2StatefulSets, err := p.client.AppsV1beta2().StatefulSets(namespace).List(ctx, options); err == nil {
 		for _, item := range appsv1b2StatefulSets.Items {
 			do := Item{
 				Name:     item.Name,
@@ -185,7 +185,7 @@ func (p PolicyInvalidPodDisruptionBudget) GetMatchingItems(namespace string, lab
 	}
 
 	// appsv1/statefulsets
-	if appsv1StatefulSets, err := p.client.AppsV1().StatefulSets(namespace).List(options); err == nil {
+	if appsv1StatefulSets, err := p.client.AppsV1().StatefulSets(namespace).List(ctx, options); err == nil {
 		for _, item := range appsv1StatefulSets.Items {
 			do := Item{
 				Name:     item.Name,
@@ -218,7 +218,7 @@ func (p PolicyInvalidPodDisruptionBudget) Validate(ctx context.Context, config p
 	}
 
 	// get a slice of all items matching the pdb labelselector
-	items, err := p.GetMatchingItems(pdbResource.PodDisruptionBudget.Namespace, pdbResource.PodDisruptionBudget.Spec.Selector)
+	items, err := p.GetMatchingItems(pdbResource.PodDisruptionBudget.Namespace, pdbResource.PodDisruptionBudget.Spec.Selector, ctx)
 	if err != nil {
 		log.Error(err)
 		return nil, nil
