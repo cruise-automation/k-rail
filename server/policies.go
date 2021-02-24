@@ -20,6 +20,7 @@ import (
 
 	"github.com/cruise-automation/k-rail/policies"
 	clusterrolebinding "github.com/cruise-automation/k-rail/policies/clusterrolebinding"
+	"github.com/cruise-automation/k-rail/policies/customresourcedefinition"
 	"github.com/cruise-automation/k-rail/policies/ingress"
 	"github.com/cruise-automation/k-rail/policies/persistentVolume"
 	"github.com/cruise-automation/k-rail/policies/pod"
@@ -76,6 +77,12 @@ func (s *Server) registerPolicies() {
 		log.WithError(err).Error("could not load InvalidPodDisruptionBudget policy")
 	} else {
 		s.registerPolicy(pdbMinAvailableTooBig)
+	}
+	crdProtect, err := customresourcedefinition.NewPolicyCRDProtect()
+	if err != nil {
+		log.WithError(err).Error("could not load CRDProtect policy")
+	} else {
+		s.registerPolicy(crdProtect)
 	}
 }
 

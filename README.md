@@ -46,6 +46,7 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
   - [Invalid Pod Disruption Budget](#invalid-pod-disruption-budget)
   - [No External IP on Service](#no-external-ip-on-service)
   - [Deny Unconfined AppArmor Policies](#deny-unconfined-apparmor-policies)
+  - [Protect CRD from accidental Deletion](#crd-protect)
 - [Configuration](#configuration)
   - [Webhook Configuration](#webhook-configuration)
   - [Logging](#logging)
@@ -465,6 +466,10 @@ Prevents providing External IPs on a Service to mitigate [CVE-2020-8554](https:/
 ## Deny Unconfined AppArmor Policies
 
 Prevents users from specifing an unconfined apparmor policy which can be used with other conditions to lead to [container escape](https://blog.trailofbits.com/2019/07/19/understanding-docker-container-escapes/).
+
+## Protect CRD From Accidental Deletion
+
+When a Custom Resource Definition is deleted the corresponding Custom Resources are deleted as well. This creates the risk of accidentally destroying important data during regular maintenance. This policy allows the user to set the annotation `k-rail.crd.protect: enabled` on any CRD which will prevent its deletion if any children CRs exist.
 
 # Configuration
 
