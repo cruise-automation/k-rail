@@ -469,7 +469,7 @@ Prevents users from specifing an unconfined apparmor policy which can be used wi
 
 ## Protect CRD From Accidental Deletion
 
-When a Custom Resource Deinition is deleted the corresponding Custom Resources are deleted as well. This creates the risk of accidentally destroying important data during regular maintenance. This policy allows the user to set the annotation `k-rail.crd.protect: enabled` on any CRD which will prevent its deletion if any children CRs exist.
+When a Custom Resource Definition is deleted the corresponding Custom Resources are deleted as well. This creates the risk of accidentally destroying important data during regular maintenance. This policy allows the user to set the annotation `k-rail.crd.protect: enabled` on any CRD which will prevent its deletion if any children CRs exist.
 
 # Configuration
 
