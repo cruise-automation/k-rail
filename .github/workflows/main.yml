@@ -41,26 +41,40 @@ jobs:
     - name: Benchmark
       run: GO111MODULE=on CGO_ENABLED=0 go test -benchmem -run=^$ github.com/cruise-automation/k-rail/server -bench .
 
-  # lint:
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       go-version: [1.13.x]
+  smoke:
+    strategy:
+      matrix:
+        go-version: [1.13.x]
+    runs-on: ubuntu-latest
 
-  #   steps:
+    steps:
+    - uses: actions/checkout@master
 
-  #   - name: Set up Go ${{ matrix.go-version }}
-  #     uses: actions/setup-go@v1
-  #     with:
-  #       go-version: ${{ matrix.go-version }}
+    - name: Run chart-testing (lint)
+      id: lint
+      uses: helm/chart-testing-action@v1.0.0-alpha.3
+      env:
+        CT_CHART_DIRS: deploy/helm
+      with:
+        command: lint
 
-  #   - name: Check out code into the Go module directory
-  #     uses: actions/checkout@v1
+    - name: Create kind cluster
+      uses: helm/kind-action@v1.0.0-alpha.3
+      with:
+        install_local_path_provisioner: true
+      # Only build a kind cluster if there are chart changes to test.
+      if: steps.lint.outputs.changed == 'true'
 
-  #   - name: Lint
-  #     uses: matoous/golangci-lint-action@v1.1.0
-  #     # with:
-  #     #   config: .golangci.yml
+    - name: Run chart-testing (install)
+      uses: helm/chart-testing-action@v1.0.0-alpha.3
+      env:
+        CT_CHART_DIRS: deploy/helm
+      with:
+        command: install
+
+    - name: Wait for k-rail to come up
+      run: |
+        kubectl wait --for=condition=available --timeout=1800s deployment/k-rail -n k-rail
 
   build:
     strategy:
