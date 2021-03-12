@@ -16,6 +16,7 @@ ensure:
 		dep ensure
 
 build:
+		protoc -I plugins/proto/ plugins/proto/plugin.proto --go_out=plugins=grpc:plugins/proto
 		GO111MODULE=on CGO_ENABLED=0 go build -o k-rail cmd/main.go
 
 test:
