@@ -1,0 +1,12 @@
+cluster_name: default
+log_level: info
+tls:
+  cert: "cert.pem"
+  key: "key.pem"
+plugin_config:
+  example_plugin:
+    luck_threshold: 0.0
+policies:
+  - name: "luck_threshold"
+    enabled: True
+    report_only: False

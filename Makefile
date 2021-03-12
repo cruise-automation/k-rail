@@ -22,3 +22,7 @@ build:
 
 test:
 		CGO_ENABLED=1 go test -race -cover $(shell go list ./... | grep -v /vendor/)
+
+run-plugin: build
+		openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out cert.pem -subj '/CN=k-rail'
+		./k-rail -config ./plugins/examples/config.yml -plugins-path-glob ./plugin
