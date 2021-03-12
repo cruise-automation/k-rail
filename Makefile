@@ -17,7 +17,8 @@ ensure:
 
 build:
 		protoc -I plugins/proto/ plugins/proto/plugin.proto --go_out=plugins=grpc:plugins/proto
-		GO111MODULE=on CGO_ENABLED=0 go build -o k-rail cmd/main.go
+		CGO_ENABLED=0 go build -o k-rail cmd/main.go
+		CGO_ENABLED=0 go build -o plugin plugins/examples/example.go
 
 test:
-		GO111MODULE=on CGO_ENABLED=1 go test -race -cover $(shell go list ./... | grep -v /vendor/)
+		CGO_ENABLED=1 go test -race -cover $(shell go list ./... | grep -v /vendor/)

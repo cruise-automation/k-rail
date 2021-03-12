@@ -113,21 +113,21 @@ func PluginsFromDirectory(directory string) ([]Plugin, error) {
 	return pluginClients, nil
 }
 
-var handshake = plugin.HandshakeConfig{
+var Handshake = plugin.HandshakeConfig{
 	ProtocolVersion:  1,
 	MagicCookieKey:   "K_RAIL_PLUGIN",
 	MagicCookieValue: "TRUE",
 }
 
-const grpcPluginName = "K_RAIL_GRPC"
+const GRPCPluginName = "K_RAIL_GRPC"
 
 var pluginMap = map[string]plugin.Plugin{
-	grpcPluginName: &KRailGRPCPlugin{},
+	GRPCPluginName: &KRailGRPCPlugin{},
 }
 
 func LaunchPluginProcess(binaryPath string) (*Plugin, error) {
 	client := plugin.NewClient(&plugin.ClientConfig{
-		HandshakeConfig:  handshake,
+		HandshakeConfig:  Handshake,
 		Plugins:          pluginMap,
 		Cmd:              exec.Command(binaryPath),
 		AllowedProtocols: []plugin.Protocol{plugin.ProtocolGRPC},
@@ -140,7 +140,7 @@ func LaunchPluginProcess(binaryPath string) (*Plugin, error) {
 	}
 
 	// Request the plugin
-	raw, err := rpcClient.Dispense(grpcPluginName)
+	raw, err := rpcClient.Dispense(GRPCPluginName)
 	if err != nil {
 		return nil, err
 	}

@@ -6,7 +6,7 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.13.x]
+        go-version: [1.16.x]
     runs-on: ubuntu-latest
 
     steps:
@@ -25,7 +25,7 @@ jobs:
   benchmark:
     strategy:
       matrix:
-        go-version: [1.13.x]
+        go-version: [1.16.x]
     runs-on: ubuntu-latest
 
     steps:
@@ -45,7 +45,7 @@ jobs:
   #   runs-on: ubuntu-latest
   #   strategy:
   #     matrix:
-  #       go-version: [1.13.x]
+  #       go-version: [1.16.x]
 
   #   steps:
 
@@ -65,7 +65,7 @@ jobs:
   build:
     strategy:
       matrix:
-        go-version: [1.13.x]
+        go-version: [1.16.x]
     runs-on: ubuntu-latest
 
     steps:

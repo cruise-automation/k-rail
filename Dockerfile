@@ -1,5 +1,5 @@
 # Build stage
-ARG GO_VERSION=1.13
+ARG GO_VERSION=1.16
 FROM golang:${GO_VERSION}-buster AS builder
 WORKDIR /build
 COPY ./ /build/
