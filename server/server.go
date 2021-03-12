@@ -96,13 +96,13 @@ func Run(ctx context.Context) {
 				if pluginConfigMap, ok := pluginConfig.(map[string]interface{}); ok {
 					err = plugin.Configure(pluginConfigMap)
 					if err != nil {
-						log.Fatalf("error configuring plugin %s: %w\n", plugin.Name, err)
+						log.Fatalf("error configuring plugin %s: %v\n", plugin.Name(), err)
 					}
 				} else {
-					log.Fatalf("expected plugin config for plugin %s to be a map of values (eg. plugins_config: %s: <config key>: <config values>)", plugin.Name, plugin.Name)
+					log.Fatalf("expected plugin config for plugin %s to be a map of values (eg. plugins_config: %s: <config key>: <config values>)", plugin.Name(), plugin.Name())
 				}
 			} else {
-				log.Infof("no plugin config found for plugin %s, continuing on", plugin.Name)
+				log.Infof("no plugin config found for plugin %s, continuing on", plugin.Name())
 			}
 		}
 
