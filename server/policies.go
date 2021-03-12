@@ -18,6 +18,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	admissionv1 "k8s.io/api/admission/v1"
 
+	"github.com/cruise-automation/k-rail/plugins"
 	"github.com/cruise-automation/k-rail/policies"
 	clusterrolebinding "github.com/cruise-automation/k-rail/policies/clusterrolebinding"
 	"github.com/cruise-automation/k-rail/policies/customresourcedefinition"
@@ -83,6 +84,12 @@ func (s *Server) registerPolicies() {
 		log.WithError(err).Error("could not load CRDProtect policy")
 	} else {
 		s.registerPolicy(crdProtect)
+	}
+
+	for _, plugin := range s.Plugins {
+		for _, policyName := range plugin.PolicyNames() {
+			s.registerPolicy(plugins.NewPluginPolicy(policyName, plugin))
+		}
 	}
 }
 

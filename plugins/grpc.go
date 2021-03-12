@@ -42,43 +42,37 @@ func (m *GRPCClient) ConfigurePlugin(config map[string]interface{}) error {
 	return err
 }
 
-func (m *GRPCClient) Validate(ar *admissionv1.AdmissionRequest) (map[string]PolicyValidateResponse, error) {
+func (m *GRPCClient) Validate(policyName string, ar *admissionv1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation, error) {
+	resourceViolations := []policies.ResourceViolation{}
 	arJson, err := json.Marshal(ar)
 	if err != nil {
-		return map[string]PolicyValidateResponse{}, err
+		return resourceViolations, nil, err
 	}
 	resp, err := m.client.Validate(context.Background(), &proto.ValidateRequest{
+		PolicyName:       policyName,
 		AdmissionRequest: arJson,
 	})
 	if err != nil {
-		return map[string]PolicyValidateResponse{}, err
+		return resourceViolations, nil, err
 	}
-	policyResponses := map[string]PolicyValidateResponse{}
-	for policy, policyResponse := range resp.PolicyResponses {
-		resourceViolations := []policies.ResourceViolation{}
-		for _, violation := range policyResponse.ResourceViolations {
-			resourceViolations = append(resourceViolations, policies.ResourceViolation{
-				ResourceName: violation.ResourceName,
-				ResourceKind: violation.ResourceKind,
-				Namespace:    violation.Namespace,
-				Violation:    violation.Violation,
-				Policy:       violation.Policy,
-				Error:        errors.New(violation.Error),
-			})
-		}
-		patchOperations := []policies.PatchOperation{}
-		for _, patchOp := range policyResponse.PatchOperations {
-			patchOperations = append(patchOperations, policies.PatchOperation{
-				Op: patchOp.Op, Path: patchOp.Path,
-				Value: patchOp.Value.AsInterface(),
-			})
-		}
-		policyResponses[policy] = PolicyValidateResponse{
-			ResourceViolations: resourceViolations,
-			PatchOperations:    patchOperations,
-		}
+	for _, violation := range resp.ResourceViolations {
+		resourceViolations = append(resourceViolations, policies.ResourceViolation{
+			ResourceName: violation.ResourceName,
+			ResourceKind: violation.ResourceKind,
+			Namespace:    violation.Namespace,
+			Violation:    violation.Violation,
+			Policy:       violation.Policy,
+			Error:        errors.New(violation.Error),
+		})
 	}
-	return policyResponses, err
+	patchOperations := []policies.PatchOperation{}
+	for _, patchOp := range resp.PatchOperations {
+		patchOperations = append(patchOperations, policies.PatchOperation{
+			Op: patchOp.Op, Path: patchOp.Path,
+			Value: patchOp.Value.AsInterface(),
+		})
+	}
+	return resourceViolations, patchOperations, err
 }
 
 // Here is the gRPC server that GRPCClient talks to.
@@ -107,40 +101,36 @@ func (m *GRPCServer) Validate(ctx context.Context, in *proto.ValidateRequest) (*
 	if err != nil {
 		return nil, err
 	}
-	resps, err := m.Impl.Validate(&ar)
+	resourceViolations, patchOperations, err := m.Impl.Validate(in.PolicyName, &ar)
 	if err != nil {
 		return nil, err
 	}
 
-	policyResponses := map[string]*proto.PolicyValidateResponse{}
-	for policy, policyResponse := range resps {
-		violations := []*proto.ResourceViolation{}
-		for _, violation := range policyResponse.ResourceViolations {
-			violations = append(violations, &proto.ResourceViolation{
-				ResourceName: violation.ResourceName,
-				ResourceKind: violation.ResourceKind,
-				Namespace:    violation.Namespace,
-				Violation:    violation.Violation,
-				Policy:       violation.Policy,
-				Error:        violation.Error.Error(),
-			})
-		}
-		patchOps := []*proto.PatchOperation{}
-		for _, patchOp := range policyResponse.PatchOperations {
-			valueStruct, err := structpb.NewValue(patchOp.Value)
-			if err != nil {
-				return nil, err
-			}
-			patchOps = append(patchOps, &proto.PatchOperation{
-				Op:    patchOp.Op,
-				Path:  patchOp.Path,
-				Value: valueStruct,
-			})
-		}
-		policyResponses[policy] = &proto.PolicyValidateResponse{
-			ResourceViolations: violations,
-			PatchOperations:    patchOps,
-		}
+	violations := []*proto.ResourceViolation{}
+	for _, violation := range resourceViolations {
+		violations = append(violations, &proto.ResourceViolation{
+			ResourceName: violation.ResourceName,
+			ResourceKind: violation.ResourceKind,
+			Namespace:    violation.Namespace,
+			Violation:    violation.Violation,
+			Policy:       violation.Policy,
+			Error:        violation.Error.Error(),
+		})
 	}
-	return &proto.ValidateResponse{PolicyResponses: policyResponses}, err
+	patchOps := []*proto.PatchOperation{}
+	for _, patchOp := range patchOperations {
+		valueStruct, err := structpb.NewValue(patchOp.Value)
+		if err != nil {
+			return nil, err
+		}
+		patchOps = append(patchOps, &proto.PatchOperation{
+			Op:    patchOp.Op,
+			Path:  patchOp.Path,
+			Value: valueStruct,
+		})
+	}
+	return &proto.ValidateResponse{
+		ResourceViolations: violations,
+		PatchOperations:    patchOps,
+	}, err
 }

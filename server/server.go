@@ -91,7 +91,8 @@ func Run(ctx context.Context) {
 		}
 
 		for _, plugin := range loadedPlugins {
-			if pluginConfig, ok := cfg.PluginConfig[plugin.Name]; ok {
+			defer plugin.Kill()
+			if pluginConfig, ok := cfg.PluginConfig[plugin.Name()]; ok {
 				if pluginConfigMap, ok := pluginConfig.(map[string]interface{}); ok {
 					err = plugin.Configure(pluginConfigMap)
 					if err != nil {

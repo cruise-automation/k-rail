@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/hashicorp/go-plugin"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	admissionv1 "k8s.io/api/admission/v1"
 
@@ -14,23 +15,58 @@ import (
 )
 
 type Plugin struct {
-	Name        string
-	PolicyNames []string
-	Client      plugin.Client
-	KRailPlugin KRailPlugin
+	name        string
+	policyNames []string
+	client      plugin.Client
+	kRailPlugin KRailPlugin
+}
+
+func (p *Plugin) Name() string {
+	return p.name
+}
+
+func (p *Plugin) PolicyNames() []string {
+	return p.policyNames
 }
 
 func (p *Plugin) Configure(config map[string]interface{}) error {
-	return p.KRailPlugin.ConfigurePlugin(config)
+	return p.kRailPlugin.ConfigurePlugin(config)
 }
 
-func (p *Plugin) Validate(ar *admissionv1.AdmissionRequest) (map[string]PolicyValidateResponse, error) {
-	return p.KRailPlugin.Validate(ar)
+func (p *Plugin) Kill() {
+	p.client.Kill()
 }
 
-type PolicyValidateResponse struct {
-	ResourceViolations []policies.ResourceViolation
-	PatchOperations    []policies.PatchOperation
+func (p *Plugin) Validate(policyName string, ar *admissionv1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation, error) {
+	return p.kRailPlugin.Validate(policyName, ar)
+}
+
+// PluginPolicy implements the server.Policy interface
+type PluginPolicy struct {
+	name   string
+	plugin Plugin
+}
+
+func NewPluginPolicy(name string, plugin Plugin) PluginPolicy {
+	return PluginPolicy{name: name, plugin: plugin}
+}
+
+func (p PluginPolicy) Name() string {
+	return p.name
+}
+
+func (p PluginPolicy) Validate(ctx context.Context,
+	config policies.Config,
+	ar *admissionv1.AdmissionRequest,
+) ([]policies.ResourceViolation, []policies.PatchOperation) {
+
+	violations, patchOps, err := p.plugin.Validate(p.name, ar)
+
+	if err != nil {
+		log.WithError(err).Errorf("error running Validate on Plugin %s Policy %s\n", p.plugin.name, p.name)
+		return []policies.ResourceViolation{}, nil
+	}
+	return violations, patchOps
 }
 
 // KRailPlugin is the interface that we're exposing as a plugin.
@@ -38,7 +74,7 @@ type KRailPlugin interface {
 	PluginName() (string, error)
 	PolicyNames() ([]string, error)
 	ConfigurePlugin(config map[string]interface{}) error
-	Validate(ar *admissionv1.AdmissionRequest) (map[string]PolicyValidateResponse, error)
+	Validate(policyName string, ar *admissionv1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation, error)
 }
 
 // This is the implementation of plugin.GRPCPlugin so we can serve/consume this.
@@ -122,9 +158,9 @@ func LaunchPluginProcess(binaryPath string) (*Plugin, error) {
 	}
 
 	return &Plugin{
-		Name:        pluginName,
-		PolicyNames: policyNames,
-		Client:      *client,
-		KRailPlugin: krailPlugin,
+		name:        pluginName,
+		policyNames: policyNames,
+		client:      *client,
+		kRailPlugin: krailPlugin,
 	}, nil
 }
