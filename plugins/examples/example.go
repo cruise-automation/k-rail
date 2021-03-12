@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"math/rand"
 
 	"github.com/hashicorp/go-plugin"
@@ -13,7 +14,7 @@ import (
 	"github.com/cruise-automation/k-rail/resource"
 )
 
-const pluginName = "example_plugin_name"
+const pluginName = "example_plugin"
 
 type ExamplePlugin struct {
 	Config   Config
@@ -44,6 +45,7 @@ func (p ExamplePlugin) ConfigurePlugin(config map[string]interface{}) error {
 	if threshold, ok := config["luck_threshold"]; ok {
 		if threshold64, ok := threshold.(float64); ok {
 			p.Config.Threshold = threshold64
+			log.Printf("Configured luck threshold to %.2f\n", threshold64)
 		}
 	}
 	return nil
@@ -99,7 +101,7 @@ func (t ThresholdPolicy) Validate(ctx context.Context,
 
 func main() {
 	// Default the luck threshold to 99% (it's very lucky)
-	examplePlugin := &ExamplePlugin{Config: Config{Threshold: 0.99}}
+	examplePlugin := &ExamplePlugin{Config: Config{Threshold: 0.99}, Policies: map[string]Policy{}}
 	examplePlugin.RegisterPolicy(ThresholdPolicy{})
 
 	plugin.Serve(&plugin.ServeConfig{

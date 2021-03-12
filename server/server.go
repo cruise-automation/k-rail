@@ -133,7 +133,7 @@ func Run(ctx context.Context) {
 
 	certBytes, err := ioutil.ReadFile(cfg.TLS.Cert)
 	if len(certBytes) == 0 || err != nil {
-		log.Fatal("got empty certificate")
+		log.WithError(err).Fatal("got empty certificate")
 	}
 
 	// on ^C, or SIGTERM handle safe shutdown
