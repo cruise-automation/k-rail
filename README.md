@@ -238,6 +238,8 @@ Since the violations are outputted as structured data, you are encouraged to agg
 
 # Supported policies
 
+Below are the policies built-in to K-Rail. Additional custom written policies can be created and configured for your organization if they are not general purpose enough for committing to upstream.  See the [example plugin provided](plugins/examples/README.md) for details on writing your own policy plugin.
+
 ## No ShareProcessNamespace
 
 `shareProcessNamespace: true` is a Pod Spec directive that puts all containers in a Pod within
@@ -546,6 +548,20 @@ The format of an exemption config is YAML, and looks like this:
 Some policies are configurable. Policy configuration is contained in the k-rail configuration file, and documentation for a policy's configuration can be found in the Supported policies heading above.
 
 For the Helm deployment, all policy and exemption configuration is contained in [`charts/k-rail/values.yaml`](charts/k-rail/values.yaml).
+
+## Plugin configuration
+
+Custom-written plugins are configurable under the `plugin_config:` yaml key such as below
+
+```yaml
+plugin_config:
+  <plugin_name>:
+    <custom plugin configuration>
+```
+
+For an example of this see the [provided plugin example](plugins/examples/README.md) and associated [config.yml](plugins/examples/config.yml).
+
+For additional reference the Helm deployment, contains this example plugin configuration as well, but is disabled by default [`charts/k-rail/values.yaml`](charts/k-rail/values.yaml).
 
 # Adding new policies
 

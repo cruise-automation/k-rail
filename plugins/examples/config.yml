@@ -5,7 +5,7 @@ tls:
   key: "key.pem"
 plugin_config:
   example_plugin:
-    luck_threshold: 0.0
+    threshold: 0.0
 policies:
   - name: "luck_threshold"
     enabled: True

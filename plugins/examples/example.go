@@ -16,6 +16,8 @@ import (
 
 const pluginName = "example_plugin"
 
+// This implements the plugins.KRailPlugin interface in-order to implement
+// the GRPC KRailPlugin service defined in the plugins.proto specification
 type ExamplePlugin struct {
 	Config   Config
 	Policies map[string]Policy
@@ -42,7 +44,7 @@ func (p ExamplePlugin) PolicyNames() ([]string, error) {
 }
 
 func (p ExamplePlugin) ConfigurePlugin(config map[string]interface{}) error {
-	if threshold, ok := config["luck_threshold"]; ok {
+	if threshold, ok := config["threshold"]; ok {
 		if threshold64, ok := threshold.(float64); ok {
 			p.Config.Threshold = threshold64
 			log.Printf("Configured luck threshold to %.2f\n", threshold64)
@@ -86,7 +88,7 @@ func (t ThresholdPolicy) Validate(ctx context.Context,
 	}
 
 	if rand.Float64() > config.Threshold {
-		violationText := fmt.Sprintf("This Pod was unlucky and didn't the random %.2f%% threshold, rejecting", config.Threshold)
+		violationText := fmt.Sprintf("This Pod was unlucky and didn't clear the random %.2f%% threshold, rejecting", config.Threshold)
 		resourceViolations = append(resourceViolations, policies.ResourceViolation{
 			Namespace:    ar.Namespace,
 			ResourceName: podResource.ResourceName,
