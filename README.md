@@ -565,6 +565,8 @@ For additional reference the Helm deployment, contains this example plugin confi
 
 # Adding new policies
 
+## For general open-source use in k-rail
+
 Policies must satisfy this interface:
 
 ```go
@@ -580,9 +582,33 @@ type Policy interface {
 ```
 
 `Name()` must return a string that matches a policy name that is provided in configuration.
-Validate accepts an AdmissionRequest, and the resource of interest must be extracted from it. See `resource/pod.go` for an example of extracting PodSpecs from an AdmissionRequest. If mutation on a resource is desired, you can return a slice of JSONPatch operations and `nil` for the violations.
+
+`Validate`accepts an AdmissionRequest, and the resource of interest must be extracted from it. See `resource/pod.go` for an example of extracting PodSpecs from an AdmissionRequest. If mutation on a resource is desired, you can return a slice of JSONPatch operations and `nil` for the violations.
 
 Policies can be registered in `internal/policies.go`. Any policies that are registered but do not have configuration provided get enabled in report-only mode.
+
+## For a custom purpose using plugins
+
+For custom written policies for your organization that are not general purpose enough for open-source usage, write a policy plugin. See the [example plugin provided](plugins/examples/README.md) for details on writing your own policy plugin in Go. Policy plugins must satisfy the following [GRPC protobuf KRailPlugin service specification](plugins/proto/plugin.proto).
+
+```protobuf
+service KRailPlugin {
+    rpc PluginName(PluginNameRequest) returns (PluginNameResponse);
+    rpc PolicyNames(PolicyNamesRequest) returns (PolicyNamesResponse);
+    rpc ConfigurePlugin(ConfigurePluginRequest) returns (ConfigurePluginResponse);
+    rpc Validate(ValidateRequest) returns (ValidateResponse);
+}
+```
+
+`PluginName` returns the name of the plugin as a string which is then used in the `plugin_config` stanza for providing customizable yaml configuration.
+
+`PolicyNames` returns the names of all the policies implemented by the plugin as an array of strings which is then used to configure them under the `policies` stanza as `enabled` and `report_only`
+
+`ConfigurePlugin` provides the customizable yaml from under corresponding `plugin_config` and plugin name stanza to initialize the plugin
+
+`Validate` accepts the policy name with an AdmissionRequest.  The resource of interest must be extracted from it. See `resource/pod.go` for an example of extracting PodSpecs from an AdmissionRequest. If mutation on a resource is desired, you can return a slice of JSONPatch operations and `nil` for the violations.
+
+Again, it is highly recommended to see the [example plugin provided](plugins/examples/README.md) for details on writing your own policy plugin in Go.
 
 # Debugging
 
