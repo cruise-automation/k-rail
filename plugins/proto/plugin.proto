@@ -1,6 +1,6 @@
 syntax = "proto3";
 package proto;
-option go_package = ".;proto";
+option go_package = "./;proto";
 import "google/protobuf/struct.proto";
 
 message PluginNameRequest {}
