@@ -55,6 +55,9 @@ config:
         allowed_values: 
           - internal
         allow_missing: false
+  plugin_config:
+    example_plugin:
+      threshold: 1.0
   policies:
     - name: "pod_no_exec"
       enabled: True
@@ -128,6 +131,9 @@ config:
     - name: "pod_deny_unconfined_apparmor_policy"
       enabled: True
       report_only: False
+    - name: "luck_threshold"
+      enabled: False
+      report_only: True
 
 exemptions:
   - resource_name: "*"

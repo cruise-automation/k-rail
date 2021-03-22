@@ -22,6 +22,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/cruise-automation/k-rail/plugins"
 	"github.com/cruise-automation/k-rail/policies"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -39,6 +40,7 @@ type Server struct {
 	EnforcedPolicies   []Policy
 	ReportOnlyPolicies []Policy
 	Exemptions         []policies.CompiledExemption
+	Plugins            []plugins.Plugin
 }
 
 // Run starts the API server
@@ -50,6 +52,7 @@ func Run(ctx context.Context) {
 
 	configPath := flag.String("config", "config.yml", "path to configuration file")
 	exemptionsPathGlob := flag.String("exemptions-path-glob", "", "path glob that includes exemption configs")
+	pluginsPathGlob := flag.String("plugins-path-glob", "", "path glob that includes plugin binaries")
 	flag.Parse()
 
 	yamlFile, err := ioutil.ReadFile(*configPath)
@@ -80,11 +83,38 @@ func Run(ctx context.Context) {
 		log.Infof("loaded %d exemptions", len(exemptions))
 	}
 
+	var loadedPlugins []plugins.Plugin
+	if *pluginsPathGlob != "" {
+		loadedPlugins, err = plugins.PluginsFromDirectory(*pluginsPathGlob)
+		if err != nil {
+			log.Fatal("error launching plugins: ", err)
+		}
+
+		for _, plugin := range loadedPlugins {
+			defer plugin.Kill()
+			if pluginConfig, ok := cfg.PluginConfig[plugin.Name()]; ok {
+				if pluginConfigMap, ok := pluginConfig.(map[string]interface{}); ok {
+					err = plugin.Configure(pluginConfigMap)
+					if err != nil {
+						log.Fatalf("error configuring plugin %s: %v\n", plugin.Name(), err)
+					}
+				} else {
+					log.Fatalf("expected plugin config for plugin %s to be a map of values (eg. plugins_config: %s: <config key>: <config values>)", plugin.Name(), plugin.Name())
+				}
+			} else {
+				log.Infof("no plugin config found for plugin %s, continuing on", plugin.Name())
+			}
+		}
+
+		log.Infof("loaded %d plugins", len(loadedPlugins))
+	}
+
 	log.Info("k-rail is running")
 
 	srv := Server{
 		Config:     cfg,
 		Exemptions: exemptions,
+		Plugins:    loadedPlugins,
 	}
 
 	srv.registerPolicies()
@@ -103,7 +133,7 @@ func Run(ctx context.Context) {
 
 	certBytes, err := ioutil.ReadFile(cfg.TLS.Cert)
 	if len(certBytes) == 0 || err != nil {
-		log.Fatal("got empty certificate")
+		log.WithError(err).Fatal("got empty certificate")
 	}
 
 	// on ^C, or SIGTERM handle safe shutdown

@@ -32,5 +32,6 @@ type Config struct {
 	}
 	GlobalReportOnly bool `json:"global_report_only"`
 	Policies         []PolicySettings
-	PolicyConfig     policies.Config `json:"policy_config"`
+	PolicyConfig     policies.Config        `json:"policy_config"`
+	PluginConfig     map[string]interface{} `json:"plugin_config"`
 }
