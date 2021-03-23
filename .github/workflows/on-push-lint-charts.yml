@@ -33,7 +33,7 @@ jobs:
           kubectl label namespace k-rail k-rail/ignore=true
 
       - name: Run chart-testing (install)
-        uses: helm/chart-testing-action@v1.0.0-rc.1
+        uses: helm/chart-testing-action@v1.1.0
         with:
           command: install
           config: .ci/ct-config.yaml
