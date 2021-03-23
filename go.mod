@@ -1,6 +1,6 @@
 module github.com/cruise-automation/k-rail/v3
 
-go 1.12
+go 1.16
 
 require (
 	github.com/gobwas/glob v0.2.3
