@@ -47,6 +47,7 @@ jobs:
         run: |
           kubectl create namespace k-rail
           kubectl label namespace k-rail k-rail/ignore=true
+        if: steps.list-changed.outputs.changed == 'true'
 
       - name: Run chart-testing (install)
         run: ct install --namespace k-rail --release-label ci
