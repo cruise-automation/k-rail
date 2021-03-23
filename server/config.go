@@ -13,7 +13,7 @@
 package server
 
 import (
-	"github.com/cruise-automation/k-rail/policies"
+	"github.com/cruise-automation/k-rail/v3/policies"
 )
 
 type PolicySettings struct {

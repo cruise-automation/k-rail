@@ -22,8 +22,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/cruise-automation/k-rail/plugins"
-	"github.com/cruise-automation/k-rail/policies"
+	"github.com/cruise-automation/k-rail/v3/plugins"
+	"github.com/cruise-automation/k-rail/v3/policies"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
