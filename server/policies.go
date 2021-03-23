@@ -18,16 +18,16 @@ import (
 	log "github.com/sirupsen/logrus"
 	admissionv1 "k8s.io/api/admission/v1"
 
-	"github.com/cruise-automation/k-rail/plugins"
-	"github.com/cruise-automation/k-rail/policies"
-	clusterrolebinding "github.com/cruise-automation/k-rail/policies/clusterrolebinding"
-	"github.com/cruise-automation/k-rail/policies/customresourcedefinition"
-	"github.com/cruise-automation/k-rail/policies/ingress"
-	"github.com/cruise-automation/k-rail/policies/persistentVolume"
-	"github.com/cruise-automation/k-rail/policies/pod"
-	"github.com/cruise-automation/k-rail/policies/poddisruptionbudget"
-	rolebinding "github.com/cruise-automation/k-rail/policies/rolebinding"
-	"github.com/cruise-automation/k-rail/policies/service"
+	"github.com/cruise-automation/k-rail/v3/plugins"
+	"github.com/cruise-automation/k-rail/v3/policies"
+	clusterrolebinding "github.com/cruise-automation/k-rail/v3/policies/clusterrolebinding"
+	"github.com/cruise-automation/k-rail/v3/policies/customresourcedefinition"
+	"github.com/cruise-automation/k-rail/v3/policies/ingress"
+	"github.com/cruise-automation/k-rail/v3/policies/persistentVolume"
+	"github.com/cruise-automation/k-rail/v3/policies/pod"
+	"github.com/cruise-automation/k-rail/v3/policies/poddisruptionbudget"
+	rolebinding "github.com/cruise-automation/k-rail/v3/policies/rolebinding"
+	"github.com/cruise-automation/k-rail/v3/policies/service"
 )
 
 // Policy specifies how a Policy is implemented

@@ -25,7 +25,7 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 
-	"github.com/cruise-automation/k-rail/policies"
+	"github.com/cruise-automation/k-rail/v3/policies"
 )
 
 // NewPolicyCRDProtect new

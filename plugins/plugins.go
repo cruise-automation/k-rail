@@ -10,8 +10,8 @@ import (
 	"google.golang.org/grpc"
 	admissionv1 "k8s.io/api/admission/v1"
 
-	"github.com/cruise-automation/k-rail/plugins/proto"
-	"github.com/cruise-automation/k-rail/policies"
+	"github.com/cruise-automation/k-rail/v3/plugins/proto"
+	"github.com/cruise-automation/k-rail/v3/policies"
 )
 
 type Plugin struct {
