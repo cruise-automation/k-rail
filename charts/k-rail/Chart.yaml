@@ -3,3 +3,6 @@ name: k-rail
 description: Kubernetes security tool for policy enforcement
 home: https://github.com/cruise-automation/k-rail
 version: v3.2.2
+maintainers:
+  - name: cruise-automation
+    url: https://cruise-automation.github.io/k-rail/
