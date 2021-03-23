@@ -39,7 +39,7 @@ jobs:
       uses: actions/checkout@v1
 
     - name: Benchmark
-      run: CGO_ENABLED=0 go test -benchmem -run=^$ github.com/cruise-automation/k-rail/server -bench .
+      run: CGO_ENABLED=0 go test -benchmem -run=^$ github.com/cruise-automation/k-rail/v3/server -bench .
 
   # lint:
   #   runs-on: ubuntu-latest
