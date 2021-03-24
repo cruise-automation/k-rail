@@ -4,11 +4,14 @@ go 1.16
 
 require (
 	github.com/gobwas/glob v0.2.3
-	github.com/golang/protobuf v1.5.1
-	github.com/gorilla/mux v1.7.3
+	github.com/golang/protobuf v1.5.1 // indirect
+	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-plugin v1.4.0
 	github.com/opencontainers/go-digest v1.0.0-rc1
+	github.com/prometheus/client_golang v1.7.1
 	github.com/sirupsen/logrus v1.6.0
+	github.com/slok/go-http-metrics v0.9.0
+	github.com/stretchr/testify v1.6.1
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 	google.golang.org/grpc v1.27.1
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0 // indirect
