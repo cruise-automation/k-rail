@@ -2,6 +2,18 @@ apiVersion: v1
 entries:
   k-rail:
   - apiVersion: v1
+    created: "2021-03-24T21:00:56.048868348Z"
+    description: Kubernetes security tool for policy enforcement
+    digest: 2a434ba78499b3a55f86bb3c81b10b83ce8e0bd4df95cc45d4247a5c90d0dfdf
+    home: https://github.com/cruise-automation/k-rail
+    maintainers:
+    - name: cruise-automation
+      url: https://cruise-automation.github.io/k-rail/
+    name: k-rail
+    urls:
+    - https://github.com/cruise-automation/k-rail/releases/download/k-rail-v3.3.0/k-rail-v3.3.0.tgz
+    version: v3.3.0
+  - apiVersion: v1
     created: "2021-03-23T22:38:11.046419455Z"
     description: Kubernetes security tool for policy enforcement
     digest: 3dd91c903146aadc35eb2c11a67c1ac378148ea0450f8921433be14dddb1f955
@@ -139,4 +151,4 @@ entries:
     urls:
     - https://github.com/cruise-automation/k-rail/releases/download/k-rail-v1.5.1/k-rail-v1.5.1.tgz
     version: v1.5.1
-generated: "2021-03-23T22:38:11.046511954Z"
+generated: "2021-03-24T21:00:56.049074449Z"
