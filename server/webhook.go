@@ -30,6 +30,8 @@ import (
 
 	"github.com/cruise-automation/k-rail/v3/policies"
 	"github.com/cruise-automation/k-rail/v3/resource"
+
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 var (
@@ -202,6 +204,18 @@ func (s *Server) validateResources(ar admissionv1.AdmissionReview) admissionv1.A
 			"user":      ar.Request.UserInfo.Username,
 			"enforced":  false,
 		}).Info("EXEMPT")
+
+		labels := prometheus.Labels{
+			"kind":               v.ResourceKind,
+			"resource":           v.ResourceName,
+			"namespace":          v.Namespace,
+			"policy":             v.Policy,
+			"user":               ar.Request.UserInfo.Username,
+			"enforced":           "false",
+			"exempt":             "true",
+			"report_only":        "false",
+			"global_report_only": fmt.Sprintf("%v", s.Config.GlobalReportOnly)}
+		policyViolations.With(labels).Inc()
 	}
 
 	// log report-only violations
@@ -214,6 +228,18 @@ func (s *Server) validateResources(ar admissionv1.AdmissionReview) admissionv1.A
 			"user":      ar.Request.UserInfo.Username,
 			"enforced":  false,
 		}).Info("NOT ENFORCED")
+
+		labels := prometheus.Labels{
+			"kind":               v.ResourceKind,
+			"resource":           v.ResourceName,
+			"namespace":          v.Namespace,
+			"policy":             v.Policy,
+			"user":               ar.Request.UserInfo.Username,
+			"enforced":           "false",
+			"exempt":             "false",
+			"report_only":        "true",
+			"global_report_only": fmt.Sprintf("%v", s.Config.GlobalReportOnly)}
+		policyViolations.With(labels).Inc()
 	}
 
 	// log enforced violations when in global report-only mode
@@ -227,6 +253,18 @@ func (s *Server) validateResources(ar admissionv1.AdmissionReview) admissionv1.A
 				"user":      ar.Request.UserInfo.Username,
 				"enforced":  false,
 			}).Info("NOT ENFORCED")
+
+			labels := prometheus.Labels{
+				"kind":               v.ResourceKind,
+				"resource":           v.ResourceName,
+				"namespace":          v.Namespace,
+				"policy":             v.Policy,
+				"user":               ar.Request.UserInfo.Username,
+				"enforced":           "false",
+				"exempt":             "false",
+				"report_only":        "true",
+				"global_report_only": fmt.Sprintf("%v", s.Config.GlobalReportOnly)}
+			policyViolations.With(labels).Inc()
 		}
 	}
 
@@ -242,6 +280,19 @@ func (s *Server) validateResources(ar admissionv1.AdmissionReview) admissionv1.A
 				"user":      ar.Request.UserInfo.Username,
 				"enforced":  true,
 			}).Warn("ENFORCED")
+
+			labels := prometheus.Labels{
+				"kind":               v.ResourceKind,
+				"resource":           v.ResourceName,
+				"namespace":          v.Namespace,
+				"policy":             v.Policy,
+				"user":               ar.Request.UserInfo.Username,
+				"enforced":           "true",
+				"exempt":             "false",
+				"report_only":        "false",
+				"global_report_only": fmt.Sprintf("%v", s.Config.GlobalReportOnly)}
+			policyViolations.With(labels).Inc()
+
 			violations = violations + "\n" + v.HumanString()
 		}
 

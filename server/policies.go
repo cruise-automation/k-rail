@@ -28,6 +28,8 @@ import (
 	"github.com/cruise-automation/k-rail/v3/policies/poddisruptionbudget"
 	rolebinding "github.com/cruise-automation/k-rail/v3/policies/rolebinding"
 	"github.com/cruise-automation/k-rail/v3/policies/service"
+
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 // Policy specifies how a Policy is implemented
@@ -41,6 +43,8 @@ type Policy interface {
 }
 
 func (s *Server) registerPolicies() {
+	prometheus.MustRegister(totalRegisteredPolicies)
+
 	// Policies will be run in the order that they are registered.
 	// Policies that mutate will have their resulting patch merged with any previous patches in that order as well.
 
@@ -99,6 +103,8 @@ func (s *Server) registerPolicy(v Policy) {
 		if val.Name == v.Name() {
 			found = true
 			if val.Enabled {
+				totalRegisteredPolicies.Inc()
+
 				if s.Config.GlobalReportOnly {
 					s.ReportOnlyPolicies = append(s.ReportOnlyPolicies, v)
 					log.Infof("enabling %s validator in REPORT ONLY mode because GLOBAL REPORT ONLY MODE is on", v.Name())
