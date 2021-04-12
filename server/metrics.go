@@ -44,5 +44,5 @@ var policyViolations = prometheus.NewCounterVec(
 		Name:      "policy_violations",
 		Help:      "Count of Violations",
 	},
-	[]string{"kind", "resource", "namespace", "policy", "user", "enforced", "exempt", "report_only", "global_report_only"},
+	[]string{"resource", "namespace", "policy", "enforced"},
 )

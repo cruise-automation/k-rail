@@ -87,6 +87,7 @@ func Run(ctx context.Context) {
 		log.Infof("loaded %d exemptions", len(exemptions))
 	}
 
+	prometheus.MustRegister(totalRegisteredPolicies)
 	prometheus.MustRegister(policyViolations)
 	prometheus.MustRegister(totalLoadedPlugins)
 
