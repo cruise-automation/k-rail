@@ -28,6 +28,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/slok/go-http-metrics/middleware/std"
 )
@@ -86,6 +87,10 @@ func Run(ctx context.Context) {
 		log.Infof("loaded %d exemptions", len(exemptions))
 	}
 
+	prometheus.MustRegister(totalRegisteredPolicies)
+	prometheus.MustRegister(policyViolations)
+	prometheus.MustRegister(totalLoadedPlugins)
+
 	var loadedPlugins []plugins.Plugin
 	if *pluginsPathGlob != "" {
 		loadedPlugins, err = plugins.PluginsFromDirectory(*pluginsPathGlob)
@@ -107,6 +112,8 @@ func Run(ctx context.Context) {
 			} else {
 				log.Infof("no plugin config found for plugin %s, continuing on", plugin.Name())
 			}
+
+			totalLoadedPlugins.Add(1)
 		}
 
 		log.Infof("loaded %d plugins", len(loadedPlugins))

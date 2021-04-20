@@ -30,7 +30,8 @@ type Config struct {
 		Cert string
 		Key  string
 	}
-	GlobalReportOnly bool `json:"global_report_only"`
+	GlobalReportOnly     bool `json:"global_report_only"`
+	GlobalMetricsEnabled bool `json:"global_metrics_enabled"`
 	Policies         []PolicySettings
 	PolicyConfig     policies.Config        `json:"policy_config"`
 	PluginConfig     map[string]interface{} `json:"plugin_config"`

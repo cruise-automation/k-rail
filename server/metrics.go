@@ -13,6 +13,7 @@
 package server
 
 import (
+	"github.com/prometheus/client_golang/prometheus"
 	metrics "github.com/slok/go-http-metrics/metrics/prometheus"
 	"github.com/slok/go-http-metrics/middleware"
 )
@@ -20,3 +21,28 @@ import (
 var prometheusMiddleware = middleware.New(middleware.Config{
 	Recorder: metrics.NewRecorder(metrics.Config{}),
 })
+
+var totalRegisteredPolicies = prometheus.NewCounter(
+	prometheus.CounterOpts{
+		Namespace: "krail",
+		Name:      "total_registered_policies",
+		Help:      "Total Policies Registered",
+	},
+)
+
+var totalLoadedPlugins = prometheus.NewCounter(
+	prometheus.CounterOpts{
+		Namespace: "krail",
+		Name:      "total_loaded_plugins",
+		Help:      "Total Plugins Loaded",
+	},
+)
+
+var policyViolations = prometheus.NewCounterVec(
+	prometheus.CounterOpts{
+		Namespace: "krail",
+		Name:      "policy_violations",
+		Help:      "Count of Violations",
+	},
+	[]string{"resource", "namespace", "policy", "enforced"},
+)

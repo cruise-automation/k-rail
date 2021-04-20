@@ -44,5 +44,6 @@ func testPrometheusMetrics(t *testing.T, h http.Handler, expMetrics []string) {
 	assert.Contains(metrics, "go_")
 	assert.Contains(metrics, "go_gc_")
 	assert.Contains(metrics, "http_")
+	assert.Contains(metrics, "krail_")
 	assert.Contains(metrics, "promhttp_metric_handler")
 }

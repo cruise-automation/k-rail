@@ -99,6 +99,8 @@ func (s *Server) registerPolicy(v Policy) {
 		if val.Name == v.Name() {
 			found = true
 			if val.Enabled {
+				totalRegisteredPolicies.Inc()
+
 				if s.Config.GlobalReportOnly {
 					s.ReportOnlyPolicies = append(s.ReportOnlyPolicies, v)
 					log.Infof("enabling %s validator in REPORT ONLY mode because GLOBAL REPORT ONLY MODE is on", v.Name())

@@ -30,6 +30,8 @@ import (
 
 	"github.com/cruise-automation/k-rail/v3/policies"
 	"github.com/cruise-automation/k-rail/v3/resource"
+
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 var (
@@ -202,6 +204,15 @@ func (s *Server) validateResources(ar admissionv1.AdmissionReview) admissionv1.A
 			"user":      ar.Request.UserInfo.Username,
 			"enforced":  false,
 		}).Info("EXEMPT")
+
+		if s.Config.GlobalMetricsEnabled == true {
+			labels := prometheus.Labels{
+				"resource":           v.ResourceName,
+				"namespace":          v.Namespace,
+				"policy":             v.Policy,
+				"enforced":  		  "false"}
+			policyViolations.With(labels).Inc()
+		}
 	}
 
 	// log report-only violations
@@ -214,6 +225,15 @@ func (s *Server) validateResources(ar admissionv1.AdmissionReview) admissionv1.A
 			"user":      ar.Request.UserInfo.Username,
 			"enforced":  false,
 		}).Info("NOT ENFORCED")
+
+		if s.Config.GlobalMetricsEnabled == true {
+			labels := prometheus.Labels{
+				"resource":           v.ResourceName,
+				"namespace":          v.Namespace,
+				"policy":             v.Policy,
+				"enforced":  		  "false"}
+			policyViolations.With(labels).Inc()
+		}
 	}
 
 	// log enforced violations when in global report-only mode
@@ -227,6 +247,15 @@ func (s *Server) validateResources(ar admissionv1.AdmissionReview) admissionv1.A
 				"user":      ar.Request.UserInfo.Username,
 				"enforced":  false,
 			}).Info("NOT ENFORCED")
+
+			if s.Config.GlobalMetricsEnabled == true {
+				labels := prometheus.Labels{
+					"resource":           v.ResourceName,
+					"namespace":          v.Namespace,
+					"policy":             v.Policy,
+					"enforced":  		  "false"}
+				policyViolations.With(labels).Inc()
+			}
 		}
 	}
 
@@ -242,6 +271,16 @@ func (s *Server) validateResources(ar admissionv1.AdmissionReview) admissionv1.A
 				"user":      ar.Request.UserInfo.Username,
 				"enforced":  true,
 			}).Warn("ENFORCED")
+
+			if s.Config.GlobalMetricsEnabled == true {
+				labels := prometheus.Labels{
+					"resource":           v.ResourceName,
+					"namespace":          v.Namespace,
+					"policy":             v.Policy,
+					"enforced":  		  "true"}
+				policyViolations.With(labels).Inc()
+			}
+
 			violations = violations + "\n" + v.HumanString()
 		}
 
