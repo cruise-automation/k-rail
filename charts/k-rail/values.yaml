@@ -48,9 +48,12 @@ config:
       IfNotPresent: []
       Always: []
     policy_require_service_loadbalancer_annotations:
-      - annotation: "cloud.google.com/load-balancer-type"
+      - annotations:
+          - "cloud.google.com/load-balancer-type"
+          - "networking.gke.io/load-balancer-type"
         allowed_values:
           - internal
+          - Internal
         allow_missing: false
   plugin_config:
     example_plugin:

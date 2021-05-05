@@ -436,8 +436,10 @@ Each annotation to police is configured with a list of possible values and a par
 ```yaml
 policy_config:
   policy_require_service_loadbalancer_annotations:
-    - annotation: "cloud.google.com/load-balancer-type"
-      allowed_values: 
+    - annotations:
+        - "cloud.google.com/load-balancer-type"
+        - "networking.gke.io/load-balancer-type"
+      allowed_values:
         - internal
         - external
       allow_missing: false

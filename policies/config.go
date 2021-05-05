@@ -40,6 +40,7 @@ type Config struct {
 // AnnotationConfig defines a single annotation config
 type AnnotationConfig struct {
 	Annotation    string   `json:"annotation"`
+	Annotations   []string `json:"annotations"`
 	AllowedValues []string `json:"allowed_values"`
 	AllowMissing  bool     `json:"allow_missing"`
 }
