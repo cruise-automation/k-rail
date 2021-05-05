@@ -175,6 +175,147 @@ func TestPolicyRequireServiceLoadbalancerExemption_Validate(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:       "multiple annotations allowed, annotation present, no violation",
+			violations: 0,
+			service: &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"networking.gke.io/load-balancer-type": "internal",
+					},
+				},
+				Spec: corev1.ServiceSpec{
+					Type: corev1.ServiceTypeLoadBalancer,
+				},
+			},
+			config: &policies.Config{
+				PolicyRequireServiceLoadBalancerAnnotations: []*policies.AnnotationConfig{
+					&policies.AnnotationConfig{
+						Annotations:   []string{"cloud.google.com/load-balancer-type", "networking.gke.io/load-balancer-type"},
+						AllowedValues: []string{"internal"},
+						AllowMissing:  false,
+					},
+				},
+			},
+		},
+		{
+			name:       "multiple annotations allowed, annotation present but bad annotation, violation",
+			violations: 1,
+			service: &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"networking.gke.io/load-balancer-type": "whatever123",
+					},
+				},
+				Spec: corev1.ServiceSpec{
+					Type: corev1.ServiceTypeLoadBalancer,
+				},
+			},
+			config: &policies.Config{
+				PolicyRequireServiceLoadBalancerAnnotations: []*policies.AnnotationConfig{
+					&policies.AnnotationConfig{
+						Annotations:   []string{"cloud.google.com/load-balancer-type", "networking.gke.io/load-balancer-type"},
+						AllowedValues: []string{"internal"},
+						AllowMissing:  false,
+					},
+				},
+			},
+		},
+		{
+			name:       "multiple annotations allowed, no annotation present, violation",
+			violations: 1,
+			service: &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{},
+				},
+				Spec: corev1.ServiceSpec{
+					Type: corev1.ServiceTypeLoadBalancer,
+				},
+			},
+			config: &policies.Config{
+				PolicyRequireServiceLoadBalancerAnnotations: []*policies.AnnotationConfig{
+					&policies.AnnotationConfig{
+						Annotations:   []string{"cloud.google.com/load-balancer-type", "networking.gke.io/load-balancer-type"},
+						AllowedValues: []string{"internal"},
+						AllowMissing:  false,
+					},
+				},
+			},
+		},
+		{
+			name:       "multiple annotations allowed, no annotation present, but empty ok, no violation",
+			violations: 0,
+			service: &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{},
+				},
+				Spec: corev1.ServiceSpec{
+					Type: corev1.ServiceTypeLoadBalancer,
+				},
+			},
+			config: &policies.Config{
+				PolicyRequireServiceLoadBalancerAnnotations: []*policies.AnnotationConfig{
+					&policies.AnnotationConfig{
+						Annotations:   []string{"cloud.google.com/load-balancer-type", "networking.gke.io/load-balancer-type"},
+						AllowedValues: []string{"internal"},
+						AllowMissing:  true,
+					},
+				},
+			},
+		},
+		{
+			name:       "multiple annotations allowed, annotation present, multiple possibilities, no violation",
+			violations: 0,
+			service: &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"networking.gke.io/load-balancer-type": "internal",
+					},
+				},
+				Spec: corev1.ServiceSpec{
+					Type: corev1.ServiceTypeLoadBalancer,
+				},
+			},
+			config: &policies.Config{
+				PolicyRequireServiceLoadBalancerAnnotations: []*policies.AnnotationConfig{
+					&policies.AnnotationConfig{
+						Annotations:   []string{"cloud.google.com/load-balancer-type", "networking.gke.io/load-balancer-type"},
+						AllowedValues: []string{"external", "internal"},
+						AllowMissing:  false,
+					},
+				},
+			},
+		},
+		{
+			name:       "multiple annotations allowed, multiple annotations present, multiple possibilities, no violation",
+			violations: 0,
+			service: &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						"networking.gke.io/load-balancer-type": "internal",
+						"myannotation":                         "yes",
+						"anotherannotation":                    "yup",
+					},
+				},
+				Spec: corev1.ServiceSpec{
+					Type: corev1.ServiceTypeLoadBalancer,
+				},
+			},
+			config: &policies.Config{
+				PolicyRequireServiceLoadBalancerAnnotations: []*policies.AnnotationConfig{
+					&policies.AnnotationConfig{
+						Annotations:   []string{"cloud.google.com/load-balancer-type", "networking.gke.io/load-balancer-type"},
+						AllowedValues: []string{"external", "internal"},
+						AllowMissing:  false,
+					},
+					&policies.AnnotationConfig{
+						Annotation:    "myannotation",
+						AllowedValues: []string{"yes", "internal"},
+						AllowMissing:  false,
+					},
+				},
+			},
+		},
 
 		{
 			name:       "no annotation present, but not type LB, no violation",

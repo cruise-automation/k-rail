@@ -15,6 +15,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -43,36 +44,50 @@ func (p PolicyRequireServiceLoadbalancerExemption) Validate(ctx context.Context,
 		return resourceViolations, nil
 	}
 
+	annotations := serviceResource.Service.ObjectMeta.GetAnnotations()
+
 	// Each annotation entry in the config is tested sequentially
 	for _, annotationConfig := range config.PolicyRequireServiceLoadBalancerAnnotations {
-		value, exists := serviceResource.Service.ObjectMeta.GetAnnotations()[annotationConfig.Annotation]
+		annotationsToCheck := annotationConfig.Annotations
+		if annotationConfig.Annotation != "" {
+			annotationsToCheck = append(annotationsToCheck, annotationConfig.Annotation)
+		}
 
-		// The annotation si only tested against possible values if it exists
-		if exists {
-			valueAllowed := false
-			for _, allowedValue := range annotationConfig.AllowedValues {
-				if value == allowedValue {
-					valueAllowed = true
-					break
+		atLeastOneAnnotationExists := false
+
+		for _, annotation := range annotationsToCheck {
+			value, exists := annotations[annotation]
+			atLeastOneAnnotationExists = atLeastOneAnnotationExists || exists
+			// The annotation is only tested against possible values if it exists
+			if exists {
+				valueAllowed := false
+				for _, allowedValue := range annotationConfig.AllowedValues {
+					if value == allowedValue {
+						valueAllowed = true
+						break
+					}
+				}
+
+				if !valueAllowed {
+					resourceViolations = append(resourceViolations, policies.ResourceViolation{
+						Namespace:    ar.Namespace,
+						ResourceName: serviceResource.ResourceName,
+						ResourceKind: serviceResource.ResourceKind,
+						Violation:    fmt.Sprintf("Require Service LoadBalancer annotations: Annotation %s value %s is not allowed", annotationConfig.Annotation, value),
+						Policy:       p.Name(),
+					})
 				}
 			}
+		}
 
-			if !valueAllowed {
-				resourceViolations = append(resourceViolations, policies.ResourceViolation{
-					Namespace:    ar.Namespace,
-					ResourceName: serviceResource.ResourceName,
-					ResourceKind: serviceResource.ResourceKind,
-					Violation:    fmt.Sprintf("Require Service LoadBalancer annotations: Annotation %s value %s is not allowed", annotationConfig.Annotation, value),
-					Policy:       p.Name(),
-				})
-			}
-			// If the annotation is not present, the policy config defines if this is acceptable.
-		} else if !annotationConfig.AllowMissing {
+		// If the annotation(s) is not present, the policy config defines if this is acceptable.
+		if !atLeastOneAnnotationExists && !annotationConfig.AllowMissing {
+			requiredAnnotations := strings.Join(annotationConfig.Annotations, " or ")
 			resourceViolations = append(resourceViolations, policies.ResourceViolation{
 				Namespace:    ar.Namespace,
 				ResourceName: serviceResource.ResourceName,
 				ResourceKind: serviceResource.ResourceKind,
-				Violation:    fmt.Sprintf("Require Service LoadBalancer annotations: Annotation %s cannot be empty", annotationConfig.Annotation),
+				Violation:    fmt.Sprintf("Require Service LoadBalancer annotations: Annotation %s cannot be empty", requiredAnnotations),
 				Policy:       p.Name(),
 			})
 		}
