@@ -55,6 +55,10 @@ config:
           - internal
           - Internal
         allow_missing: false
+      - annotation: "networking.gke.io/internal-load-balancer-allow-global-access"
+        allowed_values:
+          - true
+        allow_missing: false
   plugin_config:
     example_plugin:
       threshold: 1.0

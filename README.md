@@ -443,6 +443,10 @@ policy_config:
         - internal
         - external
       allow_missing: false
+    - annotation: "networking.gke.io/internal-load-balancer-allow-global-access"
+      allowed_values:
+        - true
+      allow_missing: false
 ```
 
 ## No Persistent Volume Host Path
