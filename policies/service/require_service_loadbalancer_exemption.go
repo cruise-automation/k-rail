@@ -82,7 +82,7 @@ func (p PolicyRequireServiceLoadbalancerExemption) Validate(ctx context.Context,
 
 		// If the annotation(s) is not present, the policy config defines if this is acceptable.
 		if !atLeastOneAnnotationExists && !annotationConfig.AllowMissing {
-			requiredAnnotations := strings.Join(annotationConfig.Annotations, " or ")
+			requiredAnnotations := strings.Join(annotationsToCheck, " or ")
 			resourceViolations = append(resourceViolations, policies.ResourceViolation{
 				Namespace:    ar.Namespace,
 				ResourceName: serviceResource.ResourceName,
