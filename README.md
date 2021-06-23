@@ -134,7 +134,7 @@ kubectl label namespace k-rail k-rail/ignore=true
 helm install k-rail k-rail/k-rail --namespace k-rail
 ```
 
-For the Helm deployment, all configuration for policies and exemptions are contained in [`charts/k-rail/values.yaml`](charts/k-rail/values.yaml).
+For the Helm deployment, all configuration for policies and exemptions are contained in [`charts/k-rail/values.yaml`](charts/k-rail/values.yaml). Feel free to override configuration values as you see fit per the various Helm provided [methods](https://helm.sh/docs/chart_template_guide/values_files/).
 
 For Helm 2 and below, it is recommended to use `helm template` render the YAML for applying rather than using Helm Tiller:
 
