@@ -263,6 +263,13 @@ The Docker socket bind mount provides API access to the host Docker daemon, whic
 
 **Note:** It is recommended to use the `No Bind Mounts` policy to disable all `hostPath` mounts rather than only this policy, because it is easily bypassed. This policy does not provide meaningful protection and is here for informative purposes.
 
+## No Root User
+
+Running as the root user is extremely dangerous and should be forbidden for all possible workloads.
+This policy blocks pods when the security context doesn't explicitly set `runAsUser: [some uid > 0]` or `runAsNonRoot: true`
+
+The securityContext can be set at the pod level or on each individual container.
+
 ## EmptyDir size limit
 
 By [default](https://kubernetes.io/docs/concepts/storage/volumes/#example-pod), an `emptyDir` lacks a `sizeLimit` parameter, and is disk-based;
