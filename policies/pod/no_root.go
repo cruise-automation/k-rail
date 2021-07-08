@@ -34,7 +34,7 @@ func (p PolicyNoRootUser) Validate(ctx context.Context, _ policies.Config, ar *a
 			Namespace:    ar.Namespace,
 			ResourceName: podResource.ResourceName,
 			ResourceKind: podResource.ResourceKind,
-			Violation:    fmt.Sprintf("No Root user: Container %s can as the root user which is forbidden", container.Name),
+			Violation:    fmt.Sprintf("No Root user: Container %s can run as the root user which is forbidden", container.Name),
 			Policy:       p.Name(),
 		})
 	}
