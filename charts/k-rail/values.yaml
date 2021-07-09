@@ -72,6 +72,9 @@ config:
     - name: "pod_no_docker_sock"
       enabled: True
       report_only: False
+    - name: "pod_no_root_user"
+      enabled: True
+      report_only: False
     - name: "pod_immutable_reference"
       enabled: True
       report_only: False
