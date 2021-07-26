@@ -35,6 +35,8 @@ func (p PolicyDenyUnconfinedApparmorPolicy) Validate(ctx context.Context, config
 		return nil, nil
 	}
 
+	violationText := "Unconfined AppArmor pod: Setting AppArmor annonation on Pod to unconfined is forbidden without an exception"
+
 	if podResource.ResourceKind == "Pod" {
 		for name, value := range podResource.PodAnnotations {
 			if strings.HasPrefix(name, "container.apparmor.security.beta.kubernetes.io") {
