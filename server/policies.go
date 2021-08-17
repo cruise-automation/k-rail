@@ -23,11 +23,12 @@ import (
 	clusterrolebinding "github.com/cruise-automation/k-rail/v3/policies/clusterrolebinding"
 	"github.com/cruise-automation/k-rail/v3/policies/customresourcedefinition"
 	"github.com/cruise-automation/k-rail/v3/policies/ingress"
-	"github.com/cruise-automation/k-rail/v3/policies/persistentVolume"
+	"github.com/cruise-automation/k-rail/v3/policies/persistentvolume"
 	"github.com/cruise-automation/k-rail/v3/policies/pod"
 	"github.com/cruise-automation/k-rail/v3/policies/poddisruptionbudget"
 	rolebinding "github.com/cruise-automation/k-rail/v3/policies/rolebinding"
 	"github.com/cruise-automation/k-rail/v3/policies/service"
+	"github.com/cruise-automation/k-rail/v3/policies/virtualservice"
 )
 
 // Policy specifies how a Policy is implemented
@@ -64,8 +65,9 @@ func (s *Server) registerPolicies() {
 	s.registerPolicy(pod.PolicyDenyUnconfinedApparmorPolicy{})
 	s.registerPolicy(ingress.PolicyRequireIngressExemption{})
 	s.registerPolicy(service.PolicyRequireServiceLoadbalancerExemption{})
+	s.registerPolicy(virtualservice.PolicyRequireVirtualServiceGatewayExemption{})
 	s.registerPolicy(service.PolicyServiceNoExternalIP{})
-	s.registerPolicy(persistentVolume.PolicyNoPersistentVolumeHost{})
+	s.registerPolicy(persistentvolume.PolicyNoPersistentVolumeHost{})
 	s.registerPolicy(clusterrolebinding.PolicyNoAnonymousClusterRoleBinding{})
 	s.registerPolicy(rolebinding.PolicyNoAnonymousRoleBinding{})
 	requireUniqueHostPolicy, err := ingress.NewPolicyRequireUniqueHost()
