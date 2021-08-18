@@ -59,6 +59,11 @@ config:
         allowed_values:
           - true
         allow_missing: false
+    policy_require_virtualservice_gateways:
+      allowed_gateways:
+        - "istio-system/internal-gateway"
+        - "mesh"
+      allow_empty_gateways: true
   plugin_config:
     example_plugin:
       threshold: 1.0

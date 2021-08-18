@@ -40,6 +40,8 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
   - [Unique Ingress Host](#unique-ingress-host)
   - [Service type LoadBalancer annotation check](#service-type-loadbalancer-annotation-check)
     - [Policy configuration](#policy-configuration-5)
+  - [Istio VirtualService Gateways check](#istio-virtualservice-gateways-check)
+    - [Policy configuration](#policy-configuration-6)
   - [No Persistent Volume Host Path](#no-persistent-volume-host-path)
   - [No Anonymous Cluster Role Binding](#no-anonymous-cluster-role-binding)
   - [No Anonymous Role Binding](#no-anonymous-role-binding)
@@ -54,7 +56,7 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
     - [Global report-only mode](#global-report-only-mode)
     - [Policy modes](#policy-modes)
   - [Policy exemptions](#policy-exemptions)
-  - [Policy configuration](#policy-configuration-6)
+  - [Policy configuration](#policy-configuration-7)
 - [Adding new policies](#adding-new-policies)
 - [Debugging](#debugging)
   - [Resources are having timeout events](#resources-are-having-timeout-events)
@@ -454,6 +456,24 @@ policy_config:
       allowed_values:
         - true
       allow_missing: false
+```
+## Istio VirtualService Gateways check
+
+Gateways set on Istio virtual services are used to configure public and private Istio ingress access along with potentially usage of sensitive domains.
+
+This policy validates the gateways listed on an Istio virtual service and will reject virtual services defined with gateways outside the acceptable range.
+
+### Policy configuration
+
+A list of allowed gateways is configured along with a parameter to set if an empty list of gateways is allowed for virtual services. According to the [Istio virtual service documentation](https://istio.io/latest/docs/reference/config/networking/virtual-service/), an unset list of gateways will default to the `mesh` gateway which will apply the virtual service to all sidecars in the service mesh.
+
+```yaml
+policy_config:
+  policy_require_virtualservice_gateways:
+    allowed_gateways:
+      - "istio-system/internal-gateway"
+      - "mesh"
+    allow_empty_gateways: true
 ```
 
 ## No Persistent Volume Host Path

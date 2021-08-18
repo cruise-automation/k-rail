@@ -31,6 +31,7 @@ const (
 	cacheKeyClusterRoleBinding
 	cacheKeyRoleBinding
 	cacheKeyPodDisruptionBudget
+	cacheKeyVirtualService
 )
 
 type cache struct {
