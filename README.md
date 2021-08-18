@@ -459,7 +459,7 @@ policy_config:
 ```
 ## Istio VirtualService Gateways check
 
-Gateways set on Istio virtuals services are used to configure public and private Istio ingress access along with potentially usage of sensitive domains.
+Gateways set on Istio virtual services are used to configure public and private Istio ingress access along with potentially usage of sensitive domains.
 
 This policy validates the gateways listed on an Istio virtual service and will reject virtual services defined with gateways outside the acceptable range.
 
