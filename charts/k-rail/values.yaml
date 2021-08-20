@@ -110,6 +110,9 @@ config:
     - name: "pod_empty_dir_size_limit"
       enabled: True
       report_only: False
+    - name: "pod_no_root_user"
+      enabled: True
+      report_only: False
     - name: "pod_default_seccomp_policy"
       enabled: True
       report_only: False
@@ -129,6 +132,9 @@ config:
       enabled: True
       report_only: False
     - name: "service_require_loadbalancer_exemption"
+      enabled: True
+      report_only: False
+    - name: "service_require_virtualservice_gateway_exemption"
       enabled: True
       report_only: False
     - name: "cluster_role_binding_no_anonymous_subject"
