@@ -150,7 +150,7 @@ func TestPolicyRequireVirtualServiceGatewayExemption_Validate(t *testing.T) {
 				Namespace: "namespace",
 				Name:      "name",
 				Object:    runtime.RawExtension{Raw: raw},
-				Resource:  metav1.GroupVersionResource{Group: "", Version: "v1beta1", Resource: "virtualservices"},
+				Resource:  metav1.GroupVersionResource{Group: "networking.istio.io", Version: "v1beta1", Resource: "virtualservices"},
 			}
 
 			v := PolicyRequireVirtualServiceGatewayExemption{}

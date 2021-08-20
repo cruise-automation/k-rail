@@ -78,7 +78,7 @@ func GetVirtualServiceResource(ctx context.Context, ar *admissionv1.AdmissionReq
 
 func decodeVirtualServiceResource(ar *admissionv1.AdmissionRequest) *VirtualServiceResource {
 	switch ar.Resource {
-	case metav1.GroupVersionResource{Group: "", Version: "v1beta1", Resource: "virtualservices"}, metav1.GroupVersionResource{Group: "", Version: "v1alpha3", Resource: "virtualservices"}:
+	case metav1.GroupVersionResource{Group: "networking.istio.io", Version: "v1beta1", Resource: "virtualservices"}, metav1.GroupVersionResource{Group: "networking.istio.io", Version: "v1alpha3", Resource: "virtualservices"}:
 		vsvc := VirtualService{}
 		if err := decodeObject(ar.Object.Raw, &vsvc); err != nil {
 			return nil
