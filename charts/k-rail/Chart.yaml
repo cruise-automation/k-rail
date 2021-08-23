@@ -2,7 +2,7 @@ apiVersion: v1
 name: k-rail
 description: Kubernetes security tool for policy enforcement
 home: https://github.com/cruise-automation/k-rail
-version: v3.5.1
+version: v3.5.2
 maintainers:
   - name: cruise-automation
     url: https://cruise-automation.github.io/k-rail/

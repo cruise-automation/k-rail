@@ -48,6 +48,7 @@ webhooks:
           - rolebindings
           - services
           - statefulsets
+          - virtualservices
     failurePolicy: {{ print .Values.failurePolicy }}
   {{- if .Values.reinvocationPolicy }}
     reinvocationPolicy: {{  print .Values.reinvocationPolicy }}
