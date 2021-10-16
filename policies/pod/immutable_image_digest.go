@@ -16,11 +16,11 @@ import (
 	"context"
 	"strings"
 
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/cruise-automation/k-rail/policies"
-	"github.com/cruise-automation/k-rail/resource"
+	"github.com/cruise-automation/k-rail/v3/policies"
+	"github.com/cruise-automation/k-rail/v3/resource"
 
 	digest "github.com/opencontainers/go-digest"
 )
@@ -31,7 +31,7 @@ func (p PolicyImageImmutableReference) Name() string {
 	return "pod_immutable_reference"
 }
 
-func (p PolicyImageImmutableReference) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
+func (p PolicyImageImmutableReference) Validate(ctx context.Context, config policies.Config, ar *admissionv1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 

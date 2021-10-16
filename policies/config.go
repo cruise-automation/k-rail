@@ -27,6 +27,8 @@ type Config struct {
 	PolicyRequireIngressExemptionClasses []string `json:"policy_require_ingress_exemption_classes"`
 	// PolicyRequireServiceLoadBalancerAnnotations contains the Service LB types annotation that are allowed with this policy.
 	PolicyRequireServiceLoadBalancerAnnotations []*AnnotationConfig `json:"policy_require_service_loadbalancer_annotations"`
+	// PolicyRequireVirtualServiceGateways contains the Gateways that are allowed with this policy.
+	PolicyRequireVirtualServiceGateways *VirtualServiceGatewaysConfig `json:"policy_require_virtualservice_gateways"`
 	// PolicyTrustedRepositoryRegexes contains regexes that match image repositories that you want to allow.
 	PolicyTrustedRepositoryRegexes []string `json:"policy_trusted_repository_regexes"`
 	// PolicyDefaultSeccompPolicy contains the seccomp policy that you want to be applied on Pods by default.
@@ -40,8 +42,14 @@ type Config struct {
 // AnnotationConfig defines a single annotation config
 type AnnotationConfig struct {
 	Annotation    string   `json:"annotation"`
+	Annotations   []string `json:"annotations"`
 	AllowedValues []string `json:"allowed_values"`
 	AllowMissing  bool     `json:"allow_missing"`
+}
+
+type VirtualServiceGatewaysConfig struct {
+	AllowedGateways    []string `json:"allowed_gateways"`
+	AllowEmptyGateways bool     `json:"allow_empty_gateways"`
 }
 
 type MutateEmptyDirSizeLimit struct {

@@ -19,8 +19,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cruise-automation/k-rail/policies"
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	"github.com/cruise-automation/k-rail/v3/policies"
+	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -160,7 +160,7 @@ func TestPolicyImagePullPolicy(t *testing.T) {
 		t.Run(fmt.Sprintf("Testcase:%s", k), func(t *testing.T) {
 
 			raw, _ := json.Marshal(corev1.Pod{Spec: tt.podSpec})
-			ar := &admissionv1beta1.AdmissionRequest{
+			ar := &admissionv1.AdmissionRequest{
 				Namespace: "namespace",
 				Name:      "name",
 				Object:    runtime.RawExtension{Raw: raw},

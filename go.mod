@@ -1,25 +1,29 @@
-module github.com/cruise-automation/k-rail
+module github.com/cruise-automation/k-rail/v3
 
-go 1.12
+go 1.16
 
 require (
 	github.com/gobwas/glob v0.2.3
-	github.com/golang/protobuf v1.4.2 // indirect
-	github.com/gorilla/mux v1.7.3
-	github.com/json-iterator/go v1.1.10 // indirect
+	github.com/golang/protobuf v1.5.1 // indirect
+	github.com/gorilla/mux v1.8.0
+	github.com/hashicorp/go-plugin v1.4.0
 	github.com/opencontainers/go-digest v1.0.0-rc1
+	github.com/prometheus/client_golang v1.7.1
 	github.com/sirupsen/logrus v1.6.0
-	golang.org/x/net v0.0.0-20200625001655-4c5254603344 // indirect
-	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
-	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae // indirect
-	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
-	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
+	github.com/slok/go-http-metrics v0.9.0
+	github.com/stretchr/testify v1.6.1
+	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
+	google.golang.org/grpc v1.35.0
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0 // indirect
+	google.golang.org/protobuf v1.26.0
 	gopkg.in/yaml.v2 v2.3.0 // indirect
-	k8s.io/api v0.17.2
-	k8s.io/apimachinery v0.17.2
-	k8s.io/client-go v0.17.2 //v11.0.0+incompatible
-	k8s.io/utils v0.0.0-20200229041039-0a110f9eb7ab
-	sigs.k8s.io/yaml v1.1.0
+	istio.io/api v0.0.0-20210817134638-1b724d2c575d
+	k8s.io/api v0.20.2
+	k8s.io/apiextensions-apiserver v0.20.2
+	k8s.io/apimachinery v0.20.2
+	k8s.io/client-go v0.20.2 //v11.0.0+incompatible
+	k8s.io/utils v0.0.0-20201110183641-67b214c5f920
+	sigs.k8s.io/yaml v1.2.0
 )
 
 replace git.apache.org/thrift.git => github.com/apache/thrift v0.12.0

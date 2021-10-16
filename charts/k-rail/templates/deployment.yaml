@@ -1,6 +1,7 @@
 {{- $cn := printf "k-rail.%s.svc" .Release.Namespace }}
 {{- $ca := genCA "k-rail-admission-ca" 3650 -}}
-{{- $cert := genSignedCert $cn nil nil 3650 $ca -}}
+{{- $san := printf "k-rail.%s.svc" .Release.Namespace }}
+{{- $cert := genSignedCert $cn nil (list $san) 3650 $ca -}}
 ---
 apiVersion: v1
 kind: Secret
@@ -14,13 +15,10 @@ data:
   cert.pem: {{ b64enc $cert.Cert }}
   key.pem: {{ b64enc $cert.Key }}
 ---
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   name: k-rail
-  annotations:
-    checksum/config: {{ print .Values.config | sha256sum }}
-    checksum/exemptions: {{ print .Values.exemptions | sha256sum }}
 webhooks:
   - name: k-rail.cruise-automation.github.com
     clientConfig:
@@ -30,12 +28,13 @@ webhooks:
         path: "/"
       caBundle: {{ b64enc $ca.Cert }}
     rules:
-      - operations: ["CREATE","UPDATE","CONNECT"]
+      - operations: ["CREATE","DELETE","UPDATE","CONNECT"]
         apiGroups: ["*"]
         apiVersions: ["*"]
         resources:
           - clusterrolebindings
           - cronjobs
+          - customresourcedefinitions
           - daemonsets
           - deployments
           - ingresses
@@ -54,6 +53,7 @@ webhooks:
     reinvocationPolicy: {{  print .Values.reinvocationPolicy }}
   {{- end }}
     sideEffects: None
+    admissionReviewVersions: ["v1"]
     timeoutSeconds: {{ .Values.webhookTimeout }}
     namespaceSelector:
       matchExpressions:

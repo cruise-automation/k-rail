@@ -22,10 +22,15 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/cruise-automation/k-rail/policies"
+	"github.com/cruise-automation/k-rail/v3/plugins"
+	"github.com/cruise-automation/k-rail/v3/policies"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/slok/go-http-metrics/middleware/std"
 )
 
 const (
@@ -39,6 +44,7 @@ type Server struct {
 	EnforcedPolicies   []Policy
 	ReportOnlyPolicies []Policy
 	Exemptions         []policies.CompiledExemption
+	Plugins            []plugins.Plugin
 }
 
 // Run starts the API server
@@ -50,6 +56,7 @@ func Run(ctx context.Context) {
 
 	configPath := flag.String("config", "config.yml", "path to configuration file")
 	exemptionsPathGlob := flag.String("exemptions-path-glob", "", "path glob that includes exemption configs")
+	pluginsPathGlob := flag.String("plugins-path-glob", "", "path glob that includes plugin binaries")
 	flag.Parse()
 
 	yamlFile, err := ioutil.ReadFile(*configPath)
@@ -80,16 +87,50 @@ func Run(ctx context.Context) {
 		log.Infof("loaded %d exemptions", len(exemptions))
 	}
 
+	prometheus.MustRegister(totalRegisteredPolicies)
+	prometheus.MustRegister(policyViolations)
+	prometheus.MustRegister(totalLoadedPlugins)
+
+	var loadedPlugins []plugins.Plugin
+	if *pluginsPathGlob != "" {
+		loadedPlugins, err = plugins.PluginsFromDirectory(*pluginsPathGlob)
+		if err != nil {
+			log.Fatal("error launching plugins: ", err)
+		}
+
+		for _, plugin := range loadedPlugins {
+			defer plugin.Kill()
+			if pluginConfig, ok := cfg.PluginConfig[plugin.Name()]; ok {
+				if pluginConfigMap, ok := pluginConfig.(map[string]interface{}); ok {
+					err = plugin.Configure(pluginConfigMap)
+					if err != nil {
+						log.Fatalf("error configuring plugin %s: %v\n", plugin.Name(), err)
+					}
+				} else {
+					log.Fatalf("expected plugin config for plugin %s to be a map of values (eg. plugins_config: %s: <config key>: <config values>)", plugin.Name(), plugin.Name())
+				}
+			} else {
+				log.Infof("no plugin config found for plugin %s, continuing on", plugin.Name())
+			}
+
+			totalLoadedPlugins.Add(1)
+		}
+
+		log.Infof("loaded %d plugins", len(loadedPlugins))
+	}
+
 	log.Info("k-rail is running")
 
 	srv := Server{
 		Config:     cfg,
 		Exemptions: exemptions,
+		Plugins:    loadedPlugins,
 	}
 
 	srv.registerPolicies()
 
 	router := mux.NewRouter()
+	router.Use(std.HandlerProvider("", prometheusMiddleware))
 	router.HandleFunc("/", srv.ValidatingWebhook)
 
 	s := &http.Server{
@@ -103,7 +144,7 @@ func Run(ctx context.Context) {
 
 	certBytes, err := ioutil.ReadFile(cfg.TLS.Cert)
 	if len(certBytes) == 0 || err != nil {
-		log.Fatal("got empty certificate")
+		log.WithError(err).Fatal("got empty certificate")
 	}
 
 	// on ^C, or SIGTERM handle safe shutdown
@@ -117,6 +158,16 @@ func Run(ctx context.Context) {
 			log.Warn("shutting down in 15 seconds")
 			time.Sleep(15 * time.Second)
 			os.Exit(0)
+		}
+	}()
+
+	// serve metrics
+	prometheusServer := http.NewServeMux()
+	prometheusServer.Handle("/metrics", promhttp.Handler())
+	go func() {
+		log.Info("metrics listening at :2112")
+		if err := http.ListenAndServe(":2112", prometheusServer); err != nil {
+			log.Fatalf("error while serving metrics: %s", err)
 		}
 	}()
 

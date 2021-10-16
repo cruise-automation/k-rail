@@ -15,10 +15,10 @@ package ingress
 import (
 	"context"
 
-	"github.com/cruise-automation/k-rail/policies"
-	"github.com/cruise-automation/k-rail/resource"
+	"github.com/cruise-automation/k-rail/v3/policies"
+	"github.com/cruise-automation/k-rail/v3/resource"
 	log "github.com/sirupsen/logrus"
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -50,7 +50,7 @@ func (p PolicyRequireUniqueHost) Name() string {
 
 func (p PolicyRequireUniqueHost) CheckIngressNamespaces(ctx context.Context, host string) (map[string]struct{}, error) {
 	ingressNamespacesMap := make(map[string]struct{})
-	ingresses, err := p.client.ExtensionsV1beta1().Ingresses("").List(metav1.ListOptions{})
+	ingresses, err := p.client.ExtensionsV1beta1().Ingresses("").List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return ingressNamespacesMap, err
 	}
@@ -75,7 +75,7 @@ func Find(slice []string, val string) bool {
 	return false
 }
 
-func (p PolicyRequireUniqueHost) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
+func (p PolicyRequireUniqueHost) Validate(ctx context.Context, config policies.Config, ar *admissionv1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 

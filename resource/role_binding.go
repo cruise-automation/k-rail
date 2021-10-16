@@ -15,7 +15,7 @@ package resource
 import (
 	"context"
 
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -28,14 +28,14 @@ type RoleBindingResource struct {
 }
 
 // GetRoleBindingResource extracts a RoleBindingResource from an AdmissionRequest
-func GetRoleBindingResource(ctx context.Context, ar *admissionv1beta1.AdmissionRequest) *RoleBindingResource {
+func GetRoleBindingResource(ctx context.Context, ar *admissionv1.AdmissionRequest) *RoleBindingResource {
 	c := GetResourceCache(ctx)
 	return c.getOrSet(cacheKeyRoleBinding, func() interface{} {
 		return decodeRoleBindingResource(ar)
 	}).(*RoleBindingResource)
 }
 
-func decodeRoleBindingResource(ar *admissionv1beta1.AdmissionRequest) *RoleBindingResource {
+func decodeRoleBindingResource(ar *admissionv1.AdmissionRequest) *RoleBindingResource {
 	switch ar.Kind {
 	case metav1.GroupVersionKind{Group: "rbac.authorization.k8s.io", Version: "v1", Kind: "RoleBinding"}:
 		rb := rbacv1.RoleBinding{}

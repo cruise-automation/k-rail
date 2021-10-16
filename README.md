@@ -40,11 +40,15 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
   - [Unique Ingress Host](#unique-ingress-host)
   - [Service type LoadBalancer annotation check](#service-type-loadbalancer-annotation-check)
     - [Policy configuration](#policy-configuration-5)
+  - [Istio VirtualService Gateways check](#istio-virtualservice-gateways-check)
+    - [Policy configuration](#policy-configuration-6)
   - [No Persistent Volume Host Path](#no-persistent-volume-host-path)
   - [No Anonymous Cluster Role Binding](#no-anonymous-cluster-role-binding)
   - [No Anonymous Role Binding](#no-anonymous-role-binding)
   - [Invalid Pod Disruption Budget](#invalid-pod-disruption-budget)
   - [No External IP on Service](#no-external-ip-on-service)
+  - [Deny Unconfined AppArmor Policies](#deny-unconfined-apparmor-policies)
+  - [Protect CRD from accidental Deletion](#crd-protect)
 - [Configuration](#configuration)
   - [Webhook Configuration](#webhook-configuration)
   - [Logging](#logging)
@@ -52,7 +56,7 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
     - [Global report-only mode](#global-report-only-mode)
     - [Policy modes](#policy-modes)
   - [Policy exemptions](#policy-exemptions)
-  - [Policy configuration](#policy-configuration-6)
+  - [Policy configuration](#policy-configuration-7)
 - [Adding new policies](#adding-new-policies)
 - [Debugging](#debugging)
   - [Resources are having timeout events](#resources-are-having-timeout-events)
@@ -132,7 +136,7 @@ kubectl label namespace k-rail k-rail/ignore=true
 helm install k-rail k-rail/k-rail --namespace k-rail
 ```
 
-For the Helm deployment, all configuration for policies and exemptions are contained in [`charts/k-rail/values.yaml`](charts/k-rail/values.yaml).
+For the Helm deployment, all configuration for policies and exemptions are contained in [`charts/k-rail/values.yaml`](charts/k-rail/values.yaml). Feel free to override configuration values as you see fit per the various Helm provided [methods](https://helm.sh/docs/chart_template_guide/values_files/).
 
 For Helm 2 and below, it is recommended to use `helm template` render the YAML for applying rather than using Helm Tiller:
 
@@ -236,6 +240,8 @@ Since the violations are outputted as structured data, you are encouraged to agg
 
 # Supported policies
 
+Below are the policies built-in to K-Rail. Additional custom written policies can be created and configured for your organization if they are not general purpose enough for committing to upstream.  See the [example plugin provided](plugins/examples/README.md) for details on writing your own policy plugin.
+
 ## No ShareProcessNamespace
 
 `shareProcessNamespace: true` is a Pod Spec directive that puts all containers in a Pod within
@@ -258,6 +264,13 @@ Host bind mounts (also called `hostPath` mounts) can be used to exfiltrate data 
 The Docker socket bind mount provides API access to the host Docker daemon, which can be used for privilege escalation or otherwise control the container host. Using Docker sock mounts can cause unreliability of the node because of the extra workloads that the Kubernetes schedulers are not aware of.
 
 **Note:** It is recommended to use the `No Bind Mounts` policy to disable all `hostPath` mounts rather than only this policy, because it is easily bypassed. This policy does not provide meaningful protection and is here for informative purposes.
+
+## No Root User
+
+Running as the root user is extremely dangerous and should be forbidden for all possible workloads.
+This policy blocks pods when the security context doesn't explicitly set `runAsUser: [some uid > 0]` or `runAsNonRoot: true`
+
+The securityContext can be set at the pod level or on each individual container.
 
 ## EmptyDir size limit
 
@@ -432,11 +445,35 @@ Each annotation to police is configured with a list of possible values and a par
 ```yaml
 policy_config:
   policy_require_service_loadbalancer_annotations:
-    - annotation: "cloud.google.com/load-balancer-type"
-      allowed_values: 
+    - annotations:
+        - "cloud.google.com/load-balancer-type"
+        - "networking.gke.io/load-balancer-type"
+      allowed_values:
         - internal
         - external
       allow_missing: false
+    - annotation: "networking.gke.io/internal-load-balancer-allow-global-access"
+      allowed_values:
+        - true
+      allow_missing: false
+```
+## Istio VirtualService Gateways check
+
+Gateways set on Istio virtual services are used to configure public and private Istio ingress access along with potentially usage of sensitive domains.
+
+This policy validates the gateways listed on an Istio virtual service and will reject virtual services defined with gateways outside the acceptable range.
+
+### Policy configuration
+
+A list of allowed gateways is configured along with a parameter to set if an empty list of gateways is allowed for virtual services. According to the [Istio virtual service documentation](https://istio.io/latest/docs/reference/config/networking/virtual-service/), an unset list of gateways will default to the `mesh` gateway which will apply the virtual service to all sidecars in the service mesh.
+
+```yaml
+policy_config:
+  policy_require_virtualservice_gateways:
+    allowed_gateways:
+      - "istio-system/internal-gateway"
+      - "mesh"
+    allow_empty_gateways: true
 ```
 
 ## No Persistent Volume Host Path
@@ -460,6 +497,14 @@ Prevent misconfigured pod disruption budgets from disrupting normal system maint
 ## No External IP on Service
 
 Prevents providing External IPs on a Service to mitigate [CVE-2020-8554](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-8554).
+
+## Deny Unconfined AppArmor Policies
+
+Prevents users from specifing an unconfined apparmor policy which can be used with other conditions to lead to [container escape](https://blog.trailofbits.com/2019/07/19/understanding-docker-container-escapes/).
+
+## Protect CRD From Accidental Deletion
+
+When a Custom Resource Definition is deleted the corresponding Custom Resources are deleted as well. This creates the risk of accidentally destroying important data during regular maintenance. This policy allows the user to set the annotation `k-rail.crd.protect: enabled` on any CRD which will prevent its deletion if any children CRs exist.
 
 # Configuration
 
@@ -529,13 +574,31 @@ The format of an exemption config is YAML, and looks like this:
 #   exempt_policies: ["*"]
 ```
 
+*Note:* The resource name automatically has a trailing glob appended in order to match resources created by controllers. This could lead to unintended matches.
+
 ## Policy configuration
 
 Some policies are configurable. Policy configuration is contained in the k-rail configuration file, and documentation for a policy's configuration can be found in the Supported policies heading above.
 
 For the Helm deployment, all policy and exemption configuration is contained in [`charts/k-rail/values.yaml`](charts/k-rail/values.yaml).
 
+## Plugin configuration
+
+Custom-written plugins are configurable under the `plugin_config:` yaml key such as below
+
+```yaml
+plugin_config:
+  <plugin_name>:
+    <custom plugin configuration>
+```
+
+For an example of this see the [provided plugin example](plugins/examples/README.md) and associated [config.yml](plugins/examples/config.yml).
+
+For additional reference the Helm deployment, contains this example plugin configuration as well, but is disabled by default [`charts/k-rail/values.yaml`](charts/k-rail/values.yaml).
+
 # Adding new policies
+
+## For general open-source use in k-rail
 
 Policies must satisfy this interface:
 
@@ -546,15 +609,39 @@ type Policy interface {
   Name() string
   Validate(ctx context.Context,
     config policies.Config,
-    ar *admissionv1beta1.AdmissionRequest,
+    ar *admissionv1.AdmissionRequest,
   ) ([]policies.ResourceViolation, []policies.PatchOperation)
 }
 ```
 
 `Name()` must return a string that matches a policy name that is provided in configuration.
-Validate accepts an AdmissionRequest, and the resource of interest must be extracted from it. See `resource/pod.go` for an example of extracting PodSpecs from an AdmissionRequest. If mutation on a resource is desired, you can return a slice of JSONPatch operations and `nil` for the violations.
+
+`Validate`accepts an AdmissionRequest, and the resource of interest must be extracted from it. See `resource/pod.go` for an example of extracting PodSpecs from an AdmissionRequest. If mutation on a resource is desired, you can return a slice of JSONPatch operations and `nil` for the violations.
 
 Policies can be registered in `internal/policies.go`. Any policies that are registered but do not have configuration provided get enabled in report-only mode.
+
+## For a custom purpose using plugins
+
+For custom written policies for your organization that are not general purpose enough for open-source usage, write a policy plugin. See the [example plugin provided](plugins/examples/README.md) for details on writing your own policy plugin in Go. Policy plugins must satisfy the following [GRPC protobuf KRailPlugin service specification](plugins/proto/plugin.proto).
+
+```protobuf
+service KRailPlugin {
+    rpc PluginName(PluginNameRequest) returns (PluginNameResponse);
+    rpc PolicyNames(PolicyNamesRequest) returns (PolicyNamesResponse);
+    rpc ConfigurePlugin(ConfigurePluginRequest) returns (ConfigurePluginResponse);
+    rpc Validate(ValidateRequest) returns (ValidateResponse);
+}
+```
+
+`PluginName` returns the name of the plugin as a string which is then used in the `plugin_config` stanza for providing customizable yaml configuration.
+
+`PolicyNames` returns the names of all the policies implemented by the plugin as an array of strings which is then used to configure them under the `policies` stanza as `enabled` and `report_only`
+
+`ConfigurePlugin` provides the customizable yaml from under corresponding `plugin_config` and plugin name stanza to initialize the plugin
+
+`Validate` accepts the policy name with an AdmissionRequest.  The resource of interest must be extracted from it. See `resource/pod.go` for an example of extracting PodSpecs from an AdmissionRequest. If mutation on a resource is desired, you can return a slice of JSONPatch operations and `nil` for the violations.
+
+Again, it is highly recommended to see the [example plugin provided](plugins/examples/README.md) for details on writing your own policy plugin in Go.
 
 # Debugging
 

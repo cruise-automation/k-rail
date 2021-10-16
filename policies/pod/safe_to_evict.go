@@ -15,9 +15,9 @@ package pod
 import (
 	"context"
 
-	"github.com/cruise-automation/k-rail/policies"
-	"github.com/cruise-automation/k-rail/resource"
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	"github.com/cruise-automation/k-rail/v3/policies"
+	"github.com/cruise-automation/k-rail/v3/resource"
+	admissionv1 "k8s.io/api/admission/v1"
 )
 
 type PolicySafeToEvict struct{}
@@ -26,7 +26,7 @@ func (p PolicySafeToEvict) Name() string {
 	return "pod_safe_to_evict"
 }
 
-func (p PolicySafeToEvict) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
+func (p PolicySafeToEvict) Validate(ctx context.Context, config policies.Config, ar *admissionv1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 

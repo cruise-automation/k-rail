@@ -18,8 +18,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/cruise-automation/k-rail/policies"
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	"github.com/cruise-automation/k-rail/v3/policies"
+	admissionv1 "k8s.io/api/admission/v1"
 	authenticationv1 "k8s.io/api/authentication/v1"
 	corev1 "k8s.io/api/core/v1"
 	apiresource "k8s.io/apimachinery/pkg/api/resource"
@@ -104,8 +104,8 @@ func runBenchmark(b *testing.B, testSrv Server, tt test) {
 	pod := corev1.Pod{Spec: tt.podSpec}
 	pod.Name = tt.resourceName
 	raw, _ := json.Marshal(pod)
-	ar := admissionv1beta1.AdmissionReview{
-		Request: &admissionv1beta1.AdmissionRequest{
+	ar := admissionv1.AdmissionReview{
+		Request: &admissionv1.AdmissionRequest{
 			Namespace: tt.resourceNamespace,
 			Object:    runtime.RawExtension{Raw: raw},
 			Resource:  metav1.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"},
@@ -156,8 +156,8 @@ func TestServer_validateResources(t *testing.T) {
 			pod := corev1.Pod{Spec: tt.podSpec}
 			pod.Name = tt.resourceName
 			raw, _ := json.Marshal(pod)
-			ar := admissionv1beta1.AdmissionReview{
-				Request: &admissionv1beta1.AdmissionRequest{
+			ar := admissionv1.AdmissionReview{
+				Request: &admissionv1.AdmissionRequest{
 					Namespace: tt.resourceNamespace,
 					Object:    runtime.RawExtension{Raw: raw},
 					Resource:  metav1.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"},

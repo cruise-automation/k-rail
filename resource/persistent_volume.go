@@ -15,7 +15,7 @@ package resource
 import (
 	"context"
 
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -28,14 +28,14 @@ type PersistentVolumeResource struct {
 }
 
 // GetPersistentVolumeResource extracts and PersistentVolumeResource from an AdmissionRequest
-func GetPersistentVolumeResource(ctx context.Context, ar *admissionv1beta1.AdmissionRequest) *PersistentVolumeResource {
+func GetPersistentVolumeResource(ctx context.Context, ar *admissionv1.AdmissionRequest) *PersistentVolumeResource {
 	c := GetResourceCache(ctx)
 	return c.getOrSet(cacheKeyPersistentVolume, func() interface{} {
 		return decodePersistentVolumeResource(ar)
 	}).(*PersistentVolumeResource)
 }
 
-func decodePersistentVolumeResource(ar *admissionv1beta1.AdmissionRequest) *PersistentVolumeResource {
+func decodePersistentVolumeResource(ar *admissionv1.AdmissionRequest) *PersistentVolumeResource {
 	switch ar.Kind {
 	case metav1.GroupVersionKind{Group: "", Version: "v1", Kind: "PersistentVolume"}:
 		pv := corev1.PersistentVolume{}

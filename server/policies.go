@@ -15,16 +15,20 @@ package server
 import (
 	"context"
 
-	"github.com/cruise-automation/k-rail/policies"
-	clusterrolebinding "github.com/cruise-automation/k-rail/policies/clusterrolebinding"
-	"github.com/cruise-automation/k-rail/policies/ingress"
-	"github.com/cruise-automation/k-rail/policies/persistentVolume"
-	"github.com/cruise-automation/k-rail/policies/pod"
-	"github.com/cruise-automation/k-rail/policies/poddisruptionbudget"
-	rolebinding "github.com/cruise-automation/k-rail/policies/rolebinding"
-	"github.com/cruise-automation/k-rail/policies/service"
 	log "github.com/sirupsen/logrus"
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
+
+	"github.com/cruise-automation/k-rail/v3/plugins"
+	"github.com/cruise-automation/k-rail/v3/policies"
+	clusterrolebinding "github.com/cruise-automation/k-rail/v3/policies/clusterrolebinding"
+	"github.com/cruise-automation/k-rail/v3/policies/customresourcedefinition"
+	"github.com/cruise-automation/k-rail/v3/policies/ingress"
+	"github.com/cruise-automation/k-rail/v3/policies/persistentvolume"
+	"github.com/cruise-automation/k-rail/v3/policies/pod"
+	"github.com/cruise-automation/k-rail/v3/policies/poddisruptionbudget"
+	rolebinding "github.com/cruise-automation/k-rail/v3/policies/rolebinding"
+	"github.com/cruise-automation/k-rail/v3/policies/service"
+	"github.com/cruise-automation/k-rail/v3/policies/virtualservice"
 )
 
 // Policy specifies how a Policy is implemented
@@ -33,7 +37,7 @@ type Policy interface {
 	Name() string
 	Validate(ctx context.Context,
 		config policies.Config,
-		ar *admissionv1beta1.AdmissionRequest,
+		ar *admissionv1.AdmissionRequest,
 	) ([]policies.ResourceViolation, []policies.PatchOperation)
 }
 
@@ -44,6 +48,7 @@ func (s *Server) registerPolicies() {
 	s.registerPolicy(pod.PolicyNoExec{})
 	s.registerPolicy(pod.PolicyBindMounts{})
 	s.registerPolicy(pod.PolicyDockerSock{})
+	s.registerPolicy(pod.PolicyNoRootUser{})
 	s.registerPolicy(pod.PolicyEmptyDirSizeLimit{})
 	s.registerPolicy(pod.PolicyImageImmutableReference{})
 	s.registerPolicy(pod.PolicyNoTiller{})
@@ -57,10 +62,12 @@ func (s *Server) registerPolicies() {
 	s.registerPolicy(pod.PolicyDefaultSeccompPolicy{})
 	s.registerPolicy(pod.PolicyNoShareProcessNamespace{})
 	s.registerPolicy(pod.PolicyImagePullPolicy{})
+	s.registerPolicy(pod.PolicyDenyUnconfinedApparmorPolicy{})
 	s.registerPolicy(ingress.PolicyRequireIngressExemption{})
 	s.registerPolicy(service.PolicyRequireServiceLoadbalancerExemption{})
+	s.registerPolicy(virtualservice.PolicyRequireVirtualServiceGatewayExemption{})
 	s.registerPolicy(service.PolicyServiceNoExternalIP{})
-	s.registerPolicy(persistentVolume.PolicyNoPersistentVolumeHost{})
+	s.registerPolicy(persistentvolume.PolicyNoPersistentVolumeHost{})
 	s.registerPolicy(clusterrolebinding.PolicyNoAnonymousClusterRoleBinding{})
 	s.registerPolicy(rolebinding.PolicyNoAnonymousRoleBinding{})
 	requireUniqueHostPolicy, err := ingress.NewPolicyRequireUniqueHost()
@@ -75,6 +82,18 @@ func (s *Server) registerPolicies() {
 	} else {
 		s.registerPolicy(pdbMinAvailableTooBig)
 	}
+	crdProtect, err := customresourcedefinition.NewPolicyCRDProtect()
+	if err != nil {
+		log.WithError(err).Error("could not load CRDProtect policy")
+	} else {
+		s.registerPolicy(crdProtect)
+	}
+
+	for _, plugin := range s.Plugins {
+		for _, policyName := range plugin.PolicyNames() {
+			s.registerPolicy(plugins.NewPluginPolicy(policyName, plugin))
+		}
+	}
 }
 
 func (s *Server) registerPolicy(v Policy) {
@@ -83,6 +102,8 @@ func (s *Server) registerPolicy(v Policy) {
 		if val.Name == v.Name() {
 			found = true
 			if val.Enabled {
+				totalRegisteredPolicies.Inc()
+
 				if s.Config.GlobalReportOnly {
 					s.ReportOnlyPolicies = append(s.ReportOnlyPolicies, v)
 					log.Infof("enabling %s validator in REPORT ONLY mode because GLOBAL REPORT ONLY MODE is on", v.Name())

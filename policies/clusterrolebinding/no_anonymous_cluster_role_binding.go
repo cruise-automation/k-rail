@@ -16,10 +16,10 @@ import (
 	"context"
 	"strings"
 
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 
-	"github.com/cruise-automation/k-rail/policies"
-	"github.com/cruise-automation/k-rail/resource"
+	"github.com/cruise-automation/k-rail/v3/policies"
+	"github.com/cruise-automation/k-rail/v3/resource"
 )
 
 type PolicyNoAnonymousClusterRoleBinding struct{}
@@ -28,7 +28,7 @@ func (p PolicyNoAnonymousClusterRoleBinding) Name() string {
 	return "cluster_role_binding_no_anonymous_subject"
 }
 
-func (p PolicyNoAnonymousClusterRoleBinding) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
+func (p PolicyNoAnonymousClusterRoleBinding) Validate(ctx context.Context, config policies.Config, ar *admissionv1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 	crbResource := resource.GetClusterRoleBindingResource(ctx, ar)

@@ -15,10 +15,9 @@ package pod
 import (
 	"context"
 
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
-
-	"github.com/cruise-automation/k-rail/policies"
-	"github.com/cruise-automation/k-rail/resource"
+	"github.com/cruise-automation/k-rail/v3/policies"
+	"github.com/cruise-automation/k-rail/v3/resource"
+	admissionv1 "k8s.io/api/admission/v1"
 )
 
 type PolicyNoHostNetwork struct{}
@@ -27,7 +26,7 @@ func (p PolicyNoHostNetwork) Name() string {
 	return "pod_no_host_network"
 }
 
-func (p PolicyNoHostNetwork) Validate(ctx context.Context, config policies.Config, ar *admissionv1beta1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
+func (p PolicyNoHostNetwork) Validate(ctx context.Context, config policies.Config, ar *admissionv1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
 	resourceViolations := []policies.ResourceViolation{}
 

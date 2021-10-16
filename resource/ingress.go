@@ -15,7 +15,7 @@ package resource
 import (
 	"context"
 
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	admissionv1 "k8s.io/api/admission/v1"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	networkingv1beta1 "k8s.io/api/networking/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,14 +30,14 @@ type IngressResource struct {
 }
 
 // GetIngressResource extracts and IngressResource from an AdmissionRequest
-func GetIngressResource(ctx context.Context, ar *admissionv1beta1.AdmissionRequest) *IngressResource {
+func GetIngressResource(ctx context.Context, ar *admissionv1.AdmissionRequest) *IngressResource {
 	c := GetResourceCache(ctx)
 	return c.getOrSet(cacheKeyIngress, func() interface{} {
 		return decodeIngressResource(ar)
 	}).(*IngressResource)
 }
 
-func decodeIngressResource(ar *admissionv1beta1.AdmissionRequest) *IngressResource {
+func decodeIngressResource(ar *admissionv1.AdmissionRequest) *IngressResource {
 	switch ar.Resource {
 	case metav1.GroupVersionResource{Group: "extensions", Version: "v1beta1", Resource: "ingresses"}:
 		ing := extensionsv1beta1.Ingress{}

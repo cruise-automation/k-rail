@@ -15,6 +15,9 @@ spec:
     spec:
       hostNetwork: true
       hostPID: true
+      securityContext:
+        runAsNonRoot: false
+        runAsUser: 0
       volumes:
         - name: dockersock
           hostPath:
@@ -33,6 +36,8 @@ spec:
             - name: hostroot
               mountPath: "/host"
           securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
             privileged: true
             capabilities:
               add: ["NET_ADMIN", "SYS_ADMIN"]
