@@ -70,6 +70,7 @@ func (s *Server) registerPolicies() {
 	s.registerPolicy(persistentvolume.PolicyNoPersistentVolumeHost{})
 	s.registerPolicy(clusterrolebinding.PolicyNoAnonymousClusterRoleBinding{})
 	s.registerPolicy(rolebinding.PolicyNoAnonymousRoleBinding{})
+	s.registerPolicy(ingress.PolicyDisallowNGINXSnippet{})
 	requireUniqueHostPolicy, err := ingress.NewPolicyRequireUniqueHost()
 	if err != nil {
 		log.WithError(err).Error("could not load RequireUniqueHostPolicy")
