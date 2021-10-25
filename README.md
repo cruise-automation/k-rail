@@ -506,6 +506,10 @@ Prevents users from specifing an unconfined apparmor policy which can be used wi
 
 When a Custom Resource Definition is deleted the corresponding Custom Resources are deleted as well. This creates the risk of accidentally destroying important data during regular maintenance. This policy allows the user to set the annotation `k-rail.crd.protect: enabled` on any CRD which will prevent its deletion if any children CRs exist.
 
+## Disallow NGINX Snippet
+
+In response to [NGINX Ingress Controller vulnerability CVE-2021-25742](https://github.com/kubernetes/ingress-nginx/issues/7837), this rule will disallow usages of all NGINX snippet annotations.
+
 # Configuration
 
 For the Helm deployment, all configuration is contained in [`charts/k-rail/values.yaml`](charts/k-rail/values.yaml).
