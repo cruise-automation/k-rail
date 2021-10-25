@@ -122,6 +122,9 @@ config:
     - name: "pod_image_pull_policy"
       enabled: True
       report_only: False
+    - name: "ingress_disallow_nginx_snippet"  # report_only, allow operators to override
+      enabled: True
+      report_only: True
     - name: "ingress_require_ingress_exemption"
       enabled: True
       report_only: False
