@@ -40,10 +40,7 @@ func (p PolicyDisallowNGINXSnippet) Validate(ctx context.Context, config policie
 		return resourceViolations, nil
 	}
 
-	if ingressResource.IngressExt.Annotations == nil {
-		return resourceViolations, nil
-	}
-	for key := range ingressResource.IngressExt.Annotations {
+	for key := range ingressResource.GetAnnotations() {
 		if nginxSnippetAnnotationRegex.MatchString(key) {
 			resourceViolations = append(resourceViolations, policies.ResourceViolation{
 				Namespace:    ar.Namespace,

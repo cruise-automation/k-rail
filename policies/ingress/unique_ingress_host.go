@@ -86,36 +86,8 @@ func (p PolicyRequireUniqueHost) Validate(ctx context.Context, config policies.C
 
 	violationText := "Requires Unique Ingress Host: Ingress Host should not point to multiple namespaces. Host already in:"
 
-	for _, rule := range ingressResource.IngressExt.Spec.Rules {
-		ingressNamespacesMap, err := p.CheckIngressNamespaces(ctx, rule.Host)
-		if err != nil {
-			log.Error(err)
-			return nil, nil
-		}
-		foundNamespace := false
-		_, ok := ingressNamespacesMap[ar.Namespace]
-		if ok {
-			foundNamespace = true
-		}
-		if (len(ingressNamespacesMap) == 0) || (len(ingressNamespacesMap) == 1 && foundNamespace) {
-			return resourceViolations, nil
-		} else {
-			namespacesStr := ""
-			for k := range ingressNamespacesMap {
-				namespacesStr = namespacesStr + " " + k
-			}
-			resourceViolations = append(resourceViolations, policies.ResourceViolation{
-				Namespace:    ar.Namespace,
-				ResourceName: ingressResource.ResourceName,
-				ResourceKind: ingressResource.ResourceKind,
-				Violation:    violationText + ": " + namespacesStr,
-				Policy:       p.Name(),
-			})
-		}
-	}
-
-	for _, rule := range ingressResource.IngressNet.Spec.Rules {
-		ingressNamespacesMap, err := p.CheckIngressNamespaces(ctx, rule.Host)
+	for _, host := range ingressResource.GetHosts() {
+		ingressNamespacesMap, err := p.CheckIngressNamespaces(ctx, host)
 		if err != nil {
 			log.Error(err)
 			return nil, nil
