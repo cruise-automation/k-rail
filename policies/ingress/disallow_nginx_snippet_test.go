@@ -57,7 +57,7 @@ func TestPolicyDisallowNGINXSnippet(t *testing.T) {
 			violations: 2,
 			ingress: &extensionsv1beta1.Ingress{
 				TypeMeta: metav1.TypeMeta{
-					APIVersion: "networking/v1beta1",
+					APIVersion: "networking.k8s.io/v1beta1",
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
@@ -72,7 +72,7 @@ func TestPolicyDisallowNGINXSnippet(t *testing.T) {
 			violations: 2,
 			ingress: &networkingv1.Ingress{
 				TypeMeta: metav1.TypeMeta{
-					APIVersion: "networking/v1",
+					APIVersion: "networking.k8s.io/v1",
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{

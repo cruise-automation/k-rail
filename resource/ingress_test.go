@@ -53,7 +53,7 @@ func TestGetAnnotations(t *testing.T) {
 		{
 			ingress: &networkingv1beta1.Ingress{
 				TypeMeta: metav1.TypeMeta{
-					APIVersion: "networking/v1beta1",
+					APIVersion: "networking.k8s.io/v1beta1",
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
@@ -68,7 +68,7 @@ func TestGetAnnotations(t *testing.T) {
 		{
 			ingress: &networkingv1.Ingress{
 				TypeMeta: metav1.TypeMeta{
-					APIVersion: "networking/v1",
+					APIVersion: "networking.k8s.io/v1",
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
@@ -125,7 +125,7 @@ func TestGetHosts(t *testing.T) {
 		{
 			ingress: &networkingv1beta1.Ingress{
 				TypeMeta: metav1.TypeMeta{
-					APIVersion: "networking/v1beta1",
+					APIVersion: "networking.k8s.io/v1beta1",
 				},
 				Spec: networkingv1beta1.IngressSpec{
 					Rules: []networkingv1beta1.IngressRule{
@@ -139,7 +139,7 @@ func TestGetHosts(t *testing.T) {
 		{
 			ingress: &networkingv1.Ingress{
 				TypeMeta: metav1.TypeMeta{
-					APIVersion: "networking/v1",
+					APIVersion: "networking.k8s.io/v1",
 				},
 				Spec: networkingv1.IngressSpec{
 					Rules: []networkingv1.IngressRule{

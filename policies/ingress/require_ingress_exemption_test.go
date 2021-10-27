@@ -100,7 +100,7 @@ func TestPolicyRequireIngressExemption(t *testing.T) {
 					Namespace: "namespace",
 					Name:      "name",
 					Object:    runtime.RawExtension{Raw: raw},
-					Resource:  metav1.GroupVersionResource{Group: "networking", Version: "v1beta1", Resource: "ingresses"},
+					Resource:  metav1.GroupVersionResource{Group: "networking.k8s.io", Version: "v1beta1", Resource: "ingresses"},
 				}
 			}
 
