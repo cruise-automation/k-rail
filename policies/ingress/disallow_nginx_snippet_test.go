@@ -42,6 +42,9 @@ func TestPolicyDisallowNGINXSnippet(t *testing.T) {
 			name:       "deny 1",
 			violations: 1,
 			ingress: &extensionsv1beta1.Ingress{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "extensions/v1beta1",
+				},
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						"nginx.ingress.kubernetes.io/server-snippet": "i'm malicious",
@@ -53,6 +56,9 @@ func TestPolicyDisallowNGINXSnippet(t *testing.T) {
 			name:       "deny 2",
 			violations: 2,
 			ingress: &extensionsv1beta1.Ingress{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "networking/v1beta1",
+				},
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						"nginx.ingress.kubernetes.io/server-snippet": "i'm malicious",
@@ -65,6 +71,9 @@ func TestPolicyDisallowNGINXSnippet(t *testing.T) {
 			name:       "deny 3",
 			violations: 2,
 			ingress: &networkingv1.Ingress{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "networking/v1",
+				},
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						"nginx.ingress.kubernetes.io/server-snippet": "i'm malicious",
