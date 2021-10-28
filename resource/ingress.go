@@ -17,16 +17,18 @@ import (
 
 	admissionv1 "k8s.io/api/admission/v1"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
+	networkingv1 "k8s.io/api/networking/v1"
 	networkingv1beta1 "k8s.io/api/networking/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // IngressResource contains the information needed for processing by a Policy
 type IngressResource struct {
-	IngressExt   extensionsv1beta1.Ingress
-	IngressNet   networkingv1beta1.Ingress
-	ResourceName string
-	ResourceKind string
+	IngressExt        extensionsv1beta1.Ingress
+	IngressNetV1Beta1 networkingv1beta1.Ingress
+	IngressNetV1      networkingv1.Ingress
+	ResourceName      string
+	ResourceKind      string
 }
 
 // GetIngressResource extracts and IngressResource from an AdmissionRequest
@@ -49,17 +51,54 @@ func decodeIngressResource(ar *admissionv1.AdmissionRequest) *IngressResource {
 			ResourceName: GetResourceName(ing.ObjectMeta),
 			ResourceKind: "Ingress",
 		}
-	case metav1.GroupVersionResource{Group: "networking", Version: "v1beta1", Resource: "ingresses"}:
+	case metav1.GroupVersionResource{Group: "networking.k8s.io", Version: "v1beta1", Resource: "ingresses"}:
 		ing := networkingv1beta1.Ingress{}
 		if err := decodeObject(ar.Object.Raw, &ing); err != nil {
 			return nil
 		}
 		return &IngressResource{
-			IngressNet:   ing,
+			IngressNetV1Beta1: ing,
+			ResourceName:      GetResourceName(ing.ObjectMeta),
+			ResourceKind:      "Ingress",
+		}
+	case metav1.GroupVersionResource{Group: "networking.k8s.io", Version: "v1", Resource: "ingresses"}:
+		ing := networkingv1.Ingress{}
+		if err := decodeObject(ar.Object.Raw, &ing); err != nil {
+			return nil
+		}
+		return &IngressResource{
+			IngressNetV1: ing,
 			ResourceName: GetResourceName(ing.ObjectMeta),
 			ResourceKind: "Ingress",
 		}
 	default:
 		return nil
 	}
+}
+
+// GetAnnotations returns ingress annotations, across all available ingress versions
+func (ir IngressResource) GetAnnotations() map[string]string {
+	if ir.IngressExt.Annotations != nil {
+		return ir.IngressExt.Annotations
+	} else if ir.IngressNetV1Beta1.Annotations != nil {
+		return ir.IngressNetV1Beta1.Annotations
+	} else if ir.IngressNetV1.Annotations != nil {
+		return ir.IngressNetV1.Annotations
+	}
+	return nil
+}
+
+// GetHosts returns list of all hosts in ingress spec, across all available ingress versions
+func (ir IngressResource) GetHosts() []string {
+	hosts := []string{}
+	for _, rule := range ir.IngressExt.Spec.Rules {
+		hosts = append(hosts, rule.Host)
+	}
+	for _, rule := range ir.IngressNetV1Beta1.Spec.Rules {
+		hosts = append(hosts, rule.Host)
+	}
+	for _, rule := range ir.IngressNetV1.Spec.Rules {
+		hosts = append(hosts, rule.Host)
+	}
+	return hosts
 }

@@ -38,20 +38,7 @@ func (p PolicyRequireIngressExemption) Validate(ctx context.Context, config poli
 	violationText := "Require Ingress Exemption: Using certain Ingress classes requires an exemption"
 
 	for _, ingressClass := range config.PolicyRequireIngressExemptionClasses {
-		for annotation, value := range ingressResource.IngressExt.ObjectMeta.GetAnnotations() {
-			if annotation == "kubernetes.io/ingress.class" {
-				if value == ingressClass {
-					resourceViolations = append(resourceViolations, policies.ResourceViolation{
-						Namespace:    ar.Namespace,
-						ResourceName: ingressResource.ResourceName,
-						ResourceKind: ingressResource.ResourceKind,
-						Violation:    violationText,
-						Policy:       p.Name(),
-					})
-				}
-			}
-		}
-		for annotation, value := range ingressResource.IngressNet.ObjectMeta.GetAnnotations() {
+		for annotation, value := range ingressResource.GetAnnotations() {
 			if annotation == "kubernetes.io/ingress.class" {
 				if value == ingressClass {
 					resourceViolations = append(resourceViolations, policies.ResourceViolation{
