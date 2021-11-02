@@ -28,6 +28,10 @@ func (p PolicyDefaultSeccompPolicy) Name() string {
 
 func (p PolicyDefaultSeccompPolicy) Validate(ctx context.Context, config policies.Config, ar *admissionv1.AdmissionRequest) ([]policies.ResourceViolation, []policies.PatchOperation) {
 
+	if ar.Operation == "DELETE" {
+		return nil, nil
+	}
+
 	podResource := resource.GetPodResource(ctx, ar)
 	if podResource == nil {
 		return nil, nil
