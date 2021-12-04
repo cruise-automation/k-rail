@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"math/rand"
@@ -95,6 +96,7 @@ func (t ThresholdPolicy) Validate(ctx context.Context,
 			ResourceKind: podResource.ResourceKind,
 			Violation:    violationText,
 			Policy:       t.Name(),
+			Error:        errors.New(violationText),
 		})
 
 	}
