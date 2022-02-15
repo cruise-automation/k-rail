@@ -18,6 +18,7 @@ ensure:
 build:
 		protoc -I plugins/proto/ plugins/proto/plugin.proto --go_out=plugins=grpc:plugins/proto
 		CGO_ENABLED=0 go build -o k-rail cmd/main.go
+		CGO_ENABLED=0 go build -o k-rail-check cmd/check.go
 		CGO_ENABLED=0 go build -o plugin plugins/examples/example.go
 
 test:

@@ -3,6 +3,7 @@ module github.com/cruise-automation/k-rail/v3
 go 1.16
 
 require (
+	github.com/gertd/go-pluralize v0.2.0
 	github.com/gobwas/glob v0.2.3
 	github.com/golang/protobuf v1.5.1 // indirect
 	github.com/gorilla/mux v1.8.0

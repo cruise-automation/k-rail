@@ -15,18 +15,26 @@ package server
 import (
 	"context"
 	"flag"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/cruise-automation/k-rail/v3/plugins"
 	"github.com/cruise-automation/k-rail/v3/policies"
+	"github.com/gertd/go-pluralize"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
-	"sigs.k8s.io/yaml"
+	"k8s.io/api/admission/v1"
+	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/json"
+	"k8s.io/apimachinery/pkg/util/yaml"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -35,6 +43,7 @@ import (
 
 const (
 	serviceName = "k-rail"
+	yamlBufSize = 10 * 1024
 )
 
 // Server contains configuration state needed for the API server
@@ -54,69 +63,23 @@ func Run(ctx context.Context) {
 
 	cfg := Config{}
 
-	configPath := flag.String("config", "config.yml", "path to configuration file")
-	exemptionsPathGlob := flag.String("exemptions-path-glob", "", "path glob that includes exemption configs")
-	pluginsPathGlob := flag.String("plugins-path-glob", "", "path glob that includes plugin binaries")
-	flag.Parse()
+	configPath, exemptionsPathGlob, pluginsPathGlob := parseFlags()
 
-	yamlFile, err := ioutil.ReadFile(*configPath)
+	err := cfg.load(configPath)
 	if err != nil {
-		log.Fatal("error loading yaml config: ", err)
+		log.Fatal(err)
 	}
-	err = yaml.Unmarshal(yamlFile, &cfg)
+
+	exemptions, err := loadExemptions(exemptionsPathGlob)
 	if err != nil {
-		log.Fatal("error unmarshalling yaml config: ", err)
+		log.Fatal(err)
 	}
 
-	if len(cfg.LogLevel) == 0 {
-		log.SetLevel(log.InfoLevel)
-	} else {
-		level, err := log.ParseLevel(cfg.LogLevel)
-		if err != nil {
-			log.Fatal("invalid log level set: ", err)
-		}
-		log.SetLevel(level)
-	}
+	registerMetrics()
 
-	var exemptions []policies.CompiledExemption
-	if *exemptionsPathGlob != "" {
-		exemptions, err = policies.ExemptionsFromDirectory(*exemptionsPathGlob)
-		if err != nil {
-			log.Fatal("error loading exemptions: ", err)
-		}
-		log.Infof("loaded %d exemptions", len(exemptions))
-	}
-
-	prometheus.MustRegister(totalRegisteredPolicies)
-	prometheus.MustRegister(policyViolations)
-	prometheus.MustRegister(totalLoadedPlugins)
-
-	var loadedPlugins []plugins.Plugin
-	if *pluginsPathGlob != "" {
-		loadedPlugins, err = plugins.PluginsFromDirectory(*pluginsPathGlob)
-		if err != nil {
-			log.Fatal("error launching plugins: ", err)
-		}
-
-		for _, plugin := range loadedPlugins {
-			defer plugin.Kill()
-			if pluginConfig, ok := cfg.PluginConfig[plugin.Name()]; ok {
-				if pluginConfigMap, ok := pluginConfig.(map[string]interface{}); ok {
-					err = plugin.Configure(pluginConfigMap)
-					if err != nil {
-						log.Fatalf("error configuring plugin %s: %v\n", plugin.Name(), err)
-					}
-				} else {
-					log.Fatalf("expected plugin config for plugin %s to be a map of values (eg. plugins_config: %s: <config key>: <config values>)", plugin.Name(), plugin.Name())
-				}
-			} else {
-				log.Infof("no plugin config found for plugin %s, continuing on", plugin.Name())
-			}
-
-			totalLoadedPlugins.Add(1)
-		}
-
-		log.Infof("loaded %d plugins", len(loadedPlugins))
+	loadedPlugins, err := loadPlugins(pluginsPathGlob, cfg)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	log.Info("k-rail is running")
@@ -180,6 +143,65 @@ func Run(ctx context.Context) {
 	log.Fatal(s.ListenAndServeTLS(cfg.TLS.Cert, cfg.TLS.Key))
 }
 
+func registerMetrics() {
+	prometheus.MustRegister(totalRegisteredPolicies)
+	prometheus.MustRegister(policyViolations)
+	prometheus.MustRegister(totalLoadedPlugins)
+}
+
+func parseFlags() (string, string, string) {
+	configPath := flag.String("config", "config.yml", "path to configuration file")
+	exemptionsPathGlob := flag.String("exemptions-path-glob", "", "path glob that includes exemption configs")
+	pluginsPathGlob := flag.String("plugins-path-glob", "", "path glob that includes plugin binaries")
+	flag.Parse()
+	return *configPath, *exemptionsPathGlob, *pluginsPathGlob
+}
+
+func loadPlugins(pluginsPathGlob string, cfg Config) ([]plugins.Plugin, error) {
+	var loadedPlugins []plugins.Plugin
+	var err error
+	if pluginsPathGlob != "" {
+		loadedPlugins, err = plugins.PluginsFromDirectory(pluginsPathGlob)
+		if err != nil {
+			return loadedPlugins, fmt.Errorf("error launching plugins: %s", err)
+		}
+
+		for _, plugin := range loadedPlugins {
+			defer plugin.Kill()
+			if pluginConfig, ok := cfg.PluginConfig[plugin.Name()]; ok {
+				if pluginConfigMap, ok := pluginConfig.(map[string]interface{}); ok {
+					err = plugin.Configure(pluginConfigMap)
+					if err != nil {
+						return loadedPlugins, fmt.Errorf("error configuring plugin %s: %v\n", plugin.Name(), err)
+					}
+				} else {
+					return loadedPlugins, fmt.Errorf("expected plugin config for plugin %s to be a map of values (eg. plugins_config: %s: <config key>: <config values>)", plugin.Name(), plugin.Name())
+				}
+			} else {
+				log.Infof("no plugin config found for plugin %s, continuing on", plugin.Name())
+			}
+
+			totalLoadedPlugins.Add(1)
+		}
+
+		log.Infof("loaded %d plugins", len(loadedPlugins))
+	}
+	return loadedPlugins, err
+}
+
+func loadExemptions(exemptionsPathGlob string) ([]policies.CompiledExemption, error) {
+	var exemptions []policies.CompiledExemption
+	var err error
+	if exemptionsPathGlob != "" {
+		exemptions, err = policies.ExemptionsFromDirectory(exemptionsPathGlob)
+		if err != nil {
+			return exemptions, fmt.Errorf("error loading exemptions: %s", err)
+		}
+		log.Infof("loaded %d exemptions", len(exemptions))
+	}
+	return exemptions, err
+}
+
 func (s *Server) readinessFunc(w http.ResponseWriter, r *http.Request) {
 	if s.RequestedShutdown {
 		w.WriteHeader(http.StatusGone)
@@ -192,4 +214,56 @@ func (s *Server) readinessFunc(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) LogAndPrintError(user string, err error) {
 	log.Error(err)
+}
+
+// validateFile validates all resources in file
+func (s *Server) validateFile(inputFile string) ([]v1.AdmissionReview, error) {
+	var results []v1.AdmissionReview
+	// Read input manifest file
+	inputFileReader, err := os.Open(inputFile)
+	if err != nil {
+		return results, fmt.Errorf("read input file: %s", err)
+	}
+
+	yamlReader := yaml.NewDocumentDecoder(inputFileReader)
+	yamlBuf := make([]byte, yamlBufSize)
+
+	for {
+		yamlSize, err := yamlReader.Read(yamlBuf)
+		if err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				return results, fmt.Errorf("error reading yaml document: %s", err)
+			}
+		}
+
+		raw, err := yaml.ToJSON(yamlBuf[:yamlSize])
+		if err != nil {
+			return results, fmt.Errorf("error converting yaml to json: %s", err)
+		}
+		var partialObject v12.PartialObjectMetadata
+		err = json.Unmarshal(raw, &partialObject)
+		if err != nil {
+			return results, fmt.Errorf("error unmarshaling object from json: %s", err)
+		}
+		gvk := partialObject.GroupVersionKind()
+		pc := pluralize.NewClient()
+		resource := strings.ToLower(gvk.Kind)
+		if pc.IsSingular(gvk.Kind) {
+			resource = strings.ToLower(pc.Plural(gvk.Kind))
+		}
+		ar := v1.AdmissionReview{
+			Request: &v1.AdmissionRequest{
+				Namespace: partialObject.GetNamespace(),
+				Name:      partialObject.GetName(),
+				Object:    runtime.RawExtension{Raw: raw},
+				Resource:  v12.GroupVersionResource{Group: gvk.Group, Version: gvk.Version, Resource: resource},
+				Kind:      v12.GroupVersionKind{Group: gvk.Group, Version: gvk.Version, Kind: gvk.Kind},
+			},
+		}
+		results = append(results, s.validateResources(ar))
+		continue
+	}
+	return results, nil
 }
