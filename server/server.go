@@ -30,8 +30,8 @@ import (
 	"github.com/gertd/go-pluralize"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
-	"k8s.io/api/admission/v1"
-	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	admissionv1 "k8s.io/api/admission/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/apimachinery/pkg/util/yaml"
@@ -217,8 +217,8 @@ func (s *Server) LogAndPrintError(user string, err error) {
 }
 
 // validateFile validates all resources in file
-func (s *Server) validateFile(inputFile string) ([]v1.AdmissionReview, error) {
-	var results []v1.AdmissionReview
+func (s *Server) validateFile(inputFile string) ([]admissionv1.AdmissionReview, error) {
+	var results []admissionv1.AdmissionReview
 	// Read input manifest file
 	inputFileReader, err := os.Open(inputFile)
 	if err != nil {
@@ -242,24 +242,25 @@ func (s *Server) validateFile(inputFile string) ([]v1.AdmissionReview, error) {
 		if err != nil {
 			return results, fmt.Errorf("error converting yaml to json: %s", err)
 		}
-		var partialObject v12.PartialObjectMetadata
+		var partialObject metav1.PartialObjectMetadata
 		err = json.Unmarshal(raw, &partialObject)
 		if err != nil {
 			return results, fmt.Errorf("error unmarshaling object from json: %s", err)
 		}
 		gvk := partialObject.GroupVersionKind()
+		// The only way to guess resource without using discovery from client package
 		pc := pluralize.NewClient()
 		resource := strings.ToLower(gvk.Kind)
 		if pc.IsSingular(gvk.Kind) {
 			resource = strings.ToLower(pc.Plural(gvk.Kind))
 		}
-		ar := v1.AdmissionReview{
-			Request: &v1.AdmissionRequest{
+		ar := admissionv1.AdmissionReview{
+			Request: &admissionv1.AdmissionRequest{
 				Namespace: partialObject.GetNamespace(),
 				Name:      partialObject.GetName(),
 				Object:    runtime.RawExtension{Raw: raw},
-				Resource:  v12.GroupVersionResource{Group: gvk.Group, Version: gvk.Version, Resource: resource},
-				Kind:      v12.GroupVersionKind{Group: gvk.Group, Version: gvk.Version, Kind: gvk.Kind},
+				Resource:  metav1.GroupVersionResource{Group: gvk.Group, Version: gvk.Version, Resource: resource},
+				Kind:      metav1.GroupVersionKind{Group: gvk.Group, Version: gvk.Version, Kind: gvk.Kind},
 			},
 		}
 		results = append(results, s.validateResources(ar))

@@ -88,6 +88,7 @@ func Check() {
 		for _, review := range reviews {
 			if !review.Response.Allowed {
 				allowed = false
+				// validateFile can be refactored to return some struct to avoid parsing response message
 				for _, violation := range strings.Split(review.Response.Result.Message, "\n") {
 					if violation != "" {
 						fmt.Printf("FAIL - %s - %s - %s\n", filename, review.Request.Name, violation)
