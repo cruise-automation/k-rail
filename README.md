@@ -709,6 +709,7 @@ $ kubectl get secret --namespace k-rail k-rail-cert -o json | jq -r '.data["cert
 Policies can be checked from CI/CD without interacting with k8s clusters by using CLI tool `k-rail-check`.
 It has the same flags as k-rail and can use the same configuration file.
 The tool will try to parse any `.yaml` or `.yml` in directory supplied as an argument and output check results in text format.
+You can also supply file to validate as an argument.
 It will exit with non-zero exit code if it finds any policy violation.
 
 # License
