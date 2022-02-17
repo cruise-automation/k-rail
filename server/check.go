@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
-	v1 "k8s.io/api/admission/v1"
+	admissionv1 "k8s.io/api/admission/v1"
 )
 
 func Check() {
@@ -27,8 +27,6 @@ func Check() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	registerMetrics()
 
 	loadedPlugins, err := loadPlugins(pluginsPathGlob, cfg)
 	if err != nil {
@@ -51,7 +49,7 @@ func Check() {
 
 	allowed := true
 
-	results := make(map[string][]v1.AdmissionReview)
+	results := make(map[string][]admissionv1.AdmissionReview)
 
 	if stat.IsDir() {
 		err := filepath.Walk(inputFile, func(path string, info fs.FileInfo, err error) error {

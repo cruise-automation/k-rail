@@ -75,7 +75,9 @@ func Run(ctx context.Context) {
 		log.Fatal(err)
 	}
 
-	registerMetrics()
+	prometheus.MustRegister(totalRegisteredPolicies)
+	prometheus.MustRegister(policyViolations)
+	prometheus.MustRegister(totalLoadedPlugins)
 
 	loadedPlugins, err := loadPlugins(pluginsPathGlob, cfg)
 	if err != nil {
@@ -141,12 +143,6 @@ func Run(ctx context.Context) {
 	}()
 
 	log.Fatal(s.ListenAndServeTLS(cfg.TLS.Cert, cfg.TLS.Key))
-}
-
-func registerMetrics() {
-	prometheus.MustRegister(totalRegisteredPolicies)
-	prometheus.MustRegister(policyViolations)
-	prometheus.MustRegister(totalLoadedPlugins)
 }
 
 func parseFlags() (string, string, string) {
