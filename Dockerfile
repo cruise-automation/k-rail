@@ -19,6 +19,6 @@ FROM scratch
 EXPOSE 8443/tcp
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /build/k-rail /k-rail
-COPY --from=builder /build/k-rail /k-rail-check
+COPY --from=builder /build/k-rail-check /k-rail-check
 USER 65534
 ENTRYPOINT ["/k-rail", "-config", "/config/config.yml"]
