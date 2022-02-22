@@ -1,6 +1,7 @@
 package server
 
 import (
+	"flag"
 	"fmt"
 	"io/fs"
 	"os"
@@ -11,12 +12,22 @@ import (
 	admissionv1 "k8s.io/api/admission/v1"
 )
 
+var Usage = func() {
+	fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [OPTIONS] FILE|DIRECTORY ...\n", os.Args[0])
+	flag.PrintDefaults()
+}
+
 func Check() {
 	log.SetLevel(log.InfoLevel)
 
 	cfg := Config{}
 
+	flag.Usage = Usage
 	configPath, exemptionsPathGlob, pluginsPathGlob := parseFlags()
+	if flag.NArg() == 0 {
+		flag.Usage()
+		os.Exit(1)
+	}
 
 	err := cfg.load(configPath)
 	if err != nil {
@@ -41,7 +52,7 @@ func Check() {
 
 	srv.registerPolicies()
 
-	inputFile := os.Args[1]
+	inputFile := flag.Arg(1)
 	stat, err := os.Stat(inputFile)
 	if err != nil {
 		log.Fatalf("cannot stat %s: %s", inputFile, err)

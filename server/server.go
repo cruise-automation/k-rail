@@ -43,7 +43,7 @@ import (
 
 const (
 	serviceName = "k-rail"
-	yamlBufSize = 10 * 1024
+	yamlBufSize = 1 * 1024 * 1024
 )
 
 // Server contains configuration state needed for the API server
