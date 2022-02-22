@@ -52,7 +52,7 @@ func Check() {
 
 	srv.registerPolicies()
 
-	inputFile := flag.Arg(1)
+	inputFile := flag.Arg(0)
 	stat, err := os.Stat(inputFile)
 	if err != nil {
 		log.Fatalf("cannot stat %s: %s", inputFile, err)
