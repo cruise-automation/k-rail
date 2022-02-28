@@ -40,6 +40,11 @@ func Check() {
 	}
 
 	loadedPlugins, err := loadPlugins(pluginsPathGlob, cfg)
+	defer func() {
+		for _, plugin := range loadedPlugins {
+			plugin.Kill()
+		}
+	}()
 	if err != nil {
 		log.Fatal(err)
 	}

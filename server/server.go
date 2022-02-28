@@ -53,7 +53,7 @@ type Server struct {
 	EnforcedPolicies   []Policy
 	ReportOnlyPolicies []Policy
 	Exemptions         []policies.CompiledExemption
-	Plugins            []plugins.Plugin
+	Plugins            []*plugins.Plugin
 }
 
 // Run starts the API server
@@ -153,8 +153,8 @@ func parseFlags() (string, string, string) {
 	return *configPath, *exemptionsPathGlob, *pluginsPathGlob
 }
 
-func loadPlugins(pluginsPathGlob string, cfg Config) ([]plugins.Plugin, error) {
-	var loadedPlugins []plugins.Plugin
+func loadPlugins(pluginsPathGlob string, cfg Config) ([]*plugins.Plugin, error) {
+	var loadedPlugins []*plugins.Plugin
 	var err error
 	if pluginsPathGlob != "" {
 		loadedPlugins, err = plugins.PluginsFromDirectory(pluginsPathGlob)
@@ -163,7 +163,6 @@ func loadPlugins(pluginsPathGlob string, cfg Config) ([]plugins.Plugin, error) {
 		}
 
 		for _, plugin := range loadedPlugins {
-			defer plugin.Kill()
 			if pluginConfig, ok := cfg.PluginConfig[plugin.Name()]; ok {
 				if pluginConfigMap, ok := pluginConfig.(map[string]interface{}); ok {
 					err = plugin.Configure(pluginConfigMap)

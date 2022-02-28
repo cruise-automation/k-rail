@@ -17,7 +17,7 @@ import (
 type Plugin struct {
 	name        string
 	policyNames []string
-	client      plugin.Client
+	client      *plugin.Client
 	kRailPlugin KRailPlugin
 }
 
@@ -44,10 +44,10 @@ func (p *Plugin) Validate(policyName string, ar *admissionv1.AdmissionRequest) (
 // PluginPolicy implements the server.Policy interface
 type PluginPolicy struct {
 	name   string
-	plugin Plugin
+	plugin *Plugin
 }
 
-func NewPluginPolicy(name string, plugin Plugin) PluginPolicy {
+func NewPluginPolicy(name string, plugin *Plugin) PluginPolicy {
 	return PluginPolicy{name: name, plugin: plugin}
 }
 
@@ -95,20 +95,20 @@ func (p *KRailGRPCPlugin) GRPCClient(ctx context.Context, broker *plugin.GRPCBro
 	return &GRPCClient{client: proto.NewKRailPluginClient(c)}, nil
 }
 
-func PluginsFromDirectory(directory string) ([]Plugin, error) {
+func PluginsFromDirectory(directory string) ([]*Plugin, error) {
 	binaries, err := filepath.Glob(directory)
 	if err != nil {
-		return []Plugin{}, err
+		return []*Plugin{}, err
 	}
 
-	pluginClients := []Plugin{}
+	pluginClients := []*Plugin{}
 	for _, binary := range binaries {
 		pluginClient, err := LaunchPluginProcess(binary)
 		if err != nil {
 			return pluginClients, err
 
 		}
-		pluginClients = append(pluginClients, *pluginClient)
+		pluginClients = append(pluginClients, pluginClient)
 	}
 	return pluginClients, nil
 }
@@ -160,7 +160,7 @@ func LaunchPluginProcess(binaryPath string) (*Plugin, error) {
 	return &Plugin{
 		name:        pluginName,
 		policyNames: policyNames,
-		client:      *client,
+		client:      client,
 		kRailPlugin: krailPlugin,
 	}, nil
 }
