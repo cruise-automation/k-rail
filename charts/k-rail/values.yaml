@@ -23,6 +23,13 @@ tolerations: []
 
 affinity: {}
 
+## securityContext to apply to the pod
+podSecurityContext: {}
+
+## securityContext to apply to the container
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+
 # Set to the value (in seconds) which the mutatingwebhook should use for a timeout
 # for slower clusters (or larger workloads) this may need to be increased
 webhookTimeout: 1
