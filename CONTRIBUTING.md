@@ -1,5 +1,7 @@
 # Contributing
 
+> The k-rail project has been deprecated and will receive no new features or bugfixes except in the case of critical security vulnerabilities. We recommend migrating to an actively developed tool like [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper) that provides similar functionality.
+
 By submitting a Contribution this Project (terms defined below), you agree to the following Contributor License Agreement:
 
 The following terms are used throughout this agreement:

@@ -4,6 +4,8 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/cruise-automation/k-rail)](https://goreportcard.com/report/github.com/cruise-automation/k-rail)
 [![Docker Hub Build Status](https://img.shields.io/docker/cloud/build/cruise/k-rail.svg)](https://hub.docker.com/r/cruise/k-rail/)
 
+> The k-rail project has been deprecated and will receive no new features or bugfixes except in the case of critical security vulnerabilities. We recommend migrating to an actively developed tool like [OPA Gatekeeper](https://github.com/open-policy-agent/gatekeeper) that provides similar functionality.
+
 k-rail is a workload policy enforcement tool for Kubernetes. It can help you secure a multi tenant cluster with minimal disruption and maximum velocity.
 
 - [Why k-rail?](#why-k-rail)
