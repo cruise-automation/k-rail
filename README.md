@@ -67,6 +67,7 @@ k-rail is a workload policy enforcement tool for Kubernetes. It can help you sec
   - [Policies are enabled, but are not triggering when they should](#policies-are-enabled-but-are-not-triggering-when-they-should)
   - [Policies are enabled, but a deployment is blocked and an exemption is needed](#policies-are-enabled-but-a-deployment-is-blocked-and-an-exemption-is-needed)
   - [Checking the mTLS certificate expiration](#checking-the-mtls-certificate-expiration)
+- [CLI tool](#cli-tool)
 - [License](#license)
 
 # Why k-rail?
@@ -705,6 +706,13 @@ $ kubectl get secret --namespace k-rail k-rail-cert -o json | jq -r '.data["cert
             Not After : Oct 21 05:40:16 2029 GMT
         Subject: CN = k-rail.k-rail.svc
 ```
+
+# CLI Tool
+Policies can be checked from CI/CD without interacting with k8s clusters by using CLI tool `k-rail-check`.
+It has the same flags as k-rail and can use the same configuration file.
+The tool will try to parse any `.yaml` or `.yml` in directory supplied as an argument and output check results in text format.
+You can also supply file to validate as an argument.
+It will exit with non-zero exit code if it finds any policy violation.
 
 # License
 

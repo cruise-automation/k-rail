@@ -13,7 +13,12 @@
 package server
 
 import (
+	"fmt"
+	"io/ioutil"
+
 	"github.com/cruise-automation/k-rail/v3/policies"
+	log "github.com/sirupsen/logrus"
+	"sigs.k8s.io/yaml"
 )
 
 type PolicySettings struct {
@@ -35,4 +40,26 @@ type Config struct {
 	Policies         []PolicySettings
 	PolicyConfig     policies.Config        `json:"policy_config"`
 	PluginConfig     map[string]interface{} `json:"plugin_config"`
+}
+
+func (cfg *Config) load(configPath string) error {
+	yamlFile, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		return fmt.Errorf("error loading yaml config: %s", err)
+	}
+	err = yaml.Unmarshal(yamlFile, &cfg)
+	if err != nil {
+		return fmt.Errorf("error unmarshalling yaml config: %s", err)
+	}
+
+	if len(cfg.LogLevel) == 0 {
+		log.SetLevel(log.InfoLevel)
+	} else {
+		level, err := log.ParseLevel(cfg.LogLevel)
+		if err != nil {
+			return fmt.Errorf("invalid log level set: %s", err)
+		}
+		log.SetLevel(level)
+	}
+	return nil
 }

@@ -144,7 +144,7 @@ func (s *Server) validateResources(ar admissionv1.AdmissionReview) admissionv1.A
 		// have the relevant resource name available for any resource being checked for exemptions.
 		// The AdmissionReview Name is often empty and populated by an downstream controller.
 		podResource := resource.GetPodResource(ctx, ar.Request)
-		if len(violations) == 0 && patches != nil && !policies.IsExempt(
+		if podResource != nil && len(violations) == 0 && patches != nil && !policies.IsExempt(
 			s.Config.ClusterName,
 			podResource.ResourceName,
 			ar.Request.Namespace,
@@ -207,10 +207,10 @@ func (s *Server) validateResources(ar admissionv1.AdmissionReview) admissionv1.A
 
 		if s.Config.GlobalMetricsEnabled == true {
 			labels := prometheus.Labels{
-				"resource":           v.ResourceName,
-				"namespace":          v.Namespace,
-				"policy":             v.Policy,
-				"enforced":  		  "false"}
+				"resource":  v.ResourceName,
+				"namespace": v.Namespace,
+				"policy":    v.Policy,
+				"enforced":  "false"}
 			policyViolations.With(labels).Inc()
 		}
 	}
@@ -228,10 +228,10 @@ func (s *Server) validateResources(ar admissionv1.AdmissionReview) admissionv1.A
 
 		if s.Config.GlobalMetricsEnabled == true {
 			labels := prometheus.Labels{
-				"resource":           v.ResourceName,
-				"namespace":          v.Namespace,
-				"policy":             v.Policy,
-				"enforced":  		  "false"}
+				"resource":  v.ResourceName,
+				"namespace": v.Namespace,
+				"policy":    v.Policy,
+				"enforced":  "false"}
 			policyViolations.With(labels).Inc()
 		}
 	}
@@ -250,10 +250,10 @@ func (s *Server) validateResources(ar admissionv1.AdmissionReview) admissionv1.A
 
 			if s.Config.GlobalMetricsEnabled == true {
 				labels := prometheus.Labels{
-					"resource":           v.ResourceName,
-					"namespace":          v.Namespace,
-					"policy":             v.Policy,
-					"enforced":  		  "false"}
+					"resource":  v.ResourceName,
+					"namespace": v.Namespace,
+					"policy":    v.Policy,
+					"enforced":  "false"}
 				policyViolations.With(labels).Inc()
 			}
 		}
@@ -274,10 +274,10 @@ func (s *Server) validateResources(ar admissionv1.AdmissionReview) admissionv1.A
 
 			if s.Config.GlobalMetricsEnabled == true {
 				labels := prometheus.Labels{
-					"resource":           v.ResourceName,
-					"namespace":          v.Namespace,
-					"policy":             v.Policy,
-					"enforced":  		  "true"}
+					"resource":  v.ResourceName,
+					"namespace": v.Namespace,
+					"policy":    v.Policy,
+					"enforced":  "true"}
 				policyViolations.With(labels).Inc()
 			}
 
