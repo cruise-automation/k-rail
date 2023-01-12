@@ -83,6 +83,10 @@ spec:
         checksum/tls: {{ print $ca.Cert | sha256sum }}
     spec:
       serviceAccountName: k-rail
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: k-rail
           command: ["/k-rail", "-config=/config/config.yml", "-exemptions-path-glob=/exemptions/*.yml"]
@@ -100,8 +104,10 @@ spec:
             - name: exemptions
               mountPath: /exemptions
               readOnly: true
+        {{- with .Values.containerSecurityContext }}
           securityContext:
-            readOnlyRootFilesystem: true
+          {{- toYaml . | nindent 12 }}    
+        {{- end }}
           ports:
             - containerPort: 10250
             - containerPort: 8000
