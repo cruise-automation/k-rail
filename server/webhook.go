@@ -152,7 +152,10 @@ func (s *Server) validateResources(ar admissionv1.AdmissionReview) admissionv1.A
 			val.Name(),
 			s.Exemptions,
 		) {
-			mutationPatches = append(mutationPatches, patches...)
+			// K8s will not allow the mutation of DELETE operations
+			if ar.Request.Operation != "DELETE" {
+				mutationPatches = append(mutationPatches, patches...)
+			}
 		}
 
 		// apply exempt and non-exempt violations
@@ -207,10 +210,10 @@ func (s *Server) validateResources(ar admissionv1.AdmissionReview) admissionv1.A
 
 		if s.Config.GlobalMetricsEnabled == true {
 			labels := prometheus.Labels{
-				"resource":           v.ResourceName,
-				"namespace":          v.Namespace,
-				"policy":             v.Policy,
-				"enforced":  		  "false"}
+				"resource":  v.ResourceName,
+				"namespace": v.Namespace,
+				"policy":    v.Policy,
+				"enforced":  "false"}
 			policyViolations.With(labels).Inc()
 		}
 	}
@@ -228,10 +231,10 @@ func (s *Server) validateResources(ar admissionv1.AdmissionReview) admissionv1.A
 
 		if s.Config.GlobalMetricsEnabled == true {
 			labels := prometheus.Labels{
-				"resource":           v.ResourceName,
-				"namespace":          v.Namespace,
-				"policy":             v.Policy,
-				"enforced":  		  "false"}
+				"resource":  v.ResourceName,
+				"namespace": v.Namespace,
+				"policy":    v.Policy,
+				"enforced":  "false"}
 			policyViolations.With(labels).Inc()
 		}
 	}
@@ -250,10 +253,10 @@ func (s *Server) validateResources(ar admissionv1.AdmissionReview) admissionv1.A
 
 			if s.Config.GlobalMetricsEnabled == true {
 				labels := prometheus.Labels{
-					"resource":           v.ResourceName,
-					"namespace":          v.Namespace,
-					"policy":             v.Policy,
-					"enforced":  		  "false"}
+					"resource":  v.ResourceName,
+					"namespace": v.Namespace,
+					"policy":    v.Policy,
+					"enforced":  "false"}
 				policyViolations.With(labels).Inc()
 			}
 		}
@@ -274,10 +277,10 @@ func (s *Server) validateResources(ar admissionv1.AdmissionReview) admissionv1.A
 
 			if s.Config.GlobalMetricsEnabled == true {
 				labels := prometheus.Labels{
-					"resource":           v.ResourceName,
-					"namespace":          v.Namespace,
-					"policy":             v.Policy,
-					"enforced":  		  "true"}
+					"resource":  v.ResourceName,
+					"namespace": v.Namespace,
+					"policy":    v.Policy,
+					"enforced":  "true"}
 				policyViolations.With(labels).Inc()
 			}
 
